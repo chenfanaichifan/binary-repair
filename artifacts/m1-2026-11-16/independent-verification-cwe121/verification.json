@@ -1,0 +1,1407 @@
+{
+  "schema_version": 1,
+  "kind": "independent_benchmark_verification",
+  "cases": [
+    {
+      "case_id": "cwe121-unchecked-strcpy",
+      "decision": "verified",
+      "status": "verified",
+      "report": {
+        "schema_version": 1,
+        "target": {
+          "format": "elf",
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "target_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+          "target_scope": {
+            "policy": "target_scoped_associated",
+            "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+            "va": 4199088,
+            "end": 4200112
+          }
+        },
+        "generator": {
+          "generator_id": "ai-repair-benchmark/1",
+          "agent": "repair-pipeline",
+          "model": null,
+          "run_id": "cwe121-unchecked-strcpy"
+        },
+        "verifier": {
+          "verifier_id": "independent-verifier/1",
+          "version": "1"
+        },
+        "independence": {
+          "ok": true,
+          "generator_evidence_excluded": true
+        },
+        "checks": [
+          {
+            "id": "identity",
+            "title": "Original/candidate identity and candidate change",
+            "status": "passed",
+            "required": true,
+            "detail": "original=aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393 candidate=70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62"
+          },
+          {
+            "id": "container",
+            "title": "Container re-parse and metadata agreement",
+            "status": "passed",
+            "required": true,
+            "detail": "format=elf arch=x86_64 bits=64 endian=little"
+          },
+          {
+            "id": "layout-plan",
+            "title": "Patch-plan replay (layout/cave/associated changes)",
+            "status": "passed",
+            "required": true,
+            "detail": "plan 177c72dd24f5baa9 replay matches the candidate: operations=10 changed_ranges=10 cave=yes associated=8"
+          },
+          {
+            "id": "action-replay",
+            "title": "Byte-level action replay from raw images",
+            "status": "passed",
+            "required": true,
+            "detail": "plan replay covers all changed bytes: changed_ranges=10"
+          },
+          {
+            "id": "target-scope",
+            "title": "Candidate modifications stay inside the declared target scope",
+            "status": "passed",
+            "required": true,
+            "detail": "policy=target_scoped_associated scope=[0x4012b0, 0x4016b0) ops=10 reviewed_sites=1"
+          },
+          {
+            "id": "abi",
+            "title": "Candidate instruction-block ABI validation",
+            "status": "passed",
+            "required": true,
+            "detail": "ABI ok for 1 derived block(s) sources=plan.abi_blocks"
+          },
+          {
+            "id": "runtime-oracle",
+            "title": "Independent external PoC differential and regression",
+            "status": "passed",
+            "required": true,
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=4)",
+            "independent": true
+          },
+          {
+            "id": "evidence-completeness",
+            "title": "At least one independent oracle (no generator-only evidence)",
+            "status": "passed",
+            "required": true,
+            "detail": "one independent external oracle passed",
+            "independent": true
+          },
+          {
+            "id": "independence",
+            "title": "Generator/verifier independence and generator-evidence exclusion",
+            "status": "passed",
+            "required": true,
+            "detail": "generator identity is distinct and its evidence is excluded from the decision"
+          }
+        ],
+        "decision": "verified",
+        "evidence": [
+          {
+            "kind": "candidate",
+            "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+            "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62"
+          },
+          {
+            "kind": "container",
+            "original": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 336,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195624,
+                  "size": 184,
+                  "offset": 1320,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195808,
+                  "size": 28,
+                  "offset": 1504,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195840,
+                  "size": 80,
+                  "offset": 1536,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195920,
+                  "size": 72,
+                  "offset": 1616,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195992,
+                  "size": 240,
+                  "offset": 1688,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 176,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198608,
+                  "size": 160,
+                  "offset": 4304,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198768,
+                  "size": 1900,
+                  "offset": 4464,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4200668,
+                  "size": 13,
+                  "offset": 6364,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 136,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202632,
+                  "size": 372,
+                  "offset": 8328,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4203008,
+                  "size": 1444,
+                  "offset": 8704,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 104,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210768,
+                  "size": 24,
+                  "offset": 12368,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210816,
+                  "size": 32,
+                  "offset": 12392,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12392,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 144,
+                  "offset": 12437,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 3415,
+                  "offset": 12581,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 1103,
+                  "offset": 15996,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 880,
+                  "offset": 17099,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 1777,
+                  "offset": 17979,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 684,
+                  "offset": 19756,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 2256,
+                  "offset": 20440,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 1359,
+                  "offset": 22696,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 24055,
+                  "executable": false
+                }
+              ],
+              "symbols": [
+                {
+                  "va": 4198400,
+                  "name": "_init"
+                },
+                {
+                  "va": 4198768,
+                  "name": "_start"
+                },
+                {
+                  "va": 4198816,
+                  "name": "_dl_relocate_static_pie"
+                },
+                {
+                  "va": 4198832,
+                  "name": "deregister_tm_clones"
+                },
+                {
+                  "va": 4198880,
+                  "name": "register_tm_clones"
+                },
+                {
+                  "va": 4198944,
+                  "name": "__do_global_dtors_aux"
+                },
+                {
+                  "va": 4198992,
+                  "name": "frame_dummy"
+                },
+                {
+                  "va": 4198998,
+                  "name": "main"
+                },
+                {
+                  "va": 4199088,
+                  "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
+                },
+                {
+                  "va": 4199192,
+                  "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_goodG2BSink"
+                },
+                {
+                  "va": 4199296,
+                  "name": "printLine"
+                },
+                {
+                  "va": 4199334,
+                  "name": "printWLine"
+                },
+                {
+                  "va": 4199382,
+                  "name": "printIntLine"
+                },
+                {
+                  "va": 4199420,
+                  "name": "printShortLine"
+                },
+                {
+                  "va": 4199462,
+                  "name": "printFloatLine"
+                },
+                {
+                  "va": 4199516,
+                  "name": "printLongLine"
+                },
+                {
+                  "va": 4199557,
+                  "name": "printLongLongLine"
+                },
+                {
+                  "va": 4199598,
+                  "name": "printSizeTLine"
+                },
+                {
+                  "va": 4199639,
+                  "name": "printHexCharLine"
+                },
+                {
+                  "va": 4199680,
+                  "name": "printWcharLine"
+                },
+                {
+                  "va": 4199733,
+                  "name": "printUnsignedLine"
+                },
+                {
+                  "va": 4199771,
+                  "name": "printHexUnsignedCharLine"
+                },
+                {
+                  "va": 4199812,
+                  "name": "printDoubleLine"
+                },
+                {
+                  "va": 4199856,
+                  "name": "printStructLine"
+                },
+                {
+                  "va": 4199905,
+                  "name": "printBytesLine"
+                },
+                {
+                  "va": 4199997,
+                  "name": "decodeHexChars"
+                },
+                {
+                  "va": 4200220,
+                  "name": "decodeHexWChars"
+                },
+                {
+                  "va": 4200406,
+                  "name": "globalReturnsTrue"
+                },
+                {
+                  "va": 4200421,
+                  "name": "globalReturnsFalse"
+                },
+                {
+                  "va": 4200436,
+                  "name": "globalReturnsTrueOrFalse"
+                },
+                {
+                  "va": 4200470,
+                  "name": "good1"
+                },
+                {
+                  "va": 4200481,
+                  "name": "good2"
+                },
+                {
+                  "va": 4200492,
+                  "name": "good3"
+                },
+                {
+                  "va": 4200503,
+                  "name": "good4"
+                },
+                {
+                  "va": 4200514,
+                  "name": "good5"
+                },
+                {
+                  "va": 4200525,
+                  "name": "good6"
+                },
+                {
+                  "va": 4200536,
+                  "name": "good7"
+                },
+                {
+                  "va": 4200547,
+                  "name": "good8"
+                },
+                {
+                  "va": 4200558,
+                  "name": "good9"
+                },
+                {
+                  "va": 4200569,
+                  "name": "bad1"
+                },
+                {
+                  "va": 4200580,
+                  "name": "bad2"
+                },
+                {
+                  "va": 4200591,
+                  "name": "bad3"
+                },
+                {
+                  "va": 4200602,
+                  "name": "bad4"
+                },
+                {
+                  "va": 4200613,
+                  "name": "bad5"
+                },
+                {
+                  "va": 4200624,
+                  "name": "bad6"
+                },
+                {
+                  "va": 4200635,
+                  "name": "bad7"
+                },
+                {
+                  "va": 4200646,
+                  "name": "bad8"
+                },
+                {
+                  "va": 4200657,
+                  "name": "bad9"
+                },
+                {
+                  "va": 4200668,
+                  "name": "_fini"
+                }
+              ]
+            },
+            "candidate": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 336,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195624,
+                  "size": 184,
+                  "offset": 1320,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195808,
+                  "size": 28,
+                  "offset": 1504,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195840,
+                  "size": 80,
+                  "offset": 1536,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195920,
+                  "size": 72,
+                  "offset": 1616,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195992,
+                  "size": 240,
+                  "offset": 1688,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 176,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198608,
+                  "size": 160,
+                  "offset": 4304,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198768,
+                  "size": 1900,
+                  "offset": 4464,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4200668,
+                  "size": 13,
+                  "offset": 6364,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 136,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202632,
+                  "size": 372,
+                  "offset": 8328,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4203008,
+                  "size": 1444,
+                  "offset": 8704,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 104,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210768,
+                  "size": 24,
+                  "offset": 12368,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210816,
+                  "size": 32,
+                  "offset": 12392,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12392,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 144,
+                  "offset": 12437,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 3415,
+                  "offset": 12581,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 1103,
+                  "offset": 15996,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 880,
+                  "offset": 17099,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 1777,
+                  "offset": 17979,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 684,
+                  "offset": 19756,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 2256,
+                  "offset": 20440,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 1359,
+                  "offset": 22696,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 24055,
+                  "executable": false
+                }
+              ],
+              "symbols": [
+                {
+                  "va": 4198400,
+                  "name": "_init"
+                },
+                {
+                  "va": 4198768,
+                  "name": "_start"
+                },
+                {
+                  "va": 4198816,
+                  "name": "_dl_relocate_static_pie"
+                },
+                {
+                  "va": 4198832,
+                  "name": "deregister_tm_clones"
+                },
+                {
+                  "va": 4198880,
+                  "name": "register_tm_clones"
+                },
+                {
+                  "va": 4198944,
+                  "name": "__do_global_dtors_aux"
+                },
+                {
+                  "va": 4198992,
+                  "name": "frame_dummy"
+                },
+                {
+                  "va": 4198998,
+                  "name": "main"
+                },
+                {
+                  "va": 4199088,
+                  "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
+                },
+                {
+                  "va": 4199192,
+                  "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_goodG2BSink"
+                },
+                {
+                  "va": 4199296,
+                  "name": "printLine"
+                },
+                {
+                  "va": 4199334,
+                  "name": "printWLine"
+                },
+                {
+                  "va": 4199382,
+                  "name": "printIntLine"
+                },
+                {
+                  "va": 4199420,
+                  "name": "printShortLine"
+                },
+                {
+                  "va": 4199462,
+                  "name": "printFloatLine"
+                },
+                {
+                  "va": 4199516,
+                  "name": "printLongLine"
+                },
+                {
+                  "va": 4199557,
+                  "name": "printLongLongLine"
+                },
+                {
+                  "va": 4199598,
+                  "name": "printSizeTLine"
+                },
+                {
+                  "va": 4199639,
+                  "name": "printHexCharLine"
+                },
+                {
+                  "va": 4199680,
+                  "name": "printWcharLine"
+                },
+                {
+                  "va": 4199733,
+                  "name": "printUnsignedLine"
+                },
+                {
+                  "va": 4199771,
+                  "name": "printHexUnsignedCharLine"
+                },
+                {
+                  "va": 4199812,
+                  "name": "printDoubleLine"
+                },
+                {
+                  "va": 4199856,
+                  "name": "printStructLine"
+                },
+                {
+                  "va": 4199905,
+                  "name": "printBytesLine"
+                },
+                {
+                  "va": 4199997,
+                  "name": "decodeHexChars"
+                },
+                {
+                  "va": 4200220,
+                  "name": "decodeHexWChars"
+                },
+                {
+                  "va": 4200406,
+                  "name": "globalReturnsTrue"
+                },
+                {
+                  "va": 4200421,
+                  "name": "globalReturnsFalse"
+                },
+                {
+                  "va": 4200436,
+                  "name": "globalReturnsTrueOrFalse"
+                },
+                {
+                  "va": 4200470,
+                  "name": "good1"
+                },
+                {
+                  "va": 4200481,
+                  "name": "good2"
+                },
+                {
+                  "va": 4200492,
+                  "name": "good3"
+                },
+                {
+                  "va": 4200503,
+                  "name": "good4"
+                },
+                {
+                  "va": 4200514,
+                  "name": "good5"
+                },
+                {
+                  "va": 4200525,
+                  "name": "good6"
+                },
+                {
+                  "va": 4200536,
+                  "name": "good7"
+                },
+                {
+                  "va": 4200547,
+                  "name": "good8"
+                },
+                {
+                  "va": 4200558,
+                  "name": "good9"
+                },
+                {
+                  "va": 4200569,
+                  "name": "bad1"
+                },
+                {
+                  "va": 4200580,
+                  "name": "bad2"
+                },
+                {
+                  "va": 4200591,
+                  "name": "bad3"
+                },
+                {
+                  "va": 4200602,
+                  "name": "bad4"
+                },
+                {
+                  "va": 4200613,
+                  "name": "bad5"
+                },
+                {
+                  "va": 4200624,
+                  "name": "bad6"
+                },
+                {
+                  "va": 4200635,
+                  "name": "bad7"
+                },
+                {
+                  "va": 4200646,
+                  "name": "bad8"
+                },
+                {
+                  "va": 4200657,
+                  "name": "bad9"
+                },
+                {
+                  "va": 4200668,
+                  "name": "_fini"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "actions",
+            "actions": [],
+            "claimed_actions": []
+          },
+          {
+            "kind": "target-scope",
+            "declared": {
+              "policy": "target_scoped_associated",
+              "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+              "va": 4199088,
+              "end": 4200112
+            },
+            "range": {
+              "policy": "target_scoped_associated",
+              "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+              "va": 4199088,
+              "end": 4200112
+            }
+          },
+          {
+            "kind": "abi",
+            "derivation": {
+              "status": "ok",
+              "blocks": [
+                {
+                  "source": "plan.abi_blocks",
+                  "function": "",
+                  "va": 4214784,
+                  "size": 185,
+                  "arch": "x86_64",
+                  "file_offset": 28672,
+                  "block_sha256": "b2958a29f97047070d4c3df39123e2a65ca15c3ea6ff6a403c75677465a3a234"
+                }
+              ],
+              "problems": [],
+              "limitations": []
+            },
+            "reports": [
+              {
+                "block": {
+                  "source": "plan.abi_blocks",
+                  "function": "",
+                  "va": 4214784,
+                  "size": 185,
+                  "file_offset": 28672,
+                  "block_sha256": "b2958a29f97047070d4c3df39123e2a65ca15c3ea6ff6a403c75677465a3a234",
+                  "arch": "x86_64"
+                },
+                "report": {
+                  "ok": true,
+                  "fatal": 0,
+                  "findings": []
+                }
+              }
+            ]
+          },
+          {
+            "kind": "oracle",
+            "source": "external-poc-manifest",
+            "status": "pass",
+            "runner": "limactl",
+            "tier": "emulated_run",
+            "stdout_signature": "matched",
+            "errno_signature": "not_run",
+            "no_input": false,
+            "case_count": 4,
+            "regression_count": 8,
+            "limitations": []
+          },
+          {
+            "kind": "evidence-completeness",
+            "ok": true,
+            "detail": "one independent external oracle passed",
+            "sources": [
+              "external-poc-manifest"
+            ]
+          },
+          {
+            "kind": "layout-plan",
+            "plan_sha256": "177c72dd24f5baa9917bee9d18aa30dadb17c3bd8f890fd74c09f4ebb4bf82c3",
+            "replay_ok": true,
+            "changed_ranges": [
+              {
+                "original_offset": 512,
+                "candidate_offset": 512,
+                "size": 1,
+                "kind": "associated"
+              },
+              {
+                "original_offset": 516,
+                "candidate_offset": 516,
+                "size": 1,
+                "kind": "associated"
+              },
+              {
+                "original_offset": 520,
+                "candidate_offset": 520,
+                "size": 2,
+                "kind": "associated"
+              },
+              {
+                "original_offset": 528,
+                "candidate_offset": 528,
+                "size": 2,
+                "kind": "associated"
+              },
+              {
+                "original_offset": 536,
+                "candidate_offset": 536,
+                "size": 2,
+                "kind": "associated"
+              },
+              {
+                "original_offset": 544,
+                "candidate_offset": 544,
+                "size": 1,
+                "kind": "associated"
+              },
+              {
+                "original_offset": 552,
+                "candidate_offset": 552,
+                "size": 1,
+                "kind": "associated"
+              },
+              {
+                "original_offset": 560,
+                "candidate_offset": 560,
+                "size": 2,
+                "kind": "associated"
+              },
+              {
+                "original_offset": 4784,
+                "candidate_offset": 4784,
+                "size": 5,
+                "kind": "write"
+              },
+              {
+                "original_offset": 26792,
+                "candidate_offset": 26792,
+                "size": 2065,
+                "kind": "insert"
+              }
+            ],
+            "cave": {
+              "va": 4214784,
+              "size": 185,
+              "executable": true,
+              "method": "new-pt-load"
+            },
+            "associated_changes": [
+              {
+                "kind": "header_update",
+                "offset": 512,
+                "size": 1,
+                "section": "elf_header",
+                "authorization_ref": "authorization:elf-metadata:v1"
+              },
+              {
+                "kind": "header_update",
+                "offset": 516,
+                "size": 1,
+                "section": "elf_header",
+                "authorization_ref": "authorization:elf-metadata:v1"
+              },
+              {
+                "kind": "header_update",
+                "offset": 520,
+                "size": 2,
+                "section": "elf_header",
+                "authorization_ref": "authorization:elf-metadata:v1"
+              },
+              {
+                "kind": "header_update",
+                "offset": 528,
+                "size": 2,
+                "section": "elf_header",
+                "authorization_ref": "authorization:elf-metadata:v1"
+              },
+              {
+                "kind": "header_update",
+                "offset": 536,
+                "size": 2,
+                "section": "elf_header",
+                "authorization_ref": "authorization:elf-metadata:v1"
+              },
+              {
+                "kind": "header_update",
+                "offset": 544,
+                "size": 1,
+                "section": "elf_header",
+                "authorization_ref": "authorization:elf-metadata:v1"
+              },
+              {
+                "kind": "header_update",
+                "offset": 552,
+                "size": 1,
+                "section": "elf_header",
+                "authorization_ref": "authorization:elf-metadata:v1"
+              },
+              {
+                "kind": "header_update",
+                "offset": 560,
+                "size": 2,
+                "section": "elf_header",
+                "authorization_ref": "authorization:elf-metadata:v1"
+              }
+            ]
+          }
+        ],
+        "limitations": [
+          "guard candidate appends 2065 cave/PT_LOAD bytes at file offset 26792; the call redirect and header/program-header updates are declared as reviewed_site/header_update operations"
+        ],
+        "patch_plan_sha256": "177c72dd24f5baa9917bee9d18aa30dadb17c3bd8f890fd74c09f4ebb4bf82c3",
+        "oracle_evidence": {
+          "manifest_sha256": "17c787c87bc8292e03b38e2fc4e1861cbd25384952a57693a32db920eb452e52",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "status": "executed",
+          "evidence_sha256": "b4b045bea5a686d79539818eb7e83b87085296e04a3a9696448b6b0817e05e27"
+        },
+        "layout_evidence": {
+          "patch_plan_sha256": "177c72dd24f5baa9917bee9d18aa30dadb17c3bd8f890fd74c09f4ebb4bf82c3",
+          "replay_ok": true,
+          "changed_ranges": [
+            {
+              "original_offset": 512,
+              "candidate_offset": 512,
+              "size": 1,
+              "kind": "associated"
+            },
+            {
+              "original_offset": 516,
+              "candidate_offset": 516,
+              "size": 1,
+              "kind": "associated"
+            },
+            {
+              "original_offset": 520,
+              "candidate_offset": 520,
+              "size": 2,
+              "kind": "associated"
+            },
+            {
+              "original_offset": 528,
+              "candidate_offset": 528,
+              "size": 2,
+              "kind": "associated"
+            },
+            {
+              "original_offset": 536,
+              "candidate_offset": 536,
+              "size": 2,
+              "kind": "associated"
+            },
+            {
+              "original_offset": 544,
+              "candidate_offset": 544,
+              "size": 1,
+              "kind": "associated"
+            },
+            {
+              "original_offset": 552,
+              "candidate_offset": 552,
+              "size": 1,
+              "kind": "associated"
+            },
+            {
+              "original_offset": 560,
+              "candidate_offset": 560,
+              "size": 2,
+              "kind": "associated"
+            },
+            {
+              "original_offset": 4784,
+              "candidate_offset": 4784,
+              "size": 5,
+              "kind": "write"
+            },
+            {
+              "original_offset": 26792,
+              "candidate_offset": 26792,
+              "size": 2065,
+              "kind": "insert"
+            }
+          ],
+          "cave": {
+            "va": 4214784,
+            "size": 185,
+            "executable": true,
+            "method": "new-pt-load"
+          },
+          "associated_changes": [
+            {
+              "kind": "header_update",
+              "offset": 512,
+              "size": 1,
+              "section": "elf_header",
+              "authorization_ref": "authorization:elf-metadata:v1"
+            },
+            {
+              "kind": "header_update",
+              "offset": 516,
+              "size": 1,
+              "section": "elf_header",
+              "authorization_ref": "authorization:elf-metadata:v1"
+            },
+            {
+              "kind": "header_update",
+              "offset": 520,
+              "size": 2,
+              "section": "elf_header",
+              "authorization_ref": "authorization:elf-metadata:v1"
+            },
+            {
+              "kind": "header_update",
+              "offset": 528,
+              "size": 2,
+              "section": "elf_header",
+              "authorization_ref": "authorization:elf-metadata:v1"
+            },
+            {
+              "kind": "header_update",
+              "offset": 536,
+              "size": 2,
+              "section": "elf_header",
+              "authorization_ref": "authorization:elf-metadata:v1"
+            },
+            {
+              "kind": "header_update",
+              "offset": 544,
+              "size": 1,
+              "section": "elf_header",
+              "authorization_ref": "authorization:elf-metadata:v1"
+            },
+            {
+              "kind": "header_update",
+              "offset": 552,
+              "size": 1,
+              "section": "elf_header",
+              "authorization_ref": "authorization:elf-metadata:v1"
+            },
+            {
+              "kind": "header_update",
+              "offset": 560,
+              "size": 2,
+              "section": "elf_header",
+              "authorization_ref": "authorization:elf-metadata:v1"
+            }
+          ],
+          "abi_blocks": []
+        },
+        "report_sha256": "91c6681f7773b9d100658735d9e6b44bb1f1d523caed41cb4acbd7f11d2485dd"
+      },
+      "validation": {
+        "ok": true,
+        "method": "jsonschema",
+        "violations": []
+      },
+      "generator_gate": "pass"
+    }
+  ]
+}

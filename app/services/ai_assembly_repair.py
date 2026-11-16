@@ -47,6 +47,7 @@ from app.services.repair.assembly_diagnostics import (
 from app.services.repair.assembly_feedback import build_assembly_feedback
 from app.services.repair.assembly_policy import check_assembly_policy
 from app.services.repair.writer import _inject_blob
+from app.services.repair_spec import FailureBehavior, parse_failure_behavior
 
 ASM_PATH = "asm_roundtrip"
 ASM_SCHEMA_VERSION = 1
@@ -111,6 +112,267 @@ def _call_maps(allowed_calls: Iterable[Any] = ()) -> tuple[dict[int, str], dict[
         by_name[name] = target
     return by_va, by_name
 
+# ---------------------------------------------------------------------------
+# Controlled external calls for failure-behavior repairs
+# ---------------------------------------------------------------------------
+#
+# A ``failure_behavior`` contract (exit code / exact stdout / exact stderr)
+# can require the replacement block to terminate the process or write to a
+# fixed stream.  The host exposes only two minimal mechanisms, both fail-
+# closed:
+#
+# 1. Imports that already exist in the target ELF as *executable* PLT
+#    entries (exit/_exit/fputs/write/... only; never arbitrary symbols).
+# 2. Fixed x86-64 Linux syscall templates.  The model must invoke them by
+#    their exact names (``call br_write_stderr`` / ``call br_exit_group``),
+#    the host expands them into a canonical instruction sequence, and the
+#    assembled block is re-validated byte-pattern-exactly before injection.
+#    There is no arbitrary syscall capability.
+
+#: Failure-relevant imports that may be reintroduced when the target ELF
+#: already has an executable PLT entry for them.  This is a narrowing list,
+#: never a grant.
+CONTROLLED_IMPORT_NAMES = frozenset({
+    "exit", "_exit", "abort", "fputs", "fwrite", "fprintf", "write",
+    "puts", "printf", "strlen", "strcpy", "printLine",
+})
+CONTROLLED_TEMPLATE_STDOUT = "br_write_stdout"
+CONTROLLED_TEMPLATE_STDERR = "br_write_stderr"
+CONTROLLED_TEMPLATE_EXIT = "br_exit_group"
+MAX_CONTROLLED_WRITE_BYTES = 512
+
+
+@dataclass(frozen=True)
+class ControlledCall:
+    """One host-blessed call target or fixed syscall template."""
+
+    name: str
+    source: str  #: "import" (real PLT entry) | "template" (fixed syscall)
+    target_va: int = 0
+    kind: str = "call"  #: call | write | exit
+    fd: int | None = None
+    payload_hex: str = ""
+    exit_code: int | None = None
+
+    def payload(self) -> bytes:
+        return bytes.fromhex(self.payload_hex) if self.payload_hex else b""
+
+    def to_dict(self) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "name": self.name, "source": self.source,
+            "target_va": hex(self.target_va) if self.target_va else None,
+        }
+        if self.source == "template":
+            row.update({
+                "kind": self.kind, "fd": self.fd,
+                "payload_hex": self.payload_hex,
+                "exit_code": self.exit_code,
+                "invocation": "call " + self.name,
+            })
+        return row
+
+
+def _coerce_failure_behavior(value: Any) -> FailureBehavior | None:
+    """Accept FailureBehavior / mapping / None; invalid mapping -> None."""
+    if value is None:
+        return None
+    if isinstance(value, FailureBehavior):
+        return value
+    if isinstance(value, Mapping):
+        contract, error = parse_failure_behavior(value)
+        return contract if not error else None
+    return None
+
+
+def _executable_imports(container: Any) -> dict[str, int]:
+    """Controlled import names backed by an executable PLT entry in the ELF."""
+    imports = getattr(container, "imports", {}) or {}
+    section_at = getattr(container, "section_at", None)
+    usable: dict[str, int] = {}
+    for va, raw_name in imports.items():
+        name = str(raw_name).split("@", 1)[0]
+        if name not in CONTROLLED_IMPORT_NAMES:
+            continue
+        section = section_at(int(va)) if callable(section_at) else None
+        if section is None or not getattr(section, "executable", False):
+            continue
+        usable.setdefault(name, int(va))
+    return usable
+
+
+def discover_controlled_calls(
+    data: bytes,
+    container: Any,
+    target_va: int,
+    failure_behavior: Any = None,
+    *,
+    base_calls: Iterable[Any] = (),
+) -> list[Any]:
+    """Extend target-call discovery with failure-relevant controlled calls.
+
+    ``base_calls`` keeps the existing behaviour (calls already made by the
+    target function).  Imported calls are added only when the target ELF has
+    an executable PLT entry for the exact name; syscall templates are added
+    only for an ELF x86-64 target and only for the fields the failure
+    contract actually requests.  Every other case is left out (fail closed).
+    """
+    from app.services.repair.call_targets import AllowedCall
+
+    calls: list[Any] = list(base_calls)
+    names = {str(getattr(item, "name", "") or "") for item in calls}
+    for name, va in sorted(_executable_imports(container).items()):
+        if name in names:
+            continue
+        calls.append(AllowedCall(name=name, target_va=int(va), source="import"))
+        names.add(name)
+    contract = _coerce_failure_behavior(failure_behavior)
+    if contract is None or getattr(container, "format", "") != "elf":
+        return calls
+    if getattr(container, "arch", "") != "x86_64":
+        return calls
+    if contract.exit_code is not None and CONTROLLED_TEMPLATE_EXIT not in names:
+        calls.append(ControlledCall(
+            name=CONTROLLED_TEMPLATE_EXIT, source="template",
+            kind="exit", exit_code=int(contract.exit_code),
+        ))
+        names.add(CONTROLLED_TEMPLATE_EXIT)
+    requested_writes: list[tuple[str, int, bytes]] = []
+    if contract.stdout is not None:
+        requested_writes.append((
+            CONTROLLED_TEMPLATE_STDOUT, 1, contract.stdout.encode("utf-8")))
+    elif contract.stdout_hex is not None:
+        requested_writes.append((
+            CONTROLLED_TEMPLATE_STDOUT, 1, bytes.fromhex(contract.stdout_hex)))
+    if contract.stderr is not None:
+        requested_writes.append((
+            CONTROLLED_TEMPLATE_STDERR, 2, contract.stderr.encode("utf-8")))
+    for name, fd, payload in requested_writes:
+        if not payload or len(payload) > MAX_CONTROLLED_WRITE_BYTES:
+            continue
+        if name in names:
+            continue
+        calls.append(ControlledCall(
+            name=name, source="template", kind="write", fd=fd,
+            payload_hex=payload.hex(),
+        ))
+        names.add(name)
+    return calls
+
+
+def _expand_controlled_template(template: ControlledCall, arch: str) -> list[str]:
+    """Expand one fixed template into canonical assembly lines (x86-64)."""
+    if arch != "x86_64":
+        raise ValueError("controlled syscall templates require x86-64")
+    if template.kind == "exit":
+        if template.exit_code is None:
+            raise ValueError("exit template has no exit code")
+        return [
+            "mov edi, " + str(int(template.exit_code)),
+            "mov eax, 231",
+            "syscall",
+        ]
+    if template.kind == "write":
+        payload = template.payload()
+        if not payload:
+            raise ValueError("write template has no payload")
+        if len(payload) > MAX_CONTROLLED_WRITE_BYTES:
+            raise ValueError("write template payload exceeds the limit")
+        size = ((len(payload) + 15) // 16) * 16
+        padded = payload + b"\x00" * ((-len(payload)) % 8)
+        lines = ["sub rsp, " + str(size)]
+        for offset in range(0, len(padded), 8):
+            chunk = int.from_bytes(padded[offset:offset + 8], "little")
+            lines.append("movabs rax, " + str(chunk))
+            lines.append("mov qword ptr [rsp + " + str(offset) + "], rax")
+        lines += [
+            "mov edx, " + str(len(payload)),
+            "mov rsi, rsp",
+            "mov edi, " + str(int(template.fd or 2)),
+            "mov eax, 1",
+            "syscall",
+            "add rsp, " + str(size),
+        ]
+        return lines
+    raise ValueError("unknown controlled template kind: " + str(template.kind))
+
+
+def _controlled_syscall_config(failure_behavior: Any = None) -> dict[str, Any] | None:
+    """Byte-exact acceptance bounds for host-expanded syscall templates."""
+    contract = _coerce_failure_behavior(failure_behavior)
+    if contract is None:
+        return None
+    config: dict[str, Any] = {}
+    if contract.exit_code is not None:
+        config["exit_codes"] = {int(contract.exit_code)}
+    lengths: set[int] = set()
+    fds: set[int] = set()
+    if contract.stdout is not None:
+        lengths.add(len(contract.stdout.encode("utf-8")))
+        fds.add(1)
+    elif contract.stdout_hex is not None:
+        lengths.add(len(bytes.fromhex(contract.stdout_hex)))
+        fds.add(1)
+    if contract.stderr is not None:
+        lengths.add(len(contract.stderr.encode("utf-8")))
+        fds.add(2)
+    if lengths:
+        config["write_lengths"] = lengths
+        config["write_fds"] = fds
+    return config or None
+
+
+def _mov_reg_imm(ins: Any, reg: str, imm: int | None = None) -> int | None:
+    if ins.mnemonic.lower() != "mov":
+        return None
+    operands = ins.operands
+    if len(operands) != 2:
+        return None
+    if operands[0].type != 1 or operands[1].type != 2:
+        return None
+    if ins.reg_name(operands[0].reg).lower() != reg:
+        return None
+    value = int(operands[1].imm)
+    if imm is not None and value != imm:
+        return None
+    return value
+
+
+def _mov_reg_reg(ins: Any, dst: str, src: str) -> bool:
+    if ins.mnemonic.lower() != "mov":
+        return False
+    operands = ins.operands
+    if len(operands) != 2 or operands[0].type != 1 or operands[1].type != 1:
+        return False
+    return (ins.reg_name(operands[0].reg).lower() == dst
+            and ins.reg_name(operands[1].reg).lower() == src)
+
+
+def _classify_syscall(history: list[Any],
+                      config: Mapping[str, Any] | None) -> str | None:
+    """Classify a syscall as the canonical write/exit template, else None."""
+    if not config or len(history) < 3:
+        return None
+    exit_codes = config.get("exit_codes") or set()
+    if exit_codes:
+        code = _mov_reg_imm(history[-2], "edi")
+        if (code is not None and code in exit_codes
+                and _mov_reg_imm(history[-1], "eax", 231) is not None):
+            return "exit"
+    write_lengths = config.get("write_lengths") or set()
+    write_fds = config.get("write_fds") or set()
+    if write_lengths and len(history) >= 4:
+        length = _mov_reg_imm(history[-4], "edx")
+        fd = _mov_reg_imm(history[-2], "edi")
+        if (
+            length is not None and length in write_lengths
+            and fd is not None and fd in write_fds
+            and _mov_reg_reg(history[-3], "rsi", "rsp")
+            and _mov_reg_imm(history[-1], "eax", 1) is not None
+        ):
+            return "write"
+    return None
+
+
 ASM_SYSTEM_PROMPT = (
     "You are an assembly-level binary repair engineer for the AI_PATH=asm_roundtrip path.\n"
     "You receive the disassembly of one target function, its calling convention, and a\n"
@@ -125,6 +387,14 @@ ASM_SYSTEM_PROMPT = (
     "- If the packet has allowed_calls, you may use a direct call/bl ONLY to the\n"
     "  exact target addresses listed; indirect calls, other symbols and all\n"
     "  other call targets are forbidden.\n"
+    "- If the packet has a failure_behavior contract, the failure path MUST\n"
+    "  produce exactly that exit code / stdout / stderr.  When the contract asks\n"
+    "  for a process exit or exact stream bytes, invoke the fixed templates from\n"
+    "  controlled_calls by name, e.g. `call br_write_stderr` then\n"
+    "  `call br_exit_group`; the host expands them to fixed instructions and\n"
+    "  rejects any other syscall form.  Only names listed in controlled_calls\n"
+    "  may be used; absent templates mean the behaviour is not achievable and\n"
+    "  the block must not fake it.\n"
     "- Do not use syscalls, privileged instructions, trap instructions such as\n"
     "  ud2/int3, indirect jumps or absolute memory operands. Internal labels and\n"
     "  branches are allowed.\n"
@@ -164,14 +434,17 @@ def _disassemble_function(data: bytes, container: Any, sink: Sink) -> str:
 
 
 def _assembly_packet(data: bytes, container: Any, sink: Sink, listing: str,
-                     allowed_calls: Iterable[Any] = ()) -> dict[str, Any]:
+                     allowed_calls: Iterable[Any] = (),
+                     failure_behavior: Any = None,
+                     controlled_calls: Iterable[Any] = ()) -> dict[str, Any]:
     call_rows = []
     for item in allowed_calls:
         if hasattr(item, "to_dict"):
             call_rows.append(item.to_dict())
         elif isinstance(item, dict):
             call_rows.append(dict(item))
-    return {
+    contract = _coerce_failure_behavior(failure_behavior)
+    packet = {
         "schema_version": ASM_SCHEMA_VERSION,
         "path": ASM_PATH,
         "binary_sha256": _sha(data),
@@ -202,6 +475,29 @@ def _assembly_packet(data: bytes, container: Any, sink: Sink, listing: str,
             "terminate with ret",
         ],
     }
+    if contract is not None:
+        packet["failure_behavior"] = contract.to_dict()
+        packet["rules"] = [
+            "return a complete replacement function assembly",
+            "preserve the calling convention and stack-buffer capacity",
+            "on the failure path produce exactly the failure_behavior "
+            "exit code / stdout / stderr via the controlled templates",
+            "no external calls, syscalls, privileged instructions or indirect jumps",
+            "terminate with ret",
+        ]
+    template_rows = []
+    for item in controlled_calls or ():
+        if getattr(item, "source", "") != "template":
+            continue
+        row = item.to_dict() if hasattr(item, "to_dict") else dict(item)
+        template_rows.append(row)
+    if template_rows:
+        packet["controlled_calls"] = template_rows
+        packet["template_rule"] = (
+            "invoke a fixed template with `call <name>`; the host expands it "
+            "to canonical instructions and re-validates them; no other "
+            "syscall form is accepted")
+    return packet
 
 
 def _strip_comments(text: str, arch: str) -> str:
@@ -217,11 +513,20 @@ def _strip_comments(text: str, arch: str) -> str:
 
 
 def _validate_assembly_text(text: str, arch: str,
-                            allowed_calls: Iterable[Any] = ()) -> str:
+                            allowed_calls: Iterable[Any] = (),
+                            controlled_calls: Iterable[Any] = ()) -> str:
     if not isinstance(text, str) or not text.strip():
         raise ValueError("empty assembly")
     if len(text) > 12_000:
         raise ValueError("assembly text too large")
+    allowed_calls = list(allowed_calls)
+    templates: dict[str, ControlledCall] = {}
+    for item in controlled_calls or ():
+        if getattr(item, "source", "") != "template":
+            continue
+        name = str(getattr(item, "name", "") or "")
+        if name:
+            templates[name] = item
     policy = check_assembly_policy(text, arch, allowed_calls)
     if not policy.ok:
         raise policy_error([item.to_dict() for item in policy.diagnostics])
@@ -250,6 +555,14 @@ def _validate_assembly_text(text: str, arch: str,
                 raise ValueError(f"unsupported call form: {line[:60]}")
             if arch != "arm64" and mnemonic != "call":
                 raise ValueError(f"unsupported call form: {line[:60]}")
+            if not operand.lower().startswith("0x") and operand in templates:
+                # Fixed host template: expand to canonical instructions.  The
+                # expanded block is re-validated byte-exactly in
+                # _validate_code, so this cannot turn into a free-form call.
+                expansion = _expand_controlled_template(templates[operand], arch)
+                body.extend(expansion)
+                instruction_lines += len(expansion)
+                continue
             if operand.lower().startswith("0x"):
                 target = int(operand, 16)
                 name = allowed_by_va.get(target)
@@ -462,7 +775,8 @@ def _patch_binary_call_relocations(
 
 def _validate_code(code: bytes, arch: str,
                    allowed_calls: Iterable[Any] = (),
-                   base_va: int = 0) -> None:
+                   base_va: int = 0,
+                   controlled_syscalls: Mapping[str, Any] | None = None) -> None:
     if arch in {"i386", "x86_64"}:
         md = Cs(CS_ARCH_X86, CS_MODE_32 if arch == "i386" else CS_MODE_64)
     else:
@@ -471,6 +785,8 @@ def _validate_code(code: bytes, arch: str,
     allowed_by_va, _ = _call_maps(allowed_calls)
     total = 0
     last = ""
+    last_syscall_kind: str | None = None
+    history: list[Any] = []
     for ins in md.disasm(code, int(base_va)):
         if ins.address != int(base_va) + total:
             raise ValueError("assembled block has an undecodable gap")
@@ -485,8 +801,18 @@ def _validate_code(code: bytes, arch: str,
                 if target is not None and target in allowed_by_va:
                     total += ins.size
                     last = mnemonic
+                    history.append(ins)
                     continue
             raise ValueError(f"forbidden instruction in assembled block: {mnemonic}")
+        if mnemonic == "syscall":
+            kind = _classify_syscall(history, controlled_syscalls)
+            if kind is None:
+                raise ValueError("forbidden instruction in assembled block: syscall")
+            total += ins.size
+            last = "syscall"
+            last_syscall_kind = kind
+            history.append(ins)
+            continue
         if any(token in mnemonic for token in ("syscall", "sysenter", "int", "svc", "hlt")):
             raise ValueError(f"forbidden instruction in assembled block: {mnemonic}")
         safe = _SAFE_X86 if arch in {"i386", "x86_64"} else _SAFE_ARM
@@ -505,10 +831,13 @@ def _validate_code(code: bytes, arch: str,
                     break
             if target is not None and not (base_va <= target < base_va + len(code)):
                 raise ValueError("assembly branch escapes the injected block")
+        history.append(ins)
         total += ins.size
         last = mnemonic
     if total != len(code):
         raise ValueError("assembled block did not decode completely")
+    if last == "syscall" and last_syscall_kind == "exit":
+        return
     if last not in {"ret", "jmp"} and not last.startswith("b"):
         raise ValueError("assembled block must end with ret/jmp")
 
@@ -548,8 +877,15 @@ def asm_repair(
     allow_static_only: bool = False,
     poc_manifest: dict[str, Any] | None = None,
     allowed_calls: Iterable[Any] = (),
+    failure_behavior: Any = None,
 ) -> AiRepairOutcome:
-    """Run path 1 (assembly round-trip); the deterministic gate decides."""
+    """Run path 1 (assembly round-trip); the deterministic gate decides.
+
+    ``failure_behavior`` (optional, structured) enables the fail-closed
+    controlled external calls: failure-relevant PLT imports already present
+    in the target ELF plus the fixed x86-64 write/exit syscall templates.
+    Without it the path keeps its historical leaf-only behaviour.
+    """
     ai = _ai_base(ASM_PATH)
     from app.services.containers import detect_container
 
@@ -576,7 +912,17 @@ def asm_repair(
     except Exception as exc:  # noqa: BLE001
         return _fail(report, ai, "not_attempted",
                      f"cannot disassemble target function: {type(exc).__name__}: {exc}")
-    packet = _assembly_packet(data, container, sink, listing, allowed_calls)
+    contract = _coerce_failure_behavior(failure_behavior)
+    calls: list[Any] = list(allowed_calls)
+    if contract is not None:
+        calls = discover_controlled_calls(
+            data, container, int(sink.function_va or 0), contract,
+            base_calls=calls,
+        )
+    packet = _assembly_packet(
+        data, container, sink, listing, calls,
+        failure_behavior=contract, controlled_calls=calls,
+    )
     parsed, error = _call_model(
         client, system_prompt=ASM_SYSTEM_PROMPT, packet=packet,
         max_tokens=ASM_MAX_TOKENS, ai=ai,
@@ -592,10 +938,13 @@ def asm_repair(
         return _fail(report, ai, "invalid", "unsupported assembly schema_version")
     try:
         clean = _validate_assembly_text(
-            str(parsed.get("assembly") or ""), container.arch, allowed_calls
+            str(parsed.get("assembly") or ""), container.arch, calls,
+            controlled_calls=calls,
         )
-        code = _assemble(clean, container.arch)
-        _validate_code(code, container.arch, allowed_calls)
+        if calls:
+            code, relocs = _assemble_with_relocations(clean, container.arch)
+        else:
+            code, relocs = _assemble(clean, container.arch), []
     except Exception as exc:  # noqa: BLE001
         ai["status"] = "invalid"
         ai["error"] = str(exc)
@@ -606,6 +955,26 @@ def asm_repair(
         ai["status"] = "invalid"
         ai["error"] = "executable block injection failed"
         return _fail(report, ai, "invalid", ai["error"])
+    try:
+        if relocs:
+            patched = _patch_binary_call_relocations(
+                patched, cave_va, container.arch, code, relocs, calls)
+            resolved = _apply_call_relocations(
+                code, container.arch, int(cave_va), relocs, calls)
+            _validate_code(
+                resolved, container.arch, calls, base_va=int(cave_va),
+                controlled_syscalls=_controlled_syscall_config(contract),
+            )
+        else:
+            _validate_code(
+                code, container.arch, calls,
+                controlled_syscalls=_controlled_syscall_config(contract),
+            )
+    except Exception as exc:  # noqa: BLE001
+        ai["status"] = "invalid"
+        ai["error"] = str(exc)
+        ai["validation"] = {"error": str(exc)}
+        return _fail(report, ai, "invalid", f"assembly repair rejected: {exc}")
     patched = _redirect_function(patched, container, sink, cave_va)
     if patched is None:
         ai["status"] = "invalid"
@@ -618,6 +987,11 @@ def asm_repair(
         "method": method,
         "cave_va": hex(cave_va),
         "sink_kind": sink.kind,
+        "failure_behavior": (
+            contract.to_dict() if contract is not None else None),
+        "controlled_calls": [
+            item.to_dict() for item in calls
+            if getattr(item, "source", "") == "template"],
     }
     report.findings = [_sink_to_finding(sink)]
     report.strategy = "assembly-roundtrip"

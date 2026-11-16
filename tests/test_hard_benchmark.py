@@ -20,6 +20,8 @@ def test_hard_cases_are_well_formed_and_baseline_fails():
         assert (ROOT / case["binary"]).is_file()
         assert (ROOT / case["poc"]).is_file()
         assert (ROOT / case["reference_fix"]).is_file()
+        if case.get("reference_fix_asm"):
+            assert (ROOT / case["reference_fix_asm"]).is_file()
         assert case["baseline_expected"] in {"analysis_only", "rejected", "unsupported"}
         # Target-strict baseline bookkeeping (contract T1): the field records the
         # deterministic repair_any(target=...) expectation and never rewrites
@@ -28,6 +30,24 @@ def test_hard_cases_are_well_formed_and_baseline_fails():
         if strict_expected is not None:
             assert strict_expected in {"analysis_only", "rejected", "unsupported"}
             assert strict_expected != case["baseline_expected"]
+
+
+
+
+def test_cwe121_declares_failure_contract_and_reference_assembly():
+    from scripts.run_hard_benchmark import (
+        _poc_failure_contract, _poc_spec,
+    )
+    cases = json.loads((ROOT / "fixtures" / "hard-cases" / "cases.json").read_text())
+    case = next(item for item in cases["cases"]
+                if item["id"] == "cwe121-unchecked-strcpy")
+    assert case["reference_fix_asm"].endswith(".S")
+    contract = _poc_failure_contract(_poc_spec(case))
+    assert contract == {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "ERROR: input exceeds destination capacity\n",
+    }
 
 
 @pytest.mark.skipif(not LINUX_X64, reason="native PoC gate requires Linux x86-64")

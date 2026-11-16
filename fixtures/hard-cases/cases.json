@@ -20,6 +20,7 @@
       "capacity": 50,
       "poc": "fixtures/poc/cwe121.json",
       "reference_fix": "fixtures/hard-cases/cwe121_fix.c",
+      "reference_fix_asm": "fixtures/hard-cases/cwe121_failure_contract.S",
       "baseline_expected": "analysis_only",
       "contract": "CWE121 stack overflow: strcpy into char[50] without validation; repaired path must reject inputs with length+1>50 (exit 1, exact stderr) and preserve valid stdout",
       "family": "non-template semantic validation"

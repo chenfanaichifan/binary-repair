@@ -1,0 +1,2684 @@
+{
+  "schema_version": 1,
+  "provider": "reference",
+  "provider_metadata": {
+    "requested": "reference",
+    "client_class": null,
+    "provider": null,
+    "model_requested": null,
+    "base_url": null,
+    "configured": null,
+    "errors": [],
+    "status": "reference"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "cwe121-unchecked-strcpy",
+        "binary": "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+        "target": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+        "capacity": 50,
+        "poc": "fixtures/poc/cwe121.json",
+        "reference_fix": "fixtures/hard-cases/cwe121_fix.c",
+        "reference_fix_asm": "fixtures/hard-cases/cwe121_failure_contract.S",
+        "baseline_expected": "analysis_only",
+        "contract": "CWE121 stack overflow: strcpy into char[50] without validation; repaired path must reject inputs with length+1>50 (exit 1, exact stderr) and preserve valid stdout",
+        "family": "non-template semantic validation"
+      },
+      "input_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+      "baseline": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 289,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 289,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink [0x4012b0,0x401318)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+          "va": 4199088,
+          "end": 4199192,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 27,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected (strict field omitted in cases.json)",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": null,
+      "reference_fix": {
+        "attempted": true,
+        "kind": "S",
+        "reference_fix": "fixtures/hard-cases/cwe121_fix.c",
+        "reference_fix_used": "fixtures/hard-cases/cwe121_failure_contract.S",
+        "status": "source_assembly",
+        "failure_behavior": {
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": "ERROR: input exceeds destination capacity\n"
+        },
+        "controlled_calls": [
+          {
+            "name": "printLine",
+            "target_va": "0x401380",
+            "source": "direct"
+          },
+          {
+            "name": "strcpy",
+            "target_va": "0x4010d0",
+            "source": "import"
+          },
+          {
+            "name": "fprintf",
+            "target_va": "0x401120",
+            "source": "import"
+          },
+          {
+            "name": "printf",
+            "target_va": "0x401100",
+            "source": "import"
+          },
+          {
+            "name": "puts",
+            "target_va": "0x4010e0",
+            "source": "import"
+          },
+          {
+            "name": "br_exit_group",
+            "source": "template",
+            "target_va": null,
+            "kind": "exit",
+            "fd": null,
+            "payload_hex": "",
+            "exit_code": 1,
+            "invocation": "call br_exit_group"
+          },
+          {
+            "name": "br_write_stderr",
+            "source": "template",
+            "target_va": null,
+            "kind": "write",
+            "fd": 2,
+            "payload_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a",
+            "exit_code": null,
+            "invocation": "call br_write_stderr"
+          }
+        ],
+        "failure_behavior_assertions": {
+          "authority": "auxiliary_non_gate",
+          "gate": "native PoC runner (run_poc) is the only acceptance authority",
+          "checks": [
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-51",
+              "field": "exit_code",
+              "expected": 1,
+              "actual": 1,
+              "matched": true
+            },
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-51",
+              "field": "stdout",
+              "expected": "",
+              "actual": "",
+              "matched": true
+            },
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-51",
+              "field": "stderr",
+              "expected": "ERROR: input exceeds destination capacity\n",
+              "actual": "ERROR: input exceeds destination capacity\n",
+              "matched": true
+            },
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-101",
+              "field": "exit_code",
+              "expected": 1,
+              "actual": 1,
+              "matched": true
+            },
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-101",
+              "field": "stdout",
+              "expected": "",
+              "actual": "",
+              "matched": true
+            },
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-101",
+              "field": "stderr",
+              "expected": "ERROR: input exceeds destination capacity\n",
+              "actual": "ERROR: input exceeds destination capacity\n",
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-0",
+              "field": "exit_code",
+              "expected": 0,
+              "actual": 0,
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-0",
+              "field": "stdout",
+              "expected": "\n",
+              "actual": "\n",
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-1",
+              "field": "exit_code",
+              "expected": 0,
+              "actual": 0,
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-1",
+              "field": "stdout",
+              "expected": "a\n",
+              "actual": "a\n",
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-10",
+              "field": "exit_code",
+              "expected": 0,
+              "actual": 0,
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-10",
+              "field": "stdout",
+              "expected": "hello\n",
+              "actual": "hello\n",
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-49",
+              "field": "exit_code",
+              "expected": 0,
+              "actual": 0,
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-49",
+              "field": "stdout",
+              "expected": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "actual": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "matched": true
+            }
+          ],
+          "all_matched": true
+        },
+        "candidate": {
+          "gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62",
+          "poc": {
+            "schema_version": 1,
+            "status": "pass",
+            "runner": "limactl",
+            "tier": "emulated_run",
+            "stdout_signature": "matched",
+            "errno_signature": "not_run",
+            "errno_probe": "",
+            "no_input": false,
+            "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+            "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62",
+            "poc": [
+              {
+                "case_id": "cwe121-invalid-51",
+                "kind": "poc",
+                "executable": "original",
+                "exit_code": 0,
+                "crashed": false,
+                "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                "stderr": "",
+                "stdout_hex": "4141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              },
+              {
+                "case_id": "cwe121-invalid-101",
+                "kind": "poc",
+                "executable": "original",
+                "exit_code": 255,
+                "crashed": true,
+                "stdout": "",
+                "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                "stdout_hex": "",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              },
+              {
+                "case_id": "cwe121-invalid-51",
+                "kind": "poc",
+                "executable": "candidate",
+                "exit_code": 1,
+                "crashed": false,
+                "stdout": "",
+                "stderr": "ERROR: input exceeds destination capacity\n",
+                "stdout_hex": "",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              },
+              {
+                "case_id": "cwe121-invalid-101",
+                "kind": "poc",
+                "executable": "candidate",
+                "exit_code": 1,
+                "crashed": false,
+                "stdout": "",
+                "stderr": "ERROR: input exceeds destination capacity\n",
+                "stdout_hex": "",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              }
+            ],
+            "regression": [
+              {
+                "case_id": "cwe121-valid-0",
+                "kind": "regression",
+                "executable": "original",
+                "exit_code": 0,
+                "crashed": false,
+                "stdout": "\n",
+                "stderr": "",
+                "stdout_hex": "0a",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              },
+              {
+                "case_id": "cwe121-valid-1",
+                "kind": "regression",
+                "executable": "original",
+                "exit_code": 0,
+                "crashed": false,
+                "stdout": "a\n",
+                "stderr": "",
+                "stdout_hex": "610a",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              },
+              {
+                "case_id": "cwe121-valid-10",
+                "kind": "regression",
+                "executable": "original",
+                "exit_code": 0,
+                "crashed": false,
+                "stdout": "hello\n",
+                "stderr": "",
+                "stdout_hex": "68656c6c6f0a",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              },
+              {
+                "case_id": "cwe121-valid-49",
+                "kind": "regression",
+                "executable": "original",
+                "exit_code": 0,
+                "crashed": false,
+                "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                "stderr": "",
+                "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              },
+              {
+                "case_id": "cwe121-valid-0",
+                "kind": "regression",
+                "executable": "candidate",
+                "exit_code": 0,
+                "crashed": false,
+                "stdout": "\n",
+                "stderr": "",
+                "stdout_hex": "0a",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              },
+              {
+                "case_id": "cwe121-valid-1",
+                "kind": "regression",
+                "executable": "candidate",
+                "exit_code": 0,
+                "crashed": false,
+                "stdout": "a\n",
+                "stderr": "",
+                "stdout_hex": "610a",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              },
+              {
+                "case_id": "cwe121-valid-10",
+                "kind": "regression",
+                "executable": "candidate",
+                "exit_code": 0,
+                "crashed": false,
+                "stdout": "hello\n",
+                "stderr": "",
+                "stdout_hex": "68656c6c6f0a",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              },
+              {
+                "case_id": "cwe121-valid-49",
+                "kind": "regression",
+                "executable": "candidate",
+                "exit_code": 0,
+                "crashed": false,
+                "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                "stderr": "",
+                "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                "timed_out": false,
+                "error": null,
+                "expected_ok": true,
+                "syscall_errors": [],
+                "errno_value": null,
+                "lock_blocked": false
+              }
+            ],
+            "limitations": [],
+            "lock_attempts": [
+              {
+                "run_id": "9c3fc499be53426cb4d5cf6f7a6ef5ea",
+                "attempt": 1,
+                "operation": "poc_runner.run_poc",
+                "purpose": "poc_runner.run_poc",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.988,
+                "wait_ms": 0.988,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": false,
+                "depth": 1,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802105.3974771,
+                "released_at_s": 1794802113.5394611,
+                "release_depth": 0
+              },
+              {
+                "run_id": "a9d947dc5a91445b99c678de05bac4f8",
+                "attempt": 2,
+                "operation": "poc_runner.run_path:cwe121-invalid-51:original",
+                "purpose": "poc_runner.run_path:cwe121-invalid-51:original",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.002,
+                "wait_ms": 0.002,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802105.398323,
+                "released_at_s": 1794802105.616809,
+                "release_depth": 1
+              },
+              {
+                "run_id": "2d84e1fbd20a4feda1452575d7d7b688",
+                "attempt": 3,
+                "operation": "poc_runner.run_path:cwe121-invalid-51:candidate",
+                "purpose": "poc_runner.run_path:cwe121-invalid-51:candidate",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.003,
+                "wait_ms": 0.003,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802105.6179142,
+                "released_at_s": 1794802106.7877388,
+                "release_depth": 1
+              },
+              {
+                "run_id": "589c599265c1480e96a29cc82d1a8f13",
+                "attempt": 4,
+                "operation": "poc_runner.run_path:cwe121-invalid-101:original",
+                "purpose": "poc_runner.run_path:cwe121-invalid-101:original",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.003,
+                "wait_ms": 0.003,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802106.789002,
+                "released_at_s": 1794802108.1776268,
+                "release_depth": 1
+              },
+              {
+                "run_id": "100ff345b59b400187cff0d6a2cac988",
+                "attempt": 5,
+                "operation": "poc_runner.run_path:cwe121-invalid-101:candidate",
+                "purpose": "poc_runner.run_path:cwe121-invalid-101:candidate",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.004,
+                "wait_ms": 0.004,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802108.179575,
+                "released_at_s": 1794802108.4218082,
+                "release_depth": 1
+              },
+              {
+                "run_id": "8f15b326f639437ab800beb4ef811f23",
+                "attempt": 6,
+                "operation": "poc_runner.run_path:cwe121-valid-0:original",
+                "purpose": "poc_runner.run_path:cwe121-valid-0:original",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.003,
+                "wait_ms": 0.003,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802108.422949,
+                "released_at_s": 1794802108.64842,
+                "release_depth": 1
+              },
+              {
+                "run_id": "800bbf470f4b475d84b6f7b02bec9e4b",
+                "attempt": 7,
+                "operation": "poc_runner.run_path:cwe121-valid-0:candidate",
+                "purpose": "poc_runner.run_path:cwe121-valid-0:candidate",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.003,
+                "wait_ms": 0.003,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802108.649678,
+                "released_at_s": 1794802109.674921,
+                "release_depth": 1
+              },
+              {
+                "run_id": "c8d1666ad25d4d90875e19f616c371e3",
+                "attempt": 8,
+                "operation": "poc_runner.run_path:cwe121-valid-1:original",
+                "purpose": "poc_runner.run_path:cwe121-valid-1:original",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.002,
+                "wait_ms": 0.002,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802109.676058,
+                "released_at_s": 1794802109.883193,
+                "release_depth": 1
+              },
+              {
+                "run_id": "1f5a779c02394ce6b30be626efdfddaf",
+                "attempt": 9,
+                "operation": "poc_runner.run_path:cwe121-valid-1:candidate",
+                "purpose": "poc_runner.run_path:cwe121-valid-1:candidate",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.002,
+                "wait_ms": 0.002,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802109.884116,
+                "released_at_s": 1794802111.0449688,
+                "release_depth": 1
+              },
+              {
+                "run_id": "c7058b0b495f4844aab8f0efd2bee0a6",
+                "attempt": 10,
+                "operation": "poc_runner.run_path:cwe121-valid-10:original",
+                "purpose": "poc_runner.run_path:cwe121-valid-10:original",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.002,
+                "wait_ms": 0.002,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802111.04593,
+                "released_at_s": 1794802111.250547,
+                "release_depth": 1
+              },
+              {
+                "run_id": "69e32c5e16464c9591b4beb7ad30f16d",
+                "attempt": 11,
+                "operation": "poc_runner.run_path:cwe121-valid-10:candidate",
+                "purpose": "poc_runner.run_path:cwe121-valid-10:candidate",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.002,
+                "wait_ms": 0.002,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802111.251667,
+                "released_at_s": 1794802112.2879941,
+                "release_depth": 1
+              },
+              {
+                "run_id": "80ace4508500459ca2a73238242c4117",
+                "attempt": 12,
+                "operation": "poc_runner.run_path:cwe121-valid-49:original",
+                "purpose": "poc_runner.run_path:cwe121-valid-49:original",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.002,
+                "wait_ms": 0.002,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802112.28948,
+                "released_at_s": 1794802112.514199,
+                "release_depth": 1
+              },
+              {
+                "run_id": "ce8897b051f14f7c8aefce875ade9212",
+                "attempt": 13,
+                "operation": "poc_runner.run_path:cwe121-valid-49:candidate",
+                "purpose": "poc_runner.run_path:cwe121-valid-49:candidate",
+                "pid": 10471,
+                "instance": "binaryrepair",
+                "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+                "lock_wait_ms": 0.002,
+                "wait_ms": 0.002,
+                "lease_acquired": true,
+                "acquired": true,
+                "released": true,
+                "timeout": false,
+                "reentrant": true,
+                "depth": 2,
+                "ttl_s": 900.0,
+                "limactl": {
+                  "tool": "/opt/homebrew/bin/limactl",
+                  "instance": "binaryrepair",
+                  "basename": "limactl"
+                },
+                "prior_lease_stale": false,
+                "prior_lease_pid": null,
+                "attempted_at_s": 1794802112.515438,
+                "released_at_s": 1794802113.538295,
+                "release_depth": 1
+              }
+            ],
+            "lock_blocked": false
+          },
+          "repair_status": "VERIFIED",
+          "failure_behavior_assertions": {
+            "authority": "auxiliary_non_gate",
+            "gate": "native PoC runner (run_poc) is the only acceptance authority",
+            "checks": [
+              {
+                "kind": "poc",
+                "case_id": "cwe121-invalid-51",
+                "field": "exit_code",
+                "expected": 1,
+                "actual": 1,
+                "matched": true
+              },
+              {
+                "kind": "poc",
+                "case_id": "cwe121-invalid-51",
+                "field": "stdout",
+                "expected": "",
+                "actual": "",
+                "matched": true
+              },
+              {
+                "kind": "poc",
+                "case_id": "cwe121-invalid-51",
+                "field": "stderr",
+                "expected": "ERROR: input exceeds destination capacity\n",
+                "actual": "ERROR: input exceeds destination capacity\n",
+                "matched": true
+              },
+              {
+                "kind": "poc",
+                "case_id": "cwe121-invalid-101",
+                "field": "exit_code",
+                "expected": 1,
+                "actual": 1,
+                "matched": true
+              },
+              {
+                "kind": "poc",
+                "case_id": "cwe121-invalid-101",
+                "field": "stdout",
+                "expected": "",
+                "actual": "",
+                "matched": true
+              },
+              {
+                "kind": "poc",
+                "case_id": "cwe121-invalid-101",
+                "field": "stderr",
+                "expected": "ERROR: input exceeds destination capacity\n",
+                "actual": "ERROR: input exceeds destination capacity\n",
+                "matched": true
+              },
+              {
+                "kind": "regression",
+                "case_id": "cwe121-valid-0",
+                "field": "exit_code",
+                "expected": 0,
+                "actual": 0,
+                "matched": true
+              },
+              {
+                "kind": "regression",
+                "case_id": "cwe121-valid-0",
+                "field": "stdout",
+                "expected": "\n",
+                "actual": "\n",
+                "matched": true
+              },
+              {
+                "kind": "regression",
+                "case_id": "cwe121-valid-1",
+                "field": "exit_code",
+                "expected": 0,
+                "actual": 0,
+                "matched": true
+              },
+              {
+                "kind": "regression",
+                "case_id": "cwe121-valid-1",
+                "field": "stdout",
+                "expected": "a\n",
+                "actual": "a\n",
+                "matched": true
+              },
+              {
+                "kind": "regression",
+                "case_id": "cwe121-valid-10",
+                "field": "exit_code",
+                "expected": 0,
+                "actual": 0,
+                "matched": true
+              },
+              {
+                "kind": "regression",
+                "case_id": "cwe121-valid-10",
+                "field": "stdout",
+                "expected": "hello\n",
+                "actual": "hello\n",
+                "matched": true
+              },
+              {
+                "kind": "regression",
+                "case_id": "cwe121-valid-49",
+                "field": "exit_code",
+                "expected": 0,
+                "actual": 0,
+                "matched": true
+              },
+              {
+                "kind": "regression",
+                "case_id": "cwe121-valid-49",
+                "field": "stdout",
+                "expected": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                "actual": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                "matched": true
+              }
+            ],
+            "all_matched": true
+          },
+          "candidate_artifact": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/artifacts/m1-2026-11-16/run-cwe121-reference/candidates/cwe121-unchecked-strcpy.bin"
+        },
+        "injection": {
+          "target_va": "0x4012b0",
+          "cave_va": "0x405000",
+          "method": "new-pt-load",
+          "code_bytes": 185,
+          "code_hex": "554889e54881ec8000000048897df831c983f9327322803c0f007404ffc1ebf1488d7d80488b75f8e800000000488b7df8e800000000c9c34883ec3048b84552524f523a20694889042448b86e70757420657863488944240848b86565647320646573488944241048b874696e6174696f6e488944241848b82063617061636974488944242048b8790a0000000000004889442428ba2a0000004889e6bf02000000b8010000000f054883c430bf01000000b8e70000000f05",
+          "code_disassembly": [
+            {
+              "address": "0x0",
+              "bytes": "55",
+              "mnemonic": "push",
+              "operands": "rbp"
+            },
+            {
+              "address": "0x1",
+              "bytes": "4889e5",
+              "mnemonic": "mov",
+              "operands": "rbp, rsp"
+            },
+            {
+              "address": "0x4",
+              "bytes": "4881ec80000000",
+              "mnemonic": "sub",
+              "operands": "rsp, 0x80"
+            },
+            {
+              "address": "0xb",
+              "bytes": "48897df8",
+              "mnemonic": "mov",
+              "operands": "qword ptr [rbp - 8], rdi"
+            },
+            {
+              "address": "0xf",
+              "bytes": "31c9",
+              "mnemonic": "xor",
+              "operands": "ecx, ecx"
+            },
+            {
+              "address": "0x11",
+              "bytes": "83f932",
+              "mnemonic": "cmp",
+              "operands": "ecx, 0x32"
+            },
+            {
+              "address": "0x14",
+              "bytes": "7322",
+              "mnemonic": "jae",
+              "operands": "0x38"
+            },
+            {
+              "address": "0x16",
+              "bytes": "803c0f00",
+              "mnemonic": "cmp",
+              "operands": "byte ptr [rdi + rcx], 0"
+            },
+            {
+              "address": "0x1a",
+              "bytes": "7404",
+              "mnemonic": "je",
+              "operands": "0x20"
+            },
+            {
+              "address": "0x1c",
+              "bytes": "ffc1",
+              "mnemonic": "inc",
+              "operands": "ecx"
+            },
+            {
+              "address": "0x1e",
+              "bytes": "ebf1",
+              "mnemonic": "jmp",
+              "operands": "0x11"
+            },
+            {
+              "address": "0x20",
+              "bytes": "488d7d80",
+              "mnemonic": "lea",
+              "operands": "rdi, [rbp - 0x80]"
+            },
+            {
+              "address": "0x24",
+              "bytes": "488b75f8",
+              "mnemonic": "mov",
+              "operands": "rsi, qword ptr [rbp - 8]"
+            },
+            {
+              "address": "0x28",
+              "bytes": "e800000000",
+              "mnemonic": "call",
+              "operands": "0x2d"
+            },
+            {
+              "address": "0x2d",
+              "bytes": "488b7df8",
+              "mnemonic": "mov",
+              "operands": "rdi, qword ptr [rbp - 8]"
+            },
+            {
+              "address": "0x31",
+              "bytes": "e800000000",
+              "mnemonic": "call",
+              "operands": "0x36"
+            },
+            {
+              "address": "0x36",
+              "bytes": "c9",
+              "mnemonic": "leave",
+              "operands": ""
+            },
+            {
+              "address": "0x37",
+              "bytes": "c3",
+              "mnemonic": "ret",
+              "operands": ""
+            },
+            {
+              "address": "0x38",
+              "bytes": "4883ec30",
+              "mnemonic": "sub",
+              "operands": "rsp, 0x30"
+            },
+            {
+              "address": "0x3c",
+              "bytes": "48b84552524f523a2069",
+              "mnemonic": "movabs",
+              "operands": "rax, 0x69203a524f525245"
+            },
+            {
+              "address": "0x46",
+              "bytes": "48890424",
+              "mnemonic": "mov",
+              "operands": "qword ptr [rsp], rax"
+            },
+            {
+              "address": "0x4a",
+              "bytes": "48b86e70757420657863",
+              "mnemonic": "movabs",
+              "operands": "rax, 0x637865207475706e"
+            },
+            {
+              "address": "0x54",
+              "bytes": "4889442408",
+              "mnemonic": "mov",
+              "operands": "qword ptr [rsp + 8], rax"
+            },
+            {
+              "address": "0x59",
+              "bytes": "48b86565647320646573",
+              "mnemonic": "movabs",
+              "operands": "rax, 0x7365642073646565"
+            },
+            {
+              "address": "0x63",
+              "bytes": "4889442410",
+              "mnemonic": "mov",
+              "operands": "qword ptr [rsp + 0x10], rax"
+            },
+            {
+              "address": "0x68",
+              "bytes": "48b874696e6174696f6e",
+              "mnemonic": "movabs",
+              "operands": "rax, 0x6e6f6974616e6974"
+            },
+            {
+              "address": "0x72",
+              "bytes": "4889442418",
+              "mnemonic": "mov",
+              "operands": "qword ptr [rsp + 0x18], rax"
+            },
+            {
+              "address": "0x77",
+              "bytes": "48b82063617061636974",
+              "mnemonic": "movabs",
+              "operands": "rax, 0x7469636170616320"
+            },
+            {
+              "address": "0x81",
+              "bytes": "4889442420",
+              "mnemonic": "mov",
+              "operands": "qword ptr [rsp + 0x20], rax"
+            },
+            {
+              "address": "0x86",
+              "bytes": "48b8790a000000000000",
+              "mnemonic": "movabs",
+              "operands": "rax, 0xa79"
+            },
+            {
+              "address": "0x90",
+              "bytes": "4889442428",
+              "mnemonic": "mov",
+              "operands": "qword ptr [rsp + 0x28], rax"
+            },
+            {
+              "address": "0x95",
+              "bytes": "ba2a000000",
+              "mnemonic": "mov",
+              "operands": "edx, 0x2a"
+            },
+            {
+              "address": "0x9a",
+              "bytes": "4889e6",
+              "mnemonic": "mov",
+              "operands": "rsi, rsp"
+            },
+            {
+              "address": "0x9d",
+              "bytes": "bf02000000",
+              "mnemonic": "mov",
+              "operands": "edi, 2"
+            },
+            {
+              "address": "0xa2",
+              "bytes": "b801000000",
+              "mnemonic": "mov",
+              "operands": "eax, 1"
+            },
+            {
+              "address": "0xa7",
+              "bytes": "0f05",
+              "mnemonic": "syscall",
+              "operands": ""
+            },
+            {
+              "address": "0xa9",
+              "bytes": "4883c430",
+              "mnemonic": "add",
+              "operands": "rsp, 0x30"
+            },
+            {
+              "address": "0xad",
+              "bytes": "bf01000000",
+              "mnemonic": "mov",
+              "operands": "edi, 1"
+            },
+            {
+              "address": "0xb2",
+              "bytes": "b8e7000000",
+              "mnemonic": "mov",
+              "operands": "eax, 0xe7"
+            },
+            {
+              "address": "0xb7",
+              "bytes": "0f05",
+              "mnemonic": "syscall",
+              "operands": ""
+            }
+          ],
+          "assembly_sha256": "5d74238b87c287c5efe45d70a9c88216fcdd764c34b9ceb830abe8f1b9a355ce",
+          "call_targets": [
+            {
+              "name": "printLine",
+              "target_va": "0x401380",
+              "source": "direct"
+            },
+            {
+              "name": "strcpy",
+              "target_va": "0x4010d0",
+              "source": "import"
+            },
+            {
+              "name": "fprintf",
+              "target_va": "0x401120",
+              "source": "import"
+            },
+            {
+              "name": "printf",
+              "target_va": "0x401100",
+              "source": "import"
+            },
+            {
+              "name": "puts",
+              "target_va": "0x4010e0",
+              "source": "import"
+            },
+            {
+              "name": "br_exit_group",
+              "source": "template",
+              "target_va": null,
+              "kind": "exit",
+              "fd": null,
+              "payload_hex": "",
+              "exit_code": 1,
+              "invocation": "call br_exit_group"
+            },
+            {
+              "name": "br_write_stderr",
+              "source": "template",
+              "target_va": null,
+              "kind": "write",
+              "fd": 2,
+              "payload_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a",
+              "exit_code": null,
+              "invocation": "call br_write_stderr"
+            }
+          ],
+          "controlled_templates": [
+            {
+              "name": "br_exit_group",
+              "source": "template",
+              "target_va": null,
+              "kind": "exit",
+              "fd": null,
+              "payload_hex": "",
+              "exit_code": 1,
+              "invocation": "call br_exit_group"
+            },
+            {
+              "name": "br_write_stderr",
+              "source": "template",
+              "target_va": null,
+              "kind": "write",
+              "fd": 2,
+              "payload_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a",
+              "exit_code": null,
+              "invocation": "call br_write_stderr"
+            }
+          ],
+          "failure_behavior": {
+            "exit_code": 1,
+            "stdout": "",
+            "stderr": "ERROR: input exceeds destination capacity\n",
+            "stdout_hex": null
+          },
+          "call_relocations": 2,
+          "abi": {
+            "ok": true,
+            "fatal": 0,
+            "findings": []
+          }
+        },
+        "verified": true,
+        "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62",
+        "target_scope_check": "passed"
+      },
+      "ai_attempts": [],
+      "injection": {
+        "target_va": "0x4012b0",
+        "cave_va": "0x405000",
+        "method": "new-pt-load",
+        "code_bytes": 185,
+        "code_hex": "554889e54881ec8000000048897df831c983f9327322803c0f007404ffc1ebf1488d7d80488b75f8e800000000488b7df8e800000000c9c34883ec3048b84552524f523a20694889042448b86e70757420657863488944240848b86565647320646573488944241048b874696e6174696f6e488944241848b82063617061636974488944242048b8790a0000000000004889442428ba2a0000004889e6bf02000000b8010000000f054883c430bf01000000b8e70000000f05",
+        "code_disassembly": [
+          {
+            "address": "0x0",
+            "bytes": "55",
+            "mnemonic": "push",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x1",
+            "bytes": "4889e5",
+            "mnemonic": "mov",
+            "operands": "rbp, rsp"
+          },
+          {
+            "address": "0x4",
+            "bytes": "4881ec80000000",
+            "mnemonic": "sub",
+            "operands": "rsp, 0x80"
+          },
+          {
+            "address": "0xb",
+            "bytes": "48897df8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 8], rdi"
+          },
+          {
+            "address": "0xf",
+            "bytes": "31c9",
+            "mnemonic": "xor",
+            "operands": "ecx, ecx"
+          },
+          {
+            "address": "0x11",
+            "bytes": "83f932",
+            "mnemonic": "cmp",
+            "operands": "ecx, 0x32"
+          },
+          {
+            "address": "0x14",
+            "bytes": "7322",
+            "mnemonic": "jae",
+            "operands": "0x38"
+          },
+          {
+            "address": "0x16",
+            "bytes": "803c0f00",
+            "mnemonic": "cmp",
+            "operands": "byte ptr [rdi + rcx], 0"
+          },
+          {
+            "address": "0x1a",
+            "bytes": "7404",
+            "mnemonic": "je",
+            "operands": "0x20"
+          },
+          {
+            "address": "0x1c",
+            "bytes": "ffc1",
+            "mnemonic": "inc",
+            "operands": "ecx"
+          },
+          {
+            "address": "0x1e",
+            "bytes": "ebf1",
+            "mnemonic": "jmp",
+            "operands": "0x11"
+          },
+          {
+            "address": "0x20",
+            "bytes": "488d7d80",
+            "mnemonic": "lea",
+            "operands": "rdi, [rbp - 0x80]"
+          },
+          {
+            "address": "0x24",
+            "bytes": "488b75f8",
+            "mnemonic": "mov",
+            "operands": "rsi, qword ptr [rbp - 8]"
+          },
+          {
+            "address": "0x28",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x2d"
+          },
+          {
+            "address": "0x2d",
+            "bytes": "488b7df8",
+            "mnemonic": "mov",
+            "operands": "rdi, qword ptr [rbp - 8]"
+          },
+          {
+            "address": "0x31",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x36"
+          },
+          {
+            "address": "0x36",
+            "bytes": "c9",
+            "mnemonic": "leave",
+            "operands": ""
+          },
+          {
+            "address": "0x37",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          },
+          {
+            "address": "0x38",
+            "bytes": "4883ec30",
+            "mnemonic": "sub",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0x3c",
+            "bytes": "48b84552524f523a2069",
+            "mnemonic": "movabs",
+            "operands": "rax, 0x69203a524f525245"
+          },
+          {
+            "address": "0x46",
+            "bytes": "48890424",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rsp], rax"
+          },
+          {
+            "address": "0x4a",
+            "bytes": "48b86e70757420657863",
+            "mnemonic": "movabs",
+            "operands": "rax, 0x637865207475706e"
+          },
+          {
+            "address": "0x54",
+            "bytes": "4889442408",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rsp + 8], rax"
+          },
+          {
+            "address": "0x59",
+            "bytes": "48b86565647320646573",
+            "mnemonic": "movabs",
+            "operands": "rax, 0x7365642073646565"
+          },
+          {
+            "address": "0x63",
+            "bytes": "4889442410",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rsp + 0x10], rax"
+          },
+          {
+            "address": "0x68",
+            "bytes": "48b874696e6174696f6e",
+            "mnemonic": "movabs",
+            "operands": "rax, 0x6e6f6974616e6974"
+          },
+          {
+            "address": "0x72",
+            "bytes": "4889442418",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rsp + 0x18], rax"
+          },
+          {
+            "address": "0x77",
+            "bytes": "48b82063617061636974",
+            "mnemonic": "movabs",
+            "operands": "rax, 0x7469636170616320"
+          },
+          {
+            "address": "0x81",
+            "bytes": "4889442420",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rsp + 0x20], rax"
+          },
+          {
+            "address": "0x86",
+            "bytes": "48b8790a000000000000",
+            "mnemonic": "movabs",
+            "operands": "rax, 0xa79"
+          },
+          {
+            "address": "0x90",
+            "bytes": "4889442428",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rsp + 0x28], rax"
+          },
+          {
+            "address": "0x95",
+            "bytes": "ba2a000000",
+            "mnemonic": "mov",
+            "operands": "edx, 0x2a"
+          },
+          {
+            "address": "0x9a",
+            "bytes": "4889e6",
+            "mnemonic": "mov",
+            "operands": "rsi, rsp"
+          },
+          {
+            "address": "0x9d",
+            "bytes": "bf02000000",
+            "mnemonic": "mov",
+            "operands": "edi, 2"
+          },
+          {
+            "address": "0xa2",
+            "bytes": "b801000000",
+            "mnemonic": "mov",
+            "operands": "eax, 1"
+          },
+          {
+            "address": "0xa7",
+            "bytes": "0f05",
+            "mnemonic": "syscall",
+            "operands": ""
+          },
+          {
+            "address": "0xa9",
+            "bytes": "4883c430",
+            "mnemonic": "add",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0xad",
+            "bytes": "bf01000000",
+            "mnemonic": "mov",
+            "operands": "edi, 1"
+          },
+          {
+            "address": "0xb2",
+            "bytes": "b8e7000000",
+            "mnemonic": "mov",
+            "operands": "eax, 0xe7"
+          },
+          {
+            "address": "0xb7",
+            "bytes": "0f05",
+            "mnemonic": "syscall",
+            "operands": ""
+          }
+        ],
+        "assembly_sha256": "5d74238b87c287c5efe45d70a9c88216fcdd764c34b9ceb830abe8f1b9a355ce",
+        "call_targets": [
+          {
+            "name": "printLine",
+            "target_va": "0x401380",
+            "source": "direct"
+          },
+          {
+            "name": "strcpy",
+            "target_va": "0x4010d0",
+            "source": "import"
+          },
+          {
+            "name": "fprintf",
+            "target_va": "0x401120",
+            "source": "import"
+          },
+          {
+            "name": "printf",
+            "target_va": "0x401100",
+            "source": "import"
+          },
+          {
+            "name": "puts",
+            "target_va": "0x4010e0",
+            "source": "import"
+          },
+          {
+            "name": "br_exit_group",
+            "source": "template",
+            "target_va": null,
+            "kind": "exit",
+            "fd": null,
+            "payload_hex": "",
+            "exit_code": 1,
+            "invocation": "call br_exit_group"
+          },
+          {
+            "name": "br_write_stderr",
+            "source": "template",
+            "target_va": null,
+            "kind": "write",
+            "fd": 2,
+            "payload_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a",
+            "exit_code": null,
+            "invocation": "call br_write_stderr"
+          }
+        ],
+        "controlled_templates": [
+          {
+            "name": "br_exit_group",
+            "source": "template",
+            "target_va": null,
+            "kind": "exit",
+            "fd": null,
+            "payload_hex": "",
+            "exit_code": 1,
+            "invocation": "call br_exit_group"
+          },
+          {
+            "name": "br_write_stderr",
+            "source": "template",
+            "target_va": null,
+            "kind": "write",
+            "fd": 2,
+            "payload_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a",
+            "exit_code": null,
+            "invocation": "call br_write_stderr"
+          }
+        ],
+        "failure_behavior": {
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": "ERROR: input exceeds destination capacity\n",
+          "stdout_hex": null
+        },
+        "call_relocations": 2,
+        "abi": {
+          "ok": true,
+          "fatal": 0,
+          "findings": []
+        }
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "limactl",
+        "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "stdout_signature": "matched",
+          "errno_signature": "not_run",
+          "errno_probe": "",
+          "no_input": false,
+          "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+          "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62",
+          "poc": [
+            {
+              "case_id": "cwe121-invalid-51",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "stderr": "",
+              "stdout_hex": "4141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            },
+            {
+              "case_id": "cwe121-invalid-101",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            },
+            {
+              "case_id": "cwe121-invalid-51",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "ERROR: input exceeds destination capacity\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            },
+            {
+              "case_id": "cwe121-invalid-101",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "ERROR: input exceeds destination capacity\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "cwe121-valid-0",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "\n",
+              "stderr": "",
+              "stdout_hex": "0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            },
+            {
+              "case_id": "cwe121-valid-1",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "a\n",
+              "stderr": "",
+              "stdout_hex": "610a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            },
+            {
+              "case_id": "cwe121-valid-10",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "hello\n",
+              "stderr": "",
+              "stdout_hex": "68656c6c6f0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            },
+            {
+              "case_id": "cwe121-valid-49",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "stderr": "",
+              "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            },
+            {
+              "case_id": "cwe121-valid-0",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "\n",
+              "stderr": "",
+              "stdout_hex": "0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            },
+            {
+              "case_id": "cwe121-valid-1",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "a\n",
+              "stderr": "",
+              "stdout_hex": "610a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            },
+            {
+              "case_id": "cwe121-valid-10",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "hello\n",
+              "stderr": "",
+              "stdout_hex": "68656c6c6f0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            },
+            {
+              "case_id": "cwe121-valid-49",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "stderr": "",
+              "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null,
+              "lock_blocked": false
+            }
+          ],
+          "limitations": [],
+          "lock_attempts": [
+            {
+              "run_id": "9c3fc499be53426cb4d5cf6f7a6ef5ea",
+              "attempt": 1,
+              "operation": "poc_runner.run_poc",
+              "purpose": "poc_runner.run_poc",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.988,
+              "wait_ms": 0.988,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": false,
+              "depth": 1,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802105.3974771,
+              "released_at_s": 1794802113.5394611,
+              "release_depth": 0
+            },
+            {
+              "run_id": "a9d947dc5a91445b99c678de05bac4f8",
+              "attempt": 2,
+              "operation": "poc_runner.run_path:cwe121-invalid-51:original",
+              "purpose": "poc_runner.run_path:cwe121-invalid-51:original",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.002,
+              "wait_ms": 0.002,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802105.398323,
+              "released_at_s": 1794802105.616809,
+              "release_depth": 1
+            },
+            {
+              "run_id": "2d84e1fbd20a4feda1452575d7d7b688",
+              "attempt": 3,
+              "operation": "poc_runner.run_path:cwe121-invalid-51:candidate",
+              "purpose": "poc_runner.run_path:cwe121-invalid-51:candidate",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.003,
+              "wait_ms": 0.003,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802105.6179142,
+              "released_at_s": 1794802106.7877388,
+              "release_depth": 1
+            },
+            {
+              "run_id": "589c599265c1480e96a29cc82d1a8f13",
+              "attempt": 4,
+              "operation": "poc_runner.run_path:cwe121-invalid-101:original",
+              "purpose": "poc_runner.run_path:cwe121-invalid-101:original",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.003,
+              "wait_ms": 0.003,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802106.789002,
+              "released_at_s": 1794802108.1776268,
+              "release_depth": 1
+            },
+            {
+              "run_id": "100ff345b59b400187cff0d6a2cac988",
+              "attempt": 5,
+              "operation": "poc_runner.run_path:cwe121-invalid-101:candidate",
+              "purpose": "poc_runner.run_path:cwe121-invalid-101:candidate",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.004,
+              "wait_ms": 0.004,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802108.179575,
+              "released_at_s": 1794802108.4218082,
+              "release_depth": 1
+            },
+            {
+              "run_id": "8f15b326f639437ab800beb4ef811f23",
+              "attempt": 6,
+              "operation": "poc_runner.run_path:cwe121-valid-0:original",
+              "purpose": "poc_runner.run_path:cwe121-valid-0:original",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.003,
+              "wait_ms": 0.003,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802108.422949,
+              "released_at_s": 1794802108.64842,
+              "release_depth": 1
+            },
+            {
+              "run_id": "800bbf470f4b475d84b6f7b02bec9e4b",
+              "attempt": 7,
+              "operation": "poc_runner.run_path:cwe121-valid-0:candidate",
+              "purpose": "poc_runner.run_path:cwe121-valid-0:candidate",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.003,
+              "wait_ms": 0.003,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802108.649678,
+              "released_at_s": 1794802109.674921,
+              "release_depth": 1
+            },
+            {
+              "run_id": "c8d1666ad25d4d90875e19f616c371e3",
+              "attempt": 8,
+              "operation": "poc_runner.run_path:cwe121-valid-1:original",
+              "purpose": "poc_runner.run_path:cwe121-valid-1:original",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.002,
+              "wait_ms": 0.002,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802109.676058,
+              "released_at_s": 1794802109.883193,
+              "release_depth": 1
+            },
+            {
+              "run_id": "1f5a779c02394ce6b30be626efdfddaf",
+              "attempt": 9,
+              "operation": "poc_runner.run_path:cwe121-valid-1:candidate",
+              "purpose": "poc_runner.run_path:cwe121-valid-1:candidate",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.002,
+              "wait_ms": 0.002,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802109.884116,
+              "released_at_s": 1794802111.0449688,
+              "release_depth": 1
+            },
+            {
+              "run_id": "c7058b0b495f4844aab8f0efd2bee0a6",
+              "attempt": 10,
+              "operation": "poc_runner.run_path:cwe121-valid-10:original",
+              "purpose": "poc_runner.run_path:cwe121-valid-10:original",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.002,
+              "wait_ms": 0.002,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802111.04593,
+              "released_at_s": 1794802111.250547,
+              "release_depth": 1
+            },
+            {
+              "run_id": "69e32c5e16464c9591b4beb7ad30f16d",
+              "attempt": 11,
+              "operation": "poc_runner.run_path:cwe121-valid-10:candidate",
+              "purpose": "poc_runner.run_path:cwe121-valid-10:candidate",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.002,
+              "wait_ms": 0.002,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802111.251667,
+              "released_at_s": 1794802112.2879941,
+              "release_depth": 1
+            },
+            {
+              "run_id": "80ace4508500459ca2a73238242c4117",
+              "attempt": 12,
+              "operation": "poc_runner.run_path:cwe121-valid-49:original",
+              "purpose": "poc_runner.run_path:cwe121-valid-49:original",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.002,
+              "wait_ms": 0.002,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802112.28948,
+              "released_at_s": 1794802112.514199,
+              "release_depth": 1
+            },
+            {
+              "run_id": "ce8897b051f14f7c8aefce875ade9212",
+              "attempt": 13,
+              "operation": "poc_runner.run_path:cwe121-valid-49:candidate",
+              "purpose": "poc_runner.run_path:cwe121-valid-49:candidate",
+              "pid": 10471,
+              "instance": "binaryrepair",
+              "lock_path": "/Users/huageorge/.binaryrepair/locks/lima-binaryrepair.lock",
+              "lock_wait_ms": 0.002,
+              "wait_ms": 0.002,
+              "lease_acquired": true,
+              "acquired": true,
+              "released": true,
+              "timeout": false,
+              "reentrant": true,
+              "depth": 2,
+              "ttl_s": 900.0,
+              "limactl": {
+                "tool": "/opt/homebrew/bin/limactl",
+                "instance": "binaryrepair",
+                "basename": "limactl"
+              },
+              "prior_lease_stale": false,
+              "prior_lease_pid": null,
+              "attempted_at_s": 1794802112.515438,
+              "released_at_s": 1794802113.538295,
+              "release_depth": 1
+            }
+          ],
+          "lock_blocked": false
+        },
+        "repair_status": "VERIFIED",
+        "failure_behavior_assertions": {
+          "authority": "auxiliary_non_gate",
+          "gate": "native PoC runner (run_poc) is the only acceptance authority",
+          "checks": [
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-51",
+              "field": "exit_code",
+              "expected": 1,
+              "actual": 1,
+              "matched": true
+            },
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-51",
+              "field": "stdout",
+              "expected": "",
+              "actual": "",
+              "matched": true
+            },
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-51",
+              "field": "stderr",
+              "expected": "ERROR: input exceeds destination capacity\n",
+              "actual": "ERROR: input exceeds destination capacity\n",
+              "matched": true
+            },
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-101",
+              "field": "exit_code",
+              "expected": 1,
+              "actual": 1,
+              "matched": true
+            },
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-101",
+              "field": "stdout",
+              "expected": "",
+              "actual": "",
+              "matched": true
+            },
+            {
+              "kind": "poc",
+              "case_id": "cwe121-invalid-101",
+              "field": "stderr",
+              "expected": "ERROR: input exceeds destination capacity\n",
+              "actual": "ERROR: input exceeds destination capacity\n",
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-0",
+              "field": "exit_code",
+              "expected": 0,
+              "actual": 0,
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-0",
+              "field": "stdout",
+              "expected": "\n",
+              "actual": "\n",
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-1",
+              "field": "exit_code",
+              "expected": 0,
+              "actual": 0,
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-1",
+              "field": "stdout",
+              "expected": "a\n",
+              "actual": "a\n",
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-10",
+              "field": "exit_code",
+              "expected": 0,
+              "actual": 0,
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-10",
+              "field": "stdout",
+              "expected": "hello\n",
+              "actual": "hello\n",
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-49",
+              "field": "exit_code",
+              "expected": 0,
+              "actual": 0,
+              "matched": true
+            },
+            {
+              "kind": "regression",
+              "case_id": "cwe121-valid-49",
+              "field": "stdout",
+              "expected": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "actual": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "matched": true
+            }
+          ],
+          "all_matched": true
+        },
+        "candidate_artifact": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/artifacts/m1-2026-11-16/run-cwe121-reference/candidates/cwe121-unchecked-strcpy.bin"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": false,
+        "called": false,
+        "mode": "reference",
+        "provider": "reference",
+        "model": "reference-assembly",
+        "status": "not_attempted",
+        "latency_ms": 0,
+        "error": null,
+        "usage": null,
+        "request_id": null,
+        "authority": "deterministic_gate"
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "not_attempted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62",
+        "provider": {
+          "requested": "reference",
+          "client_class": null,
+          "provider": null,
+          "model_requested": null,
+          "base_url": null,
+          "configured": null,
+          "errors": [],
+          "status": "reference"
+        },
+        "model_requested": null,
+        "model_returned": null,
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": null,
+        "request_id": null,
+        "elapsed_ms": 8273,
+        "target_policy": "reference",
+        "target_scope": {
+          "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+          "va": 4199088,
+          "end": 4199192,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": []
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "not_attempted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62",
+        "provider": {
+          "requested": "reference",
+          "client_class": null,
+          "provider": null,
+          "model_requested": null,
+          "base_url": null,
+          "configured": null,
+          "errors": [],
+          "status": "reference"
+        },
+        "model_requested": null,
+        "model_returned": null,
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": null,
+        "request_id": null,
+        "elapsed_ms": 8273,
+        "target_policy": "reference",
+        "target_scope": {
+          "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+          "va": 4199088,
+          "end": 4199192,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": []
+      },
+      "failure_behavior": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "ERROR: input exceeds destination capacity\n"
+      },
+      "failure_behavior_source": "poc_failure_contract (reference assembly)",
+      "failure_behavior_assertions": {
+        "authority": "auxiliary_non_gate",
+        "gate": "native PoC runner (run_poc) is the only acceptance authority",
+        "checks": [
+          {
+            "kind": "poc",
+            "case_id": "cwe121-invalid-51",
+            "field": "exit_code",
+            "expected": 1,
+            "actual": 1,
+            "matched": true
+          },
+          {
+            "kind": "poc",
+            "case_id": "cwe121-invalid-51",
+            "field": "stdout",
+            "expected": "",
+            "actual": "",
+            "matched": true
+          },
+          {
+            "kind": "poc",
+            "case_id": "cwe121-invalid-51",
+            "field": "stderr",
+            "expected": "ERROR: input exceeds destination capacity\n",
+            "actual": "ERROR: input exceeds destination capacity\n",
+            "matched": true
+          },
+          {
+            "kind": "poc",
+            "case_id": "cwe121-invalid-101",
+            "field": "exit_code",
+            "expected": 1,
+            "actual": 1,
+            "matched": true
+          },
+          {
+            "kind": "poc",
+            "case_id": "cwe121-invalid-101",
+            "field": "stdout",
+            "expected": "",
+            "actual": "",
+            "matched": true
+          },
+          {
+            "kind": "poc",
+            "case_id": "cwe121-invalid-101",
+            "field": "stderr",
+            "expected": "ERROR: input exceeds destination capacity\n",
+            "actual": "ERROR: input exceeds destination capacity\n",
+            "matched": true
+          },
+          {
+            "kind": "regression",
+            "case_id": "cwe121-valid-0",
+            "field": "exit_code",
+            "expected": 0,
+            "actual": 0,
+            "matched": true
+          },
+          {
+            "kind": "regression",
+            "case_id": "cwe121-valid-0",
+            "field": "stdout",
+            "expected": "\n",
+            "actual": "\n",
+            "matched": true
+          },
+          {
+            "kind": "regression",
+            "case_id": "cwe121-valid-1",
+            "field": "exit_code",
+            "expected": 0,
+            "actual": 0,
+            "matched": true
+          },
+          {
+            "kind": "regression",
+            "case_id": "cwe121-valid-1",
+            "field": "stdout",
+            "expected": "a\n",
+            "actual": "a\n",
+            "matched": true
+          },
+          {
+            "kind": "regression",
+            "case_id": "cwe121-valid-10",
+            "field": "exit_code",
+            "expected": 0,
+            "actual": 0,
+            "matched": true
+          },
+          {
+            "kind": "regression",
+            "case_id": "cwe121-valid-10",
+            "field": "stdout",
+            "expected": "hello\n",
+            "actual": "hello\n",
+            "matched": true
+          },
+          {
+            "kind": "regression",
+            "case_id": "cwe121-valid-49",
+            "field": "exit_code",
+            "expected": 0,
+            "actual": 0,
+            "matched": true
+          },
+          {
+            "kind": "regression",
+            "case_id": "cwe121-valid-49",
+            "field": "stdout",
+            "expected": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+            "actual": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+            "matched": true
+          }
+        ],
+        "all_matched": true
+      },
+      "provider": {
+        "requested": "reference",
+        "client_class": null,
+        "provider": null,
+        "model_requested": null,
+        "base_url": null,
+        "configured": null,
+        "errors": [],
+        "status": "reference"
+      },
+      "provider_tag": null,
+      "model": null,
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 8608,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "reference"
+      },
+      "target_scope": {
+        "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+        "va": 4199088,
+        "end": 4199192,
+        "source": "symbol"
+      },
+      "target_scope_check": "passed",
+      "target_in_scope": true,
+      "ai_increment": true,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 1,
+  "ai_increment": 1,
+  "failure_behavior_contracts": 1,
+  "failure_behavior_assertions_all_matched": 1,
+  "failure_behavior_assertions_mismatched": 0,
+  "funnel": {
+    "VERIFIED": 1,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 1,
+  "ai_target_in_scope": 1,
+  "ai_no_candidate_reasons": {},
+  "ai_injection_error_classes": {},
+  "ai_blind_verified": 0,
+  "reference_evaluated": 1,
+  "reference_verified": 1,
+  "reference_source_only": 0,
+  "elapsed_ms": 8609,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

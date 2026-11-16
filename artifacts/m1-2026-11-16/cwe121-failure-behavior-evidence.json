@@ -1,0 +1,363 @@
+{
+  "schema_version": 1,
+  "kind": "m1_p0_1_failure_behavior_evidence",
+  "stand_in": {
+    "kind": "repository reference assembly (deterministic, not model output)",
+    "path": "fixtures/hard-cases/cwe121_failure_contract.S",
+    "sha256": "9797805179c4cb1554ce51198c125b5922371ad1ff77dc675451660ca4daf2c0",
+    "claim_scope": "protocol/pipeline validation of the structured failure_behavior contract and the controlled-call templates; NOT an AI quality claim"
+  },
+  "case": {
+    "id": "cwe121-unchecked-strcpy",
+    "target": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+    "binary": "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+    "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+    "poc_manifest": "fixtures/poc/cwe121.json",
+    "poc_manifest_sha256": "17c787c87bc8292e03b38e2fc4e1861cbd25384952a57693a32db920eb452e52"
+  },
+  "failure_behavior_contract": {
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "ERROR: input exceeds destination capacity\n"
+  },
+  "controlled_calls": [
+    {
+      "name": "printLine",
+      "target_va": "0x401380",
+      "source": "direct"
+    },
+    {
+      "name": "strcpy",
+      "target_va": "0x4010d0",
+      "source": "import"
+    },
+    {
+      "name": "fprintf",
+      "target_va": "0x401120",
+      "source": "import"
+    },
+    {
+      "name": "printf",
+      "target_va": "0x401100",
+      "source": "import"
+    },
+    {
+      "name": "puts",
+      "target_va": "0x4010e0",
+      "source": "import"
+    },
+    {
+      "name": "br_exit_group",
+      "source": "template",
+      "target_va": null,
+      "kind": "exit",
+      "fd": null,
+      "payload_hex": "",
+      "exit_code": 1,
+      "invocation": "call br_exit_group"
+    },
+    {
+      "name": "br_write_stderr",
+      "source": "template",
+      "target_va": null,
+      "kind": "write",
+      "fd": 2,
+      "payload_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a",
+      "exit_code": null,
+      "invocation": "call br_write_stderr"
+    }
+  ],
+  "auxiliary_scope": "field comparison is auxiliary evidence; the gate decision comes only from the native/guest PoC runner",
+  "injection": {
+    "ok": true,
+    "meta": {
+      "target_va": "0x4012b0",
+      "cave_va": "0x405000",
+      "method": "new-pt-load",
+      "code_bytes": 185,
+      "call_relocations": 2,
+      "error_class": null,
+      "error": null
+    }
+  },
+  "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62",
+  "gate": {
+    "decision": "pass",
+    "status": "pass",
+    "runner": "limactl",
+    "tier": "emulated_run",
+    "limitations": [],
+    "lock_blocked": false,
+    "authority": "run_poc (native/qemu/lima PoC runner) is the only gate"
+  },
+  "poc_rows": [
+    {
+      "group": "poc",
+      "case_id": "cwe121-invalid-51",
+      "executable": "original",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+      "stderr": "",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    },
+    {
+      "group": "poc",
+      "case_id": "cwe121-invalid-101",
+      "executable": "original",
+      "exit_code": 255,
+      "crashed": true,
+      "stdout": "",
+      "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    },
+    {
+      "group": "poc",
+      "case_id": "cwe121-invalid-51",
+      "executable": "candidate",
+      "exit_code": 1,
+      "crashed": false,
+      "stdout": "",
+      "stderr": "ERROR: input exceeds destination capacity\n",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    },
+    {
+      "group": "poc",
+      "case_id": "cwe121-invalid-101",
+      "executable": "candidate",
+      "exit_code": 1,
+      "crashed": false,
+      "stdout": "",
+      "stderr": "ERROR: input exceeds destination capacity\n",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    },
+    {
+      "group": "regression",
+      "case_id": "cwe121-valid-0",
+      "executable": "original",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "\n",
+      "stderr": "",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    },
+    {
+      "group": "regression",
+      "case_id": "cwe121-valid-1",
+      "executable": "original",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "a\n",
+      "stderr": "",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    },
+    {
+      "group": "regression",
+      "case_id": "cwe121-valid-10",
+      "executable": "original",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "hello\n",
+      "stderr": "",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    },
+    {
+      "group": "regression",
+      "case_id": "cwe121-valid-49",
+      "executable": "original",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+      "stderr": "",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    },
+    {
+      "group": "regression",
+      "case_id": "cwe121-valid-0",
+      "executable": "candidate",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "\n",
+      "stderr": "",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    },
+    {
+      "group": "regression",
+      "case_id": "cwe121-valid-1",
+      "executable": "candidate",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "a\n",
+      "stderr": "",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    },
+    {
+      "group": "regression",
+      "case_id": "cwe121-valid-10",
+      "executable": "candidate",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "hello\n",
+      "stderr": "",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    },
+    {
+      "group": "regression",
+      "case_id": "cwe121-valid-49",
+      "executable": "candidate",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+      "stderr": "",
+      "timed_out": false,
+      "expected_ok": true,
+      "error": null
+    }
+  ],
+  "field_comparison": {
+    "authority": "auxiliary_non_gate",
+    "gate": "native PoC runner (run_poc) is the only acceptance authority",
+    "checks": [
+      {
+        "kind": "poc",
+        "case_id": "cwe121-invalid-51",
+        "field": "exit_code",
+        "expected": 1,
+        "actual": 1,
+        "matched": true
+      },
+      {
+        "kind": "poc",
+        "case_id": "cwe121-invalid-51",
+        "field": "stdout",
+        "expected": "",
+        "actual": "",
+        "matched": true
+      },
+      {
+        "kind": "poc",
+        "case_id": "cwe121-invalid-51",
+        "field": "stderr",
+        "expected": "ERROR: input exceeds destination capacity\n",
+        "actual": "ERROR: input exceeds destination capacity\n",
+        "matched": true
+      },
+      {
+        "kind": "poc",
+        "case_id": "cwe121-invalid-101",
+        "field": "exit_code",
+        "expected": 1,
+        "actual": 1,
+        "matched": true
+      },
+      {
+        "kind": "poc",
+        "case_id": "cwe121-invalid-101",
+        "field": "stdout",
+        "expected": "",
+        "actual": "",
+        "matched": true
+      },
+      {
+        "kind": "poc",
+        "case_id": "cwe121-invalid-101",
+        "field": "stderr",
+        "expected": "ERROR: input exceeds destination capacity\n",
+        "actual": "ERROR: input exceeds destination capacity\n",
+        "matched": true
+      },
+      {
+        "kind": "regression",
+        "case_id": "cwe121-valid-0",
+        "field": "exit_code",
+        "expected": 0,
+        "actual": 0,
+        "matched": true
+      },
+      {
+        "kind": "regression",
+        "case_id": "cwe121-valid-0",
+        "field": "stdout",
+        "expected": "\n",
+        "actual": "\n",
+        "matched": true
+      },
+      {
+        "kind": "regression",
+        "case_id": "cwe121-valid-1",
+        "field": "exit_code",
+        "expected": 0,
+        "actual": 0,
+        "matched": true
+      },
+      {
+        "kind": "regression",
+        "case_id": "cwe121-valid-1",
+        "field": "stdout",
+        "expected": "a\n",
+        "actual": "a\n",
+        "matched": true
+      },
+      {
+        "kind": "regression",
+        "case_id": "cwe121-valid-10",
+        "field": "exit_code",
+        "expected": 0,
+        "actual": 0,
+        "matched": true
+      },
+      {
+        "kind": "regression",
+        "case_id": "cwe121-valid-10",
+        "field": "stdout",
+        "expected": "hello\n",
+        "actual": "hello\n",
+        "matched": true
+      },
+      {
+        "kind": "regression",
+        "case_id": "cwe121-valid-49",
+        "field": "exit_code",
+        "expected": 0,
+        "actual": 0,
+        "matched": true
+      },
+      {
+        "kind": "regression",
+        "case_id": "cwe121-valid-49",
+        "field": "stdout",
+        "expected": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+        "actual": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+        "matched": true
+      }
+    ],
+    "all_matched": true
+  },
+  "verdict": {
+    "gate": "pass",
+    "field_comparison_all_matched": true,
+    "claim": "candidate passes the native PoC gate (independent of the field comparison)"
+  }
+}

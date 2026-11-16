@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "kind": "m1_p0_1_scripted_plan_assembly_evidence",
+  "authority": "auxiliary protocol evidence; no live model was called and the native PoC gate is NOT evaluated in this file",
+  "stand_in": {
+    "planner": "fixed RepairSpec v2 (scripted stand-in)",
+    "assembly": {
+      "path": "fixtures/hard-cases/cwe121_failure_contract.S",
+      "sha256": "9797805179c4cb1554ce51198c125b5922371ad1ff77dc675451660ca4daf2c0",
+      "note": "repository reference assembly, not model output"
+    }
+  },
+  "case": {
+    "id": "cwe121-unchecked-strcpy",
+    "target": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+    "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+    "poc_manifest": "fixtures/poc/cwe121.json"
+  },
+  "planner": {
+    "client": "scripted-standin",
+    "calls": 1,
+    "plan_valid": true,
+    "plan_error": "",
+    "failure_behavior": {
+      "exit_code": 1,
+      "stdout": null,
+      "stderr": "ERROR: input exceeds destination capacity\n",
+      "stdout_hex": null
+    },
+    "failure_behavior_source": "plan",
+    "poc_failure_contract": {
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "ERROR: input exceeds destination capacity\n"
+    }
+  },
+  "assembly": {
+    "client": "scripted-standin",
+    "calls": 1,
+    "returned": true,
+    "validation_error": null,
+    "controlled_templates": [
+      {
+        "name": "br_exit_group",
+        "source": "template",
+        "target_va": null,
+        "kind": "exit",
+        "fd": null,
+        "payload_hex": "",
+        "exit_code": 1,
+        "invocation": "call br_exit_group"
+      },
+      {
+        "name": "br_write_stderr",
+        "source": "template",
+        "target_va": null,
+        "kind": "write",
+        "fd": 2,
+        "payload_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a",
+        "exit_code": null,
+        "invocation": "call br_write_stderr"
+      }
+    ]
+  },
+  "injection": {
+    "ok": true,
+    "meta": {
+      "target_va": "0x4012b0",
+      "cave_va": "0x405000",
+      "method": "new-pt-load",
+      "code_bytes": 185,
+      "call_relocations": 2,
+      "failure_behavior": {
+        "exit_code": 1,
+        "stdout": null,
+        "stderr": "ERROR: input exceeds destination capacity\n",
+        "stdout_hex": null
+      },
+      "error_class": null,
+      "error": null
+    },
+    "abi": {
+      "ok": true,
+      "fatal": 0,
+      "findings": []
+    }
+  },
+  "candidate_sha256": "70e3f612bfb082e17a12458614103925eb41a539b3dbbc753ac4e647e8c65a62"
+}

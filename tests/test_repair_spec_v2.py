@@ -1,7 +1,9 @@
 """RepairSpec v2 consistency/validation."""
 from __future__ import annotations
 
-from app.services.repair_spec import spec_from_plan, validate_spec
+from app.services.repair_spec import (
+    failure_behavior_of, spec_from_plan, validate_spec,
+)
 
 
 def _v2(**overrides):
@@ -74,6 +76,54 @@ def test_v2_unknown_strategy_and_bad_address_rejected():
     spec, error = validate_spec(plan, case=CASE, allowed_calls={"puts"},
                                 target_scope=SCOPE)
     assert spec is None and error == "affected_address_out_of_scope"
+
+
+def test_v2_structured_failure_behavior_accepted_and_roundtrips():
+    plan = _v2()
+    plan["repair"]["failure_behavior"] = {
+        "exit_code": 1, "stdout": None,
+        "stderr": "ERROR: input exceeds destination capacity\n",
+        "stdout_hex": None,
+    }
+    spec, error = validate_spec(plan, case=CASE, allowed_calls={"puts"},
+                                target_scope=SCOPE)
+    assert error == "" and spec is not None
+    contract = failure_behavior_of(spec)
+    assert contract is not None and contract.exit_code == 1
+    assert contract.stderr == "ERROR: input exceeds destination capacity\n"
+    assert spec.repair["failure_behavior"]["exit_code"] == 1
+    again = spec_from_plan(spec.to_dict())
+    assert again.to_dict() == spec.to_dict()
+    assert failure_behavior_of(again) == contract
+
+
+def test_v2_text_failure_behavior_stays_text_only():
+    spec, error = validate_spec(_v2(), case=CASE, allowed_calls={"puts"},
+                                target_scope=SCOPE)
+    assert error == "" and spec is not None
+    assert spec.repair["failure_behavior"] == "reject oversized input"
+    assert failure_behavior_of(spec) is None
+
+
+def test_v2_structured_failure_behavior_fails_closed():
+    invalid = (
+        ({"exit_code": -1}, "failure_behavior_exit_code_out_of_range"),
+        ({"exit_code": "1"}, "failure_behavior_invalid_exit_code"),
+        ({"exit_code": True}, "failure_behavior_invalid_exit_code"),
+        ({"stderr": 5}, "failure_behavior_invalid_stderr"),
+        ({"stdout": "x", "stdout_hex": "78"},
+         "failure_behavior_conflicting_stdout"),
+        ({"stdout_hex": "zz"}, "failure_behavior_invalid_stdout_hex"),
+        ({"bogus": 1}, "failure_behavior_unexpected_fields"),
+        ({}, "failure_behavior_empty"),
+    )
+    for contract, expected in invalid:
+        plan = _v2()
+        plan["repair"]["failure_behavior"] = contract
+        spec, error = validate_spec(plan, case=CASE, allowed_calls={"puts"},
+                                    target_scope=SCOPE)
+        assert spec is None, contract
+        assert error.startswith(expected), (contract, error)
 
 
 def test_v1_still_accepted():

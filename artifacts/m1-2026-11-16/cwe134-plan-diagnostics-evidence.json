@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "kind": "m1_p0_2_cwe134_plan_diagnostics_evidence",
+  "case": {
+    "id": "cwe134-format-string",
+    "target": "cwe134_bad",
+    "binary": "fixtures/repair-benchmark/CWE134_format_string/original.elf",
+    "original_sha256": "c74266a421fa3e61f33b1669d3ae22640672a5136cb22871326ab3a5ad16a56d",
+    "poc_manifest": "fixtures/poc/repair-cwe134.json",
+    "poc_manifest_sha256": "0c0ecd2ad17704dc31a637254589a80e97414ca0c2ff937a1c09f541bee61ec4"
+  },
+  "plan_diagnostics": {
+    "authority": "auxiliary typed diagnostics; no acceptance decision",
+    "historical_plan": {
+      "addresses": {
+        "function_va": "0x401156",
+        "call_va": "0x401177",
+        "callee_va": "0x401050",
+        "ret_va": "0x40117e"
+      },
+      "plan_error": "affected_address_out_of_scope",
+      "plan_invalid": {
+        "schema_version": 1,
+        "reason_code": "affected_address_out_of_scope",
+        "field": "program_context.addresses",
+        "expected": "every address inside target_scope [0x401156, 0x40117f)",
+        "detail": "do not list callee/import addresses; list only addresses inside target_scope (the planner packet now includes it)"
+      },
+      "attempt_1": {
+        "schema_version": 1,
+        "reason_code": "affected_address_out_of_scope",
+        "field": "program_context.addresses",
+        "expected": "every address inside target_scope [0x401156, 0x40117f)",
+        "detail": "do not list callee/import addresses; list only addresses inside target_scope (the planner packet now includes it)"
+      }
+    },
+    "planner_packet": {
+      "target_scope": {
+        "end": 4198783,
+        "name": "cwe134_bad",
+        "source": "symbol",
+        "va": 4198742
+      },
+      "target_scope_rule": "every program_context.addresses entry must be a hex string strictly inside target_scope; do not list callee/import addresses"
+    },
+    "repaired_plan": {
+      "addresses": [
+        "0x401156",
+        "0x401177",
+        "0x40117e"
+      ],
+      "plan_valid": true,
+      "plan_error": "",
+      "strategy": "format_string",
+      "plan_invalid": null
+    }
+  },
+  "minimal_format_string_fix": {
+    "stand_in": "scripted fixed-format assembly (not model output)",
+    "assembly": ".intel_syntax noprefix\n.text\nsub rsp, 8\nmov rsi, rdi\nmov word ptr [rsp], 0x7325\nmov byte ptr [rsp + 2], 0\nmov rdi, rsp\nxor eax, eax\ncall printf\nadd rsp, 8\nret\n",
+    "allowed_calls": [
+      {
+        "name": "printf",
+        "target_va": "0x401050",
+        "source": "import"
+      }
+    ],
+    "injection": {
+      "ok": true,
+      "meta": {
+        "target_va": "0x401156",
+        "cave_va": "0x405000",
+        "method": "new-pt-load",
+        "code_bytes": 33,
+        "call_relocations": 1,
+        "error_class": null,
+        "error": null
+      },
+      "abi": {
+        "ok": true,
+        "fatal": 0,
+        "findings": []
+      }
+    },
+    "candidate_sha256": "f93bb763bfdc83bd4390a95d1236d9472c88189837e9a3d7981fdb52e0934676",
+    "gate": {
+      "decision": "pass",
+      "status": "pass",
+      "runner": "limactl",
+      "tier": "emulated_run",
+      "limitations": [],
+      "lock_blocked": false,
+      "authority": "run_poc (native/guest PoC runner) is the only gate"
+    },
+    "poc_rows": [
+      {
+        "group": "poc",
+        "case_id": "cwe134-percent-s",
+        "executable": "original",
+        "exit_code": 255,
+        "crashed": true,
+        "stdout": "",
+        "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+        "timed_out": false,
+        "expected_ok": true,
+        "error": null
+      },
+      {
+        "group": "poc",
+        "case_id": "cwe134-percent-s",
+        "executable": "candidate",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "%s",
+        "stderr": "",
+        "timed_out": false,
+        "expected_ok": true,
+        "error": null
+      },
+      {
+        "group": "regression",
+        "case_id": "cwe134-hi",
+        "executable": "original",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "hi",
+        "stderr": "",
+        "timed_out": false,
+        "expected_ok": true,
+        "error": null
+      },
+      {
+        "group": "regression",
+        "case_id": "cwe134-hi",
+        "executable": "candidate",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "hi",
+        "stderr": "",
+        "timed_out": false,
+        "expected_ok": true,
+        "error": null
+      }
+    ],
+    "field_comparison": {
+      "authority": "auxiliary_non_gate",
+      "gate": "native PoC runner (run_poc) is the only acceptance authority",
+      "checks": [
+        {
+          "kind": "regression",
+          "case_id": "cwe134-hi",
+          "field": "exit_code",
+          "expected": 0,
+          "actual": 0,
+          "matched": true
+        },
+        {
+          "kind": "regression",
+          "case_id": "cwe134-hi",
+          "field": "stdout",
+          "expected": "hi",
+          "actual": "hi",
+          "matched": true
+        }
+      ],
+      "all_matched": true
+    }
+  },
+  "claim": {
+    "gate": "pass",
+    "plan_invalid_now_typed": true,
+    "gate_authority": "native PoC runner only",
+    "model_quality": "not_run (no live model)"
+  }
+}

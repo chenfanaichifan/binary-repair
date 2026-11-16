@@ -6,16 +6,29 @@ from pathlib import Path
 import pytest
 
 from app.services.ai_assembly_repair import (
+    ControlledCall,
     _apply_call_relocations,
     _assemble_with_relocations,
+    _controlled_syscall_config,
+    _expand_controlled_template,
     _validate_assembly_text,
     _validate_code,
+    discover_controlled_calls,
 )
 from app.services.containers import detect_container
 from app.services.repair.call_targets import AllowedCall, discover_allowed_calls
 
 ROOT = Path(__file__).resolve().parents[1]
 ELF = ROOT / "fixtures" / "elf" / "vuln-strcpy-x86_64.elf"
+CWE121 = (ROOT / "fixtures" / "public"
+          / "CWE121_src_char_declare_cpy_51b" / "original.elf")
+CWE121_TARGET = (
+    "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink")
+CWE121_CONTRACT = {
+    "exit_code": 1,
+    "stderr": "ERROR: input exceeds destination capacity\n",
+}
+CWE121_MESSAGE = b"ERROR: input exceeds destination capacity\n"
 
 
 def test_numeric_and_named_calls_are_rewritten_to_allowed_symbol():
@@ -65,6 +78,89 @@ def test_discovery_exposes_only_existing_direct_calls():
     names = {call.name for call in calls}
     assert "puts" in names
     assert all(call.target_va > 0 for call in calls)
+
+
+
+
+@pytest.mark.skipif(not CWE121.is_file(), reason="CWE121 fixture missing")
+def test_controlled_calls_expose_only_real_imports_and_fixed_templates():
+    data = CWE121.read_bytes()
+    container = detect_container(data)
+    va = next(va for va, name in container.symbols.items()
+              if name == CWE121_TARGET)
+    calls = discover_controlled_calls(data, container, va, CWE121_CONTRACT)
+    by_name = {call.name: call for call in calls}
+    exit_call = by_name["br_exit_group"]
+    assert exit_call.source == "template" and exit_call.kind == "exit"
+    assert exit_call.exit_code == 1
+    write_call = by_name["br_write_stderr"]
+    assert write_call.source == "template" and write_call.fd == 2
+    assert write_call.payload() == CWE121_MESSAGE
+    # This ELF imports neither exit() nor fputs(): no real exit call target.
+    assert "exit" not in by_name and "fputs" not in by_name
+    # Only a real PLT import may be surfaced as an import call.
+    assert by_name["strcpy"].source == "import"
+    assert all(call.target_va for call in calls
+               if call.source == "import")
+    # No contract -> no templates (fail closed).
+    plain = discover_controlled_calls(data, container, va, None)
+    assert all(call.source != "template" for call in plain)
+
+
+@pytest.mark.skipif(not CWE121.is_file(), reason="CWE121 fixture missing")
+def test_controlled_templates_are_expanded_and_byte_validated():
+    data = CWE121.read_bytes()
+    container = detect_container(data)
+    va = next(va for va, name in container.symbols.items()
+              if name == CWE121_TARGET)
+    calls = discover_controlled_calls(data, container, va, CWE121_CONTRACT)
+    text = "\n".join([
+        ".intel_syntax noprefix",
+        "call br_write_stderr",
+        "call br_exit_group",
+    ])
+    clean = _validate_assembly_text(text, "x86_64", calls,
+                                    controlled_calls=calls)
+    assert "syscall" in clean and "br_write_stderr" not in clean
+    code, relocs = _assemble_with_relocations(clean, "x86_64")
+    assert relocs == []
+    config = _controlled_syscall_config(CWE121_CONTRACT)
+    assert config == {"exit_codes": {1},
+                      "write_lengths": {len(CWE121_MESSAGE)},
+                      "write_fds": {2}}
+    _validate_code(code, "x86_64", calls, controlled_syscalls=config)
+    # No contract means no allowed syscall: the same bytes fail closed.
+    with pytest.raises(ValueError, match="syscall"):
+        _validate_code(code, "x86_64", calls)
+
+
+def test_controlled_template_expansion_is_arch_and_kind_fail_closed():
+    exit_template = ControlledCall(
+        name="br_exit_group", source="template", kind="exit", exit_code=1)
+    with pytest.raises(ValueError, match="x86-64"):
+        _expand_controlled_template(exit_template, "arm64")
+    with pytest.raises(ValueError, match="exit code"):
+        _expand_controlled_template(
+            ControlledCall(name="br_exit_group", source="template",
+                            kind="exit"), "x86_64")
+    with pytest.raises(ValueError, match="no payload"):
+        _expand_controlled_template(
+            ControlledCall(name="br_write_stderr", source="template",
+                            kind="write", fd=2), "x86_64")
+
+
+def test_unknown_or_handwritten_controlled_call_rejected():
+    allowed = [ControlledCall(name="br_exit_group", source="template",
+                              kind="exit", exit_code=1)]
+    with pytest.raises(ValueError, match="not allowed"):
+        _validate_assembly_text("call br_other", "x86_64", [],
+                                controlled_calls=allowed)
+    with pytest.raises(ValueError, match="not allowed"):
+        _validate_assembly_text("call exit", "x86_64", [],
+                                controlled_calls=allowed)
+    with pytest.raises(ValueError, match="forbidden"):
+        _validate_assembly_text("syscall", "x86_64", [],
+                                controlled_calls=allowed)
 
 
 @pytest.mark.skipif(not (ROOT / "fixtures" / "public" / "CWE121_src_char_declare_cpy_51b" / "original.elf").is_file(),

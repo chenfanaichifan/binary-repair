@@ -15,8 +15,9 @@ ALLOWED_FIELDS = frozenset({
     "schema_version", "vulnerability_type", "root_cause",
     "affected_function", "affected_addresses", "affected_registers",
     "affected_memory", "original_behavior", "required_invariant",
-    "repair_strategy", "failure_behavior", "permitted_calls",
-    "expected_behavior", "verification_conditions", "confidence",
+    "repair_strategy", "failure_behavior", "failure_behavior_contract",
+    "permitted_calls", "expected_behavior", "verification_conditions",
+    "confidence",
 })
 REQUIRED_STRINGS = (
     "vulnerability_type", "root_cause", "affected_function",
@@ -25,6 +26,214 @@ REQUIRED_STRINGS = (
 )
 MAX_TEXT = 600
 MAX_ITEMS = 64
+
+#: Structured failure contract (v2 ``repair.failure_behavior`` / v1 optional
+#: ``failure_behavior_contract``).  The deterministic native gate remains the
+#: only acceptance authority; this structure only lets the repair plan *state*
+#: the expected observable failure so the assembly stage can aim at it.
+FAILURE_BEHAVIOR_FIELDS = frozenset({
+    "exit_code", "stdout", "stderr", "stdout_hex",
+})
+MAX_FAILURE_EXIT_CODE = 255
+
+
+@dataclass(frozen=True)
+class FailureBehavior:
+    """Typed expected observable behavior of the repaired program on failure.
+
+    ``exit_code`` is the process exit status (0..255).  ``stdout``/``stderr``
+    are exact text values; ``stdout_hex`` is the exact stdout byte sequence in
+    hex.  ``stdout`` and ``stdout_hex`` are mutually exclusive.  At least one
+    field must be non-null, otherwise the structure is empty and rejected.
+    """
+
+    exit_code: int | None = None
+    stdout: str | None = None
+    stderr: str | None = None
+    stdout_hex: str | None = None
+
+    @property
+    def requested(self) -> bool:
+        return any(value is not None for value in (
+            self.exit_code, self.stdout, self.stderr, self.stdout_hex))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "exit_code": self.exit_code,
+            "stdout": self.stdout,
+            "stderr": self.stderr,
+            "stdout_hex": self.stdout_hex,
+        }
+
+
+def parse_failure_behavior(value: Any) -> tuple[FailureBehavior | None, str]:
+    """Validate one structured failure_behavior; fail closed with a typed error."""
+    if not isinstance(value, Mapping):
+        return None, "failure_behavior_not_object"
+    extra = sorted(str(key) for key in value if key not in FAILURE_BEHAVIOR_FIELDS)
+    if extra:
+        return None, "failure_behavior_unexpected_fields:" + ",".join(extra)
+    exit_code = value.get("exit_code")
+    if exit_code is not None:
+        if not isinstance(exit_code, int) or isinstance(exit_code, bool):
+            return None, "failure_behavior_invalid_exit_code"
+        if not 0 <= exit_code <= MAX_FAILURE_EXIT_CODE:
+            return None, "failure_behavior_exit_code_out_of_range"
+    stdout = value.get("stdout")
+    stderr = value.get("stderr")
+    stdout_hex = value.get("stdout_hex")
+    for name, item in (("stdout", stdout), ("stderr", stderr),
+                       ("stdout_hex", stdout_hex)):
+        if item is not None and not isinstance(item, str):
+            return None, "failure_behavior_invalid_" + name
+    if stdout is not None and stdout_hex is not None:
+        return None, "failure_behavior_conflicting_stdout"
+    if stdout_hex is not None:
+        try:
+            bytes.fromhex(stdout_hex)
+        except ValueError:
+            return None, "failure_behavior_invalid_stdout_hex"
+    contract = FailureBehavior(
+        exit_code=exit_code, stdout=stdout, stderr=stderr, stdout_hex=stdout_hex,
+    )
+    if not contract.requested:
+        return None, "failure_behavior_empty"
+    return contract, ""
+
+
+def failure_behavior_of(spec: "RepairSpec | RepairSpecV2") -> FailureBehavior | None:
+    """Return the structured failure contract of a validated/reserialized spec."""
+    if isinstance(spec, RepairSpecV2):
+        raw = spec.repair.get("failure_behavior")
+        if not isinstance(raw, Mapping):
+            return None
+        known = {key: raw.get(key) for key in FAILURE_BEHAVIOR_FIELDS
+                 if key in raw}
+        contract, error = parse_failure_behavior(known)
+        return contract if not error else None
+    return spec.failure_behavior_contract
+
+
+def _scope_expectation(target_scope: Mapping[str, Any] | None) -> str:
+    if (isinstance(target_scope, Mapping)
+            and isinstance(target_scope.get("va"), int)
+            and isinstance(target_scope.get("end"), int)):
+        return (f"every address inside target_scope "
+                f"[{int(target_scope['va']):#x}, {int(target_scope['end']):#x})")
+    return "every address inside target_scope"
+
+
+def diagnose_plan_error(
+    error: str,
+    *,
+    case: Mapping[str, Any] | None = None,
+    target_scope: Mapping[str, Any] | None = None,
+    allowed_calls: Iterable[str] = (),
+) -> dict[str, Any]:
+    """Turn one typed plan-validation error into a field-level diagnostic.
+
+    The repair plan already fails closed with typed error codes; this helper
+    names the exact schema field and the expected value so a planner retry can
+    be targeted. It never accepts a plan and never weakens validation.
+    """
+    reason = str(error or "")
+    case = case or {}
+    target = str(case.get("target") or "")
+    architecture = str(case.get("arch") or "")
+    capacity = case.get("capacity")
+    allowed = sorted({str(item) for item in allowed_calls or ()})
+    diagnostic: dict[str, Any] = {
+        "schema_version": 1,
+        "reason_code": reason,
+        "field": None,
+        "expected": None,
+        "detail": None,
+    }
+
+    def set_fields(field: str | None, expected: str | None,
+                   detail: str | None = None) -> dict[str, Any]:
+        diagnostic["field"] = field
+        diagnostic["expected"] = expected
+        diagnostic["detail"] = detail
+        return diagnostic
+
+    if reason.startswith("missing_or_empty:"):
+        return set_fields(reason.split(":", 1)[1], "a non-empty string")
+    if reason.startswith("too_long:"):
+        return set_fields(reason.split(":", 1)[1],
+                          f"at most {MAX_TEXT} characters")
+    if reason.startswith("unexpected_fields:"):
+        return set_fields("(top level)",
+                          "only fields from the supported schema",
+                          "unexpected: " + reason.split(":", 1)[1])
+    if reason.startswith("permitted_call_not_allowed"):
+        offenders = reason.split(":", 1)[1] if ":" in reason else ""
+        expected = ("a subset of the packet allowed_calls " + str(allowed)
+                    if allowed else "a subset of the packet allowed_calls")
+        return set_fields("program_context.allowed_calls", expected,
+                          ("not allowed: " + offenders) if offenders else None)
+    if reason.startswith("failure_behavior_"):
+        return set_fields(
+            "repair.failure_behavior",
+            "{exit_code:int|null, stdout:str|null, stderr:str|null, "
+            "stdout_hex:hex|null} with at least one non-null field")
+    if reason == "invalid_allowed_calls":
+        return set_fields("program_context.allowed_calls",
+                          "a list of call names or {name} objects")
+    if reason in {"invalid_affected_addresses", "invalid_affected_address",
+                  "too_many_affected_addresses"}:
+        return set_fields("program_context.addresses",
+                          f"a list of at most {MAX_ITEMS} hex-string "
+                          "addresses inside target_scope")
+    if reason == "affected_address_out_of_scope":
+        return set_fields(
+            "program_context.addresses", _scope_expectation(target_scope),
+            "do not list callee/import addresses; list only addresses inside "
+            "target_scope (the planner packet now includes it)")
+    if reason in {"invalid_capacity", "capacity_mismatch"}:
+        expected = (f"the declared case capacity {capacity}" if capacity
+                    else "a positive integer")
+        return set_fields("program_context.capacity", expected)
+    if reason in {"missing_security_invariants", "invalid_security_invariants"}:
+        return set_fields("security_invariants",
+                          "a non-empty list of non-empty strings")
+    if reason in {"missing_security_conditions", "missing_regression_conditions",
+                  "invalid_verification_conditions"}:
+        return set_fields("verification.security_conditions / "
+                          "verification.regression_conditions",
+                          "non-empty lists of non-empty strings")
+    if reason == "missing_verification_conditions":
+        return set_fields("verification_conditions",
+                          "a non-empty list of non-empty strings")
+    if reason == "unsupported_repair_strategy":
+        return set_fields("repair.strategy",
+                          "one of " + str(sorted(V2_STRATEGIES)))
+    if reason == "affected_function_mismatch":
+        expected = (f"the target function name {target!r}" if target
+                    else "the case target function name")
+        return set_fields("program_context.function", expected)
+    if reason == "abi_arch_mismatch":
+        expected = (f"the case architecture {architecture!r}" if architecture
+                    else "the case architecture")
+        return set_fields("abi.architecture", expected)
+    if reason == "abi_calling_convention_mismatch":
+        expected = "the canonical convention for " + (architecture or "arch")
+        return set_fields("abi.calling_convention", expected)
+    if reason == "invalid_confidence":
+        return set_fields("confidence",
+                          "low|medium|high or a number in [0, 1]")
+    if reason == "invalid_evidence_refs":
+        return set_fields("evidence_refs",
+                          "a list of real packet evidence ids")
+    if reason == "v2_section_missing":
+        return set_fields(
+            "vulnerability/program_context/repair/abi/verification",
+            "all five v2 sections present as objects")
+    if reason in {"plan_not_object", "empty_plan"}:
+        return set_fields(None, "one JSON RepairSpec object")
+    if reason == "unsupported_schema_version":
+        return set_fields("schema_version", "1 or 2")
+    return diagnostic
 
 
 @dataclass
@@ -44,6 +253,7 @@ class RepairSpec:
     permitted_calls: list[str] = field(default_factory=list)
     verification_conditions: list[str] = field(default_factory=list)
     confidence: str = "medium"
+    failure_behavior_contract: FailureBehavior | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -62,6 +272,9 @@ class RepairSpec:
             "expected_behavior": self.expected_behavior,
             "verification_conditions": list(self.verification_conditions),
             "confidence": self.confidence,
+            **({"failure_behavior_contract":
+                self.failure_behavior_contract.to_dict()}
+               if self.failure_behavior_contract is not None else {}),
         }
 
 
@@ -135,6 +348,12 @@ def validate_spec(parsed: Any, *, case: Mapping[str, Any],
         confidence = "high" if confidence >= 0.75 else "medium" if confidence >= 0.4 else "low"
     if confidence not in {"low", "medium", "high"}:
         return None, "invalid_confidence"
+    contract = None
+    if parsed.get("failure_behavior_contract") is not None:
+        contract, error = parse_failure_behavior(
+            parsed.get("failure_behavior_contract"))
+        if error:
+            return None, error
     spec = RepairSpec(
         schema_version=SCHEMA_VERSION,
         **values,
@@ -144,6 +363,7 @@ def validate_spec(parsed: Any, *, case: Mapping[str, Any],
         permitted_calls=[str(x) for x in permitted],
         verification_conditions=[str(x) for x in parsed.get("verification_conditions", [])],
         confidence=confidence,
+        failure_behavior_contract=contract,
     )
     return spec, ""
 
@@ -169,7 +389,7 @@ class RepairSpecV2:
     vulnerability: dict[str, str]
     program_context: dict[str, Any]
     security_invariants: list[str]
-    repair: dict[str, str]
+    repair: dict[str, Any]
     abi: dict[str, str]
     verification: dict[str, list[str]]
     confidence: str = "medium"
@@ -246,8 +466,14 @@ def validate_spec_v2(parsed: Mapping[str, Any], *, case: Mapping[str, Any],
         strategy = next((canon for token, canon in aliases if token in low), "")
     if strategy not in V2_STRATEGIES:
         return None, "unsupported_repair_strategy"
-    failure, error = _v2_text(repair.get("failure_behavior"), "repair.failure_behavior")
-    if error: return None, error
+    raw_failure = repair.get("failure_behavior")
+    if isinstance(raw_failure, Mapping):
+        contract, error = parse_failure_behavior(raw_failure)
+        if error: return None, error
+        failure = contract.to_dict()
+    else:
+        failure, error = _v2_text(raw_failure, "repair.failure_behavior")
+        if error: return None, error
     expected, error = _v2_text(repair.get("expected_behavior"), "repair.expected_behavior")
     if error: return None, error
     arch, error = _v2_text(abi.get("architecture"), "abi.architecture")
@@ -364,4 +590,10 @@ def spec_from_plan(plan: Mapping[str, Any]) -> RepairSpec | RepairSpecV2:
             confidence=str(plan.get("confidence", "medium")),
             evidence_refs=list(plan.get("evidence_refs") or []),
         )
-    return RepairSpec(**plan)
+    values = dict(plan)
+    raw_contract = values.pop("failure_behavior_contract", None)
+    contract = None
+    if isinstance(raw_contract, Mapping):
+        contract, _error = parse_failure_behavior(raw_contract)
+    values["failure_behavior_contract"] = contract
+    return RepairSpec(**values)
