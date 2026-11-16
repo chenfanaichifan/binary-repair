@@ -1435,13 +1435,14 @@ L3 CGC POV replay（exploratory，不作 gate）：
 
 - `main`（GitHub 默认分支，2026-11-12 前的历史；两会话未在其上直接推进；默认分支不可由普通 push 删除）；
 - 2026-11-13 之前的历史 refs（M1–M5 角色分支、v1.2.1 发布线、集成分支等，共约 90 个分支 + 65 个标签）——它们不是两个重点会话的"原位置"，删除会丢失课程/公开交付历史；
-- 本地：3 个 worktree、`backup/`（mirror + refs 清单）、`handoff/`、`capacity-archive-2026-11-14/` 等；
+- 本地：2 个 worktree（`binary-repair-gui`、`binary-repair`）、`backup/`（mirror + bundle + refs 清单）、`handoff/`、`capacity-archive-2026-11-14/` 等；
 - 远端：新建的 `final/consolidated-2026-11-16` 分支。
 
 ## 8.5 本地完整备份与恢复
 
 - **mirror 备份**：`backup/binary-repair-mirror-2026-11-16.git`（`git clone --mirror` 自 origin，129 MB，含全部 113 分支 / 79 个标签对象 / 11 个 pull refs 及全部 commit 对象）。
 - **refs 清单**：`backup/remote-refs-2026-11-16.txt`（删除前 `git ls-remote origin` 的 242 行原始输出）。
+- **本地 refs bundle**：`backup/local-refs-2026-11-16.bundle`（127 MB，git bundle create --all，含删除前本地全部分支/标签，包括只在本地存在过的 backup/capacity-86587da、handoff-v3-local、integration/release-2026-11-15、release/2026-11-14）。
 - **恢复方法**（任选）：
   ```bash
   # 1) 从 mirror 恢复某个分支/标签到远端
@@ -1453,20 +1454,50 @@ L3 CGC POV replay（exploratory，不作 gate）：
   ```
 - **注意**：mirror 是**本地**备份，不上传 GitHub；请保留该目录（或另存到移动硬盘/云盘）。
 
-## 8.6 执行结果（本次实做，见 CONSOLIDATION-2026-11-16.md 的最终记录）
+## 8.6 执行结果（本次实做，2026-11-16）
 
 | 项 | 结果 |
 |---|---|
-| 新分支 `final/consolidated-2026-11-16` | 已创建并推送（见 8.7） |
-| 51 个证据文件 | 已归档 |
-| `docs/consolidation/` 文档 | 5 份已提交 |
-| 删除远端分支/标签 | 23 分支 + 14 标签已删除（保留 main 与 pre-session refs） |
-| 远端 refs 数量 | 删除前 242 → 删除后（见 8.7 实测） |
-| 本地备份 | mirror 129 MB + refs 清单，已就绪 |
+| 新分支 | `final/consolidated-2026-11-16`，首个 commit `4322a51`（父 `ec503e4`），已推送 GitHub |
+| 整合内容 | 58 个文件变更：51 个补归档证据文件 + `docs/consolidation/` 5 份文档 + 根 `CONSOLIDATION.md` + README 顶部说明 |
+| 删除远端分支 | **23/23 成功**（全部两个会话产生的分支，含 `workbench-v3`、`feature/universal-repair`、`feature/ai-binary-repair`、`feature/phase8b/8c`、`coverage-audit-*`、`release/2026-11-14..16-*`） |
+| 删除远端标签 | **14/14 成功**（全部 11-14..16 的 release/evidence tag） |
+| 远端 refs 数量 | 删除前 **242**（+新分支 1 = 243 行）→ 删除后 **192** 行；heads 113 → **91**；tag refs 117 行（79 unique）→ **89** 行（**65 unique**） |
+| 会话相关远端 ref 残留 | **0**（`git ls-remote` 中已无 workbench-v3/phase8/universal/ai-binary/coverage-audit/release-2026-11-1x/autonomy/handoff-v4） |
+| 本地清理 | 删除本地 23 个会话分支 + 14 个会话 tag + 4 个本地会话分支（`backup/capacity-86587da`、`handoff-v3-local`、`integration/release-2026-11-15`、`release/2026-11-14`）+ 移除 `worktree-feature-final`；本地仅保留 `final/consolidated-2026-11-16` 一个会话相关 ref |
+| 本地剩余 | branches 102（91 remote + 本地 pre-session + 新分支）；tags 67（pre-session 历史） |
+| 备份 | `backup/binary-repair-mirror-2026-11-16.git`（129 MB，remote 全量 mirror）；`backup/local-refs-2026-11-16.bundle`（127 MB，含删除前全部本地 refs）；`backup/remote-refs-2026-11-16.txt`（242 行删除前 refs 清单） |
+| gated release SHA | 仍为 `4a7b2355ffc5225d013a777bc7d588abac58f944`（未改代码/claims/gate） |
 
 ## 8.7 验证与仓库地址
 
-> 待实做后填写（远端 refs 实测、新分支 SHA、删除结果、GitHub 地址）。
+### 8.7.1 验证清单（实测）
+
+| 检查 | 结果 |
+|---|---|
+| 新分支在 GitHub | `refs/heads/final/consolidated-2026-11-16` = `4322a51811463eedcfee98bae6e03ae48b6c911f` |
+| 新分支历史包含两会话 commit | 是（`ec503e4` 祖先链包含 `3d5d0f0`、`72db891`、`aa45b36`、`a1755a5`、`090ad94`、`0aa9f54`、`956ee10`、`f65ed53`、`fd6ca41`、`a8934fe`、`2bfa112`、`bd9cbf6`、`227f45b`、`4a7b235`） |
+| 补归档证据 | `artifacts/marcx-repair-2026-11-14/`（10 文件）、`artifacts/marcx-capacity-gui-2026-11-14/`、6 个 release-gate bundle、4 份 release note 均在树中 |
+| 整合文档 | `docs/consolidation/` 5 份（总报告/两会话分析/早期历史/整合说明） |
+| 远端 refs 清理 | 192 行；会话相关残留 0 |
+| 备份完整性 | mirror 可用（`git for-each-ref` 203 refs、`workbench-v3`=4a7b235）；bundle 127 MB 可用 |
+| 工作区 | `binary-repair-gui` 在 `final/consolidated-2026-11-16`，clean（仅 .venv 未跟踪） |
+
+### 8.7.2 仓库地址
+
+- **仓库**：`https://github.com/chenfanaichifan/binary-repair`
+- **SSH**：`git@github.com:chenfanaichifan/binary-repair.git`
+- **新分支**：`final/consolidated-2026-11-16`
+- **克隆/切换**：
+
+```bash
+git clone git@github.com:chenfanaichifan/binary-repair.git
+cd binary-repair
+git checkout final/consolidated-2026-11-16
+```
+
+- **总报告（仓库内）**：`docs/consolidation/PROJECT-MASTER-REPORT-2026-11-16.md`
+- **整合说明**：`CONSOLIDATION.md` / `docs/consolidation/CONSOLIDATION-2026-11-16.md`
 
 ## 8.8 残余风险与说明（必须知道）
 

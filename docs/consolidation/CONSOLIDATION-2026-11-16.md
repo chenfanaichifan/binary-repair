@@ -66,6 +66,26 @@ git push git@github.com:chenfanaichifan/binary-repair.git refs/tags/release-2026
 
 （执行结果见第 7 节；最终以 git ls-remote 与分支内容为准。）
 
-## 7. 执行结果
+## 7. 执行结果（2026-11-16 实做）
 
-（删除 refs 后补充：远端 refs 实测、新分支 SHA、删除结果、备份校验。）
+| 项 | 结果 |
+|---|---|
+| 新分支 | `final/consolidated-2026-11-16`，commit `4322a51`（父 `ec503e4`），已推送 |
+| 整合文件 | 51 个补归档证据 + `docs/consolidation/` 5 份 + `CONSOLIDATION.md` + README 顶部说明 = 58 个文件变更 |
+| 远端分支删除 | 23/23 成功 |
+| 远端标签删除 | 14/14 成功 |
+| 远端 refs | 243 行（含新分支）→ **192 行**；heads 91；tag refs 89（unique 65）；会话相关残留 **0** |
+| 本地清理 | 删除 23 个会话分支 + 14 个会话 tag + 4 个本地会话分支 + 移除 `worktree-feature-final`；本地仅保留新分支 |
+| 备份 | mirror 129 MB + local bundle 127 MB + 删除前 refs 清单 242 行 |
+| gated release SHA | 仍为 `4a7b2355ffc5225d013a777bc7d588abac58f944`（未改代码/claims/gate） |
+
+验证命令（可复核）：
+
+```bash
+git ls-remote git@github.com:chenfanaichifan/binary-repair.git | wc -l         # 192
+git ls-remote --heads git@github.com:chenfanaichifan/binary-repair.git | wc -l # 91
+git ls-remote git@github.com:chenfanaichifan/binary-repair.git | grep -E 'workbench-v3|phase8|universal|coverage-audit|release-2026-11-1' # 空
+git ls-remote git@github.com:chenfanaichifan/binary-repair.git refs/heads/final/consolidated-2026-11-16
+```
+
+仓库：https://github.com/chenfanaichifan/binary-repair
