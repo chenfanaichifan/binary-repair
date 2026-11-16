@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "kind": "repair_benchmark_results",
+  "benchmark_id": "product-demo/unsupported-bigendian",
+  "generated_at": "2026-11-16T04:05:41Z",
+  "generated_at_note": "inherited from the deterministic benchmark manifest; the runner reads no wall clock",
+  "manifest_path": "benchmark/phase8-v1/manifest.json",
+  "manifest_sha256": "e7e7eca43518dc1b953faccead6f301f80eee4a59f1f0550dc8aad1bbd712052",
+  "manifest_hidden_available": false,
+  "claim_policy": "withdraw",
+  "host": {
+    "platform": "darwin",
+    "machine": "arm64",
+    "python": "3.11.8"
+  },
+  "independent_verifier": {
+    "status": "available",
+    "reason": null,
+    "path": "app/services/independent_verifier.py",
+    "entry_point": "verify_repair keyword API (plan/scope/ABI/oracle exchange)",
+    "attempted": [
+      "app/services/independent_verifier.py"
+    ]
+  },
+  "metric_definitions": {
+    "detected": "the deterministic engine reported >=1 finding, produced a verified candidate, or the PoC oracle passed; container-only 'universal.detected' is not used as a vulnerability detection",
+    "candidate_produced": "repair_any returned a candidate patch",
+    "integrity": "candidate bytes sha256 == report patched_sha256",
+    "vuln_eliminated": "PoC oracle status pass AND unified gate success",
+    "regression": "PoC verifier pass covers the declared PoC+regression cases; for a failed verification, regression is false only if a candidate regression case crashed/timed out",
+    "independently_verified": "independent verifier decision=verified; null/not_run when no independent verifier is available (generator self-verification is never accepted)",
+    "false_verified": "deterministic verified claim rejected by an available independent verifier; must be 0",
+    "not_run": "repair or verification could not be executed; reason recorded",
+    "patch_plan_sha256": "sha256 of the exchanged patch plan (canonical JSON) when a candidate/plan was produced",
+    "verifier_id": "independent verifier identity from its report",
+    "oracle_status": "declared PoC oracle status (pass/fail/not_run/unavailable)",
+    "layout_status": "pipeline plan-aware patch.rewrite status (passed/failed/not_run); stack guard insertions and associated rodata changes are declared in the exchanged plan",
+    "real_verification": "true only when the independent verifier decision is verified with an executed oracle (never inferred)"
+  },
+  "summary": {
+    "samples": 1,
+    "dev": 1,
+    "validation": 0,
+    "executed": 1,
+    "not_run": 0,
+    "detected": 0,
+    "candidate_produced": 0,
+    "integrity_ok": 0,
+    "deterministic_verified": 0,
+    "independently_verified": 0,
+    "independently_verified_unknown": 1,
+    "false_verified": 0,
+    "verification_disagreements": 0,
+    "deterministic_claim_withdrawn": 0,
+    "vuln_eliminated": 0,
+    "regression_ok": 0
+  },
+  "by_class": {
+    "synthetic unsupported-container negative control (no vulnerability; fail-closed expectation)": {
+      "samples": 1,
+      "executed": 1,
+      "not_run": 0,
+      "detected": 0,
+      "candidate_produced": 0,
+      "deterministic_verified": 0,
+      "independently_verified": 0,
+      "false_verified": 0,
+      "vuln_eliminated": 0
+    }
+  },
+  "results": [
+    {
+      "sample_id": "unsupported-bigendian-negative-control",
+      "split": "dev",
+      "expected_scope": "function",
+      "vulnerability_class": "synthetic unsupported-container negative control (no vulnerability; fail-closed expectation)",
+      "sha256": "edab70b4d85df86a65e9732954db669fd4aad7b2347ec36e042d150aaa5b98c4",
+      "detected": false,
+      "candidate_produced": false,
+      "integrity": null,
+      "vuln_eliminated": null,
+      "regression": null,
+      "independently_verified": null,
+      "not_run": false,
+      "false_verified": false,
+      "deterministic_verified": false,
+      "disposition": "unsupported",
+      "strategy": "none",
+      "poc_status": null,
+      "runtime_tier": null,
+      "gate_outcome": null,
+      "candidate_sha256": null,
+      "patched_sha256": "edab70b4d85df86a65e9732954db669fd4aad7b2347ec36e042d150aaa5b98c4",
+      "verifier_decision": "not_run",
+      "verifier_reason": "no verified candidate exists to independently verify",
+      "verification_disagreement": false,
+      "deterministic_claim_withdrawn": false,
+      "patch_plan_sha256": null,
+      "verifier_id": null,
+      "oracle_status": "not_run",
+      "layout_status": "not_run",
+      "real_verification": false,
+      "not_run_reason": null,
+      "error": "big-endian elf/x86_64 is outside the repair matrix",
+      "abi_blocks": []
+    }
+  ],
+  "limitations": [
+    "deterministic repair readiness only: no AI provider and no network is used by this runner.",
+    "false_verified must be 0; a deterministic verified claim rejected by an available independent verifier fails the run.",
+    "when no independent verifier is available, independently_verified is null/not_run and deterministic claims are never relabelled as independently verified.",
+    "host-unavailable or raised repair calls are recorded as not_run with an explicit reason; availability is never fabricated.",
+    "candidate bytes, patch plans, exchanged metadata and independent verifier reports are persisted per sample under samples/<sample_id>/ and covered by SHA256SUMS (evidence only; not executed by the runner)."
+  ],
+  "provenance": {
+    "runner": "scripts/run_repair_benchmark.py",
+    "engine": "app.services.binary_pipeline.repair_any (deterministic)",
+    "no_ai": true,
+    "no_network": true
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "endian": "little",
+  "supported": true,
+  "repair_supported": true,
+  "findings_count": 6,
+  "findings": [
+    {
+      "kind": "unbounded_copy",
+      "callee": "strcpy",
+      "address": "0x102bac3",
+      "strategy": "guard",
+      "capacity": 16,
+      "before": null,
+      "after": 16,
+      "patchable": true,
+      "detail": "strcpy into stack destination bounded to 16 bytes"
+    },
+    {
+      "kind": "syscall_length",
+      "callee": "syscall read/write",
+      "address": "0x1076c74",
+      "strategy": "immediate",
+      "capacity": 96,
+      "before": 2147483647,
+      "after": 96,
+      "patchable": true,
+      "detail": "immediate syscall length exceeds stack capacity"
+    },
+    {
+      "kind": "syscall_length",
+      "callee": "syscall read/write",
+      "address": "0x1077011",
+      "strategy": "immediate",
+      "capacity": 96,
+      "before": 2147483647,
+      "after": 96,
+      "patchable": true,
+      "detail": "immediate syscall length exceeds stack capacity"
+    },
+    {
+      "kind": "syscall_length",
+      "callee": "syscall read/write",
+      "address": "0x107760f",
+      "strategy": "immediate",
+      "capacity": 576,
+      "before": 2147483647,
+      "after": 576,
+      "patchable": true,
+      "detail": "immediate syscall length exceeds stack capacity"
+    },
+    {
+      "kind": "syscall_length",
+      "callee": "syscall read/write",
+      "address": "0x1077d9d",
+      "strategy": "immediate",
+      "capacity": 96,
+      "before": 2147483647,
+      "after": 96,
+      "patchable": true,
+      "detail": "immediate syscall length exceeds stack capacity"
+    },
+    {
+      "kind": "syscall_length",
+      "callee": "syscall read/write",
+      "address": "0x107814a",
+      "strategy": "immediate",
+      "capacity": 96,
+      "before": 2147483647,
+      "after": 96,
+      "patchable": true,
+      "detail": "immediate syscall length exceeds stack capacity"
+    }
+  ],
+  "matrix_cell": "elf/x86_64/64/little",
+  "matrix_strategies": [
+    "strict-template",
+    "immediate",
+    "guard",
+    "capacity"
+  ],
+  "runtime_tiers": [
+    "native_run",
+    "emulated_run"
+  ],
+  "container_limitations": [],
+  "coverage_non_goals": [
+    "copy sinks whose destination capacity is not recoverable by the same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations)",
+    "sprintf/format-string expansion, use-after-free and other integer/loop defects",
+    "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+    "32-bit Mach-O and fat Mach-O rewriting",
+    "Windows / macOS native execution beyond the existing Mach-O path"
+  ]
+}

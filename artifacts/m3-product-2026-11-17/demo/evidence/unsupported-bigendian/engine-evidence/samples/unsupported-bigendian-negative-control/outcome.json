@@ -1,0 +1,15 @@
+{
+  "not_run": false,
+  "detected": false,
+  "candidate_produced": false,
+  "integrity": null,
+  "deterministic_verified": false,
+  "disposition": "unsupported",
+  "strategy": "none",
+  "poc_status": null,
+  "runtime_tier": null,
+  "gate_outcome": null,
+  "error": "big-endian elf/x86_64 is outside the repair matrix",
+  "candidate_sha256": null,
+  "patched_sha256": "edab70b4d85df86a65e9732954db669fd4aad7b2347ec36e042d150aaa5b98c4"
+}

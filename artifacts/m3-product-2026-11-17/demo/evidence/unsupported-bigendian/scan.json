@@ -1,0 +1,24 @@
+{
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "endian": "big",
+  "supported": true,
+  "repair_supported": false,
+  "findings_count": 0,
+  "findings": [],
+  "matrix_cell": null,
+  "matrix_strategies": [],
+  "runtime_tiers": [],
+  "container_limitations": [
+    "no executable section; nothing to analyze",
+    "elf/x86_64/64: outside the repair matrix"
+  ],
+  "coverage_non_goals": [
+    "copy sinks whose destination capacity is not recoverable by the same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations)",
+    "sprintf/format-string expansion, use-after-free and other integer/loop defects",
+    "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+    "32-bit Mach-O and fat Mach-O rewriting",
+    "Windows / macOS native execution beyond the existing Mach-O path"
+  ]
+}

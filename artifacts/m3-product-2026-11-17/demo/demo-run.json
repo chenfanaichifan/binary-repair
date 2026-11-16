@@ -1,0 +1,572 @@
+{
+  "schema_version": 1,
+  "kind": "product_demo_run",
+  "title": "BinaryRepair product demo",
+  "generated_at": "2026-11-16T04:05:41Z",
+  "elapsed_seconds": 45.71,
+  "host": {
+    "platform": "darwin",
+    "machine": "arm64",
+    "python": "3.11.8"
+  },
+  "execution": {
+    "deterministic_only": true,
+    "ai_used": false,
+    "api_key_required": false,
+    "network_used": false,
+    "engine": "app.services.binary_pipeline.repair_any",
+    "repair_driver": "scripts/run_repair_benchmark.py (execute_repair)",
+    "independent_verifier": {
+      "status": "available",
+      "reason": null,
+      "path": "app/services/independent_verifier.py",
+      "entry_point": "verify_repair keyword API (plan/scope/ABI/oracle exchange)",
+      "attempted": [
+        "app/services/independent_verifier.py"
+      ]
+    },
+    "report_langs": [
+      "en",
+      "zh"
+    ]
+  },
+  "fixtures": [
+    {
+      "fixture": "strcpy-stack-x86_64",
+      "label": "CWE-121 stack strcpy overflow (ELF x86-64)",
+      "expected": "verified",
+      "status": "VERIFIED_WITHIN_SCOPE",
+      "reason": "guard candidate appends 3926 cave/PT_LOAD bytes at file offset 4911312; the call redirect and header/program-header updates are declared as reviewed_site/header_update operations",
+      "input": {
+        "path": "fixtures/elf/vuln-strcpy-x86_64.elf",
+        "sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4"
+      },
+      "provenance": {
+        "fixture": "fixtures/elf/vuln-strcpy-x86_64.elf",
+        "fixture_sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+        "fixture_bytes": 4911312,
+        "kind": "committed_benchmark_sample",
+        "benchmark_manifest": "benchmark/phase8-v1/manifest.json",
+        "benchmark_manifest_sha256": "e7e7eca43518dc1b953faccead6f301f80eee4a59f1f0550dc8aad1bbd712052",
+        "benchmark_id": "phase8-v1",
+        "poc_manifest": "fixtures/poc/elf-x86_64-strcpy.json"
+      },
+      "sample_id": "stack-strcpy-x86_64",
+      "scan": {
+        "format": "elf",
+        "arch": "x86_64",
+        "bits": 64,
+        "endian": "little",
+        "supported": true,
+        "repair_supported": true,
+        "findings_count": 6,
+        "findings": [
+          {
+            "kind": "unbounded_copy",
+            "callee": "strcpy",
+            "address": "0x102bac3",
+            "strategy": "guard",
+            "capacity": 16,
+            "before": null,
+            "after": 16,
+            "patchable": true,
+            "detail": "strcpy into stack destination bounded to 16 bytes"
+          },
+          {
+            "kind": "syscall_length",
+            "callee": "syscall read/write",
+            "address": "0x1076c74",
+            "strategy": "immediate",
+            "capacity": 96,
+            "before": 2147483647,
+            "after": 96,
+            "patchable": true,
+            "detail": "immediate syscall length exceeds stack capacity"
+          },
+          {
+            "kind": "syscall_length",
+            "callee": "syscall read/write",
+            "address": "0x1077011",
+            "strategy": "immediate",
+            "capacity": 96,
+            "before": 2147483647,
+            "after": 96,
+            "patchable": true,
+            "detail": "immediate syscall length exceeds stack capacity"
+          },
+          {
+            "kind": "syscall_length",
+            "callee": "syscall read/write",
+            "address": "0x107760f",
+            "strategy": "immediate",
+            "capacity": 576,
+            "before": 2147483647,
+            "after": 576,
+            "patchable": true,
+            "detail": "immediate syscall length exceeds stack capacity"
+          },
+          {
+            "kind": "syscall_length",
+            "callee": "syscall read/write",
+            "address": "0x1077d9d",
+            "strategy": "immediate",
+            "capacity": 96,
+            "before": 2147483647,
+            "after": 96,
+            "patchable": true,
+            "detail": "immediate syscall length exceeds stack capacity"
+          },
+          {
+            "kind": "syscall_length",
+            "callee": "syscall read/write",
+            "address": "0x107814a",
+            "strategy": "immediate",
+            "capacity": 96,
+            "before": 2147483647,
+            "after": 96,
+            "patchable": true,
+            "detail": "immediate syscall length exceeds stack capacity"
+          }
+        ],
+        "matrix_cell": "elf/x86_64/64/little",
+        "matrix_strategies": [
+          "strict-template",
+          "immediate",
+          "guard",
+          "capacity"
+        ],
+        "runtime_tiers": [
+          "native_run",
+          "emulated_run"
+        ],
+        "container_limitations": [],
+        "coverage_non_goals": [
+          "copy sinks whose destination capacity is not recoverable by the same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations)",
+          "sprintf/format-string expansion, use-after-free and other integer/loop defects",
+          "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+          "32-bit Mach-O and fat Mach-O rewriting",
+          "Windows / macOS native execution beyond the existing Mach-O path"
+        ]
+      },
+      "repair": {
+        "disposition": "verified_patch",
+        "strategy": "guard",
+        "candidate_produced": true,
+        "candidate_sha256": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4",
+        "patched_sha256": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4",
+        "integrity": true,
+        "gate_outcome": "success_within_scope",
+        "poc_status": "pass",
+        "runtime_tier": "emulated_run",
+        "patch_plan_sha256": "2796f7b76dfe4723e762fe5a044b9b4118fbd4ece5427f76f6ed55b8e1669f7e",
+        "abi_blocks": [
+          {
+            "function": "reviewed-function",
+            "va": 16956084,
+            "size": 44,
+            "arch": "x86_64",
+            "abi_id": "sysv-amd64",
+            "evidence_sha256": "5196db00057b409687d63e329f6439169a908b5a0b74204ae9d45175e271dca1"
+          }
+        ],
+        "layout_status": "passed",
+        "false_verified": false,
+        "deterministic_claim_withdrawn": false,
+        "deterministic_verified": true
+      },
+      "verification": {
+        "independent_decision": "verified",
+        "verifier_id": "independent-verifier/1",
+        "reason": "guard candidate appends 3926 cave/PT_LOAD bytes at file offset 4911312; the call redirect and header/program-header updates are declared as reviewed_site/header_update operations",
+        "oracle_status": "pass",
+        "layout_status": "passed",
+        "real_verification": true,
+        "evidence_files_expected": true
+      },
+      "checks": [
+        {
+          "id": "identity",
+          "title": "Original/candidate identity and candidate change",
+          "status": "passed",
+          "required": true,
+          "detail": "original=c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4 candidate=1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4"
+        },
+        {
+          "id": "container",
+          "title": "Container re-parse and metadata agreement",
+          "status": "passed",
+          "required": true,
+          "detail": "format=elf arch=x86_64 bits=64 endian=little"
+        },
+        {
+          "id": "layout-plan",
+          "title": "Patch-plan replay (layout/cave/associated changes)",
+          "status": "passed",
+          "required": true,
+          "detail": "plan 8bd9649e2df10aab replay matches the candidate: operations=9 changed_ranges=9 cave=yes associated=7"
+        },
+        {
+          "id": "action-replay",
+          "title": "Byte-level action replay from raw images",
+          "status": "passed",
+          "required": true,
+          "detail": "plan replay covers all changed bytes: changed_ranges=9"
+        },
+        {
+          "id": "target-scope",
+          "title": "Candidate modifications stay inside the declared target scope",
+          "status": "passed",
+          "required": true,
+          "detail": "policy=target_scoped_associated scope=[0x102bab4, 0x102bae0) ops=9 reviewed_sites=1"
+        },
+        {
+          "id": "abi",
+          "title": "Candidate instruction-block ABI validation",
+          "status": "passed",
+          "required": true,
+          "detail": "ABI ok for 1 derived block(s) sources=plan.abi_blocks"
+        },
+        {
+          "id": "runtime-oracle",
+          "title": "Independent external PoC differential and regression",
+          "status": "passed",
+          "required": true,
+          "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=4)"
+        },
+        {
+          "id": "evidence-completeness",
+          "title": "At least one independent oracle (no generator-only evidence)",
+          "status": "passed",
+          "required": true,
+          "detail": "one independent external oracle passed"
+        },
+        {
+          "id": "independence",
+          "title": "Generator/verifier independence and generator-evidence exclusion",
+          "status": "passed",
+          "required": true,
+          "detail": "generator identity is distinct and its evidence is excluded from the decision"
+        }
+      ],
+      "limitations": [
+        "guard candidate appends 3926 cave/PT_LOAD bytes at file offset 4911312; the call redirect and header/program-header updates are declared as reviewed_site/header_update operations"
+      ],
+      "not_run": [],
+      "engine_summary": {
+        "samples": 1,
+        "executed": 1,
+        "not_run": 0,
+        "detected": 1,
+        "candidate_produced": 1,
+        "deterministic_verified": 1,
+        "independently_verified": 1,
+        "false_verified": 0,
+        "verification_disagreements": 0,
+        "deterministic_claim_withdrawn": 0,
+        "vuln_eliminated": 1,
+        "regression_ok": 1
+      },
+      "evidence_root": "evidence/strcpy-stack-x86_64"
+    },
+    {
+      "fixture": "marcx-capacity",
+      "label": "CWE-131/697/787 capacity-check confusion (ELF x86-64)",
+      "expected": "verified",
+      "status": "VERIFIED_WITHIN_SCOPE",
+      "reason": "plan replay covers every changed byte; raw-diff bytes not declared by the plan are rejected",
+      "input": {
+        "path": "fixtures/elf/vuln-capacity-confusion-x86_64.elf",
+        "sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+      },
+      "provenance": {
+        "fixture": "fixtures/elf/vuln-capacity-confusion-x86_64.elf",
+        "fixture_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+        "fixture_bytes": 713160,
+        "kind": "committed_benchmark_sample",
+        "benchmark_manifest": "benchmark/phase8-v1/manifest.json",
+        "benchmark_manifest_sha256": "e7e7eca43518dc1b953faccead6f301f80eee4a59f1f0550dc8aad1bbd712052",
+        "benchmark_id": "phase8-v1",
+        "poc_manifest": "fixtures/poc/marcx-capacity.json"
+      },
+      "sample_id": "heap-capacity-x86_64",
+      "scan": {
+        "format": "elf",
+        "arch": "x86_64",
+        "bits": 64,
+        "endian": "little",
+        "supported": true,
+        "repair_supported": true,
+        "findings_count": 1,
+        "findings": [
+          {
+            "kind": "syscall_length",
+            "callee": "syscall read/write",
+            "address": "0x42a5bc",
+            "strategy": "immediate",
+            "capacity": 8,
+            "before": 158,
+            "after": 8,
+            "patchable": true,
+            "detail": "immediate syscall length exceeds stack capacity"
+          }
+        ],
+        "matrix_cell": "elf/x86_64/64/little",
+        "matrix_strategies": [
+          "strict-template",
+          "immediate",
+          "guard",
+          "capacity"
+        ],
+        "runtime_tiers": [
+          "native_run",
+          "emulated_run"
+        ],
+        "container_limitations": [],
+        "coverage_non_goals": [
+          "copy sinks whose destination capacity is not recoverable by the same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations)",
+          "sprintf/format-string expansion, use-after-free and other integer/loop defects",
+          "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+          "32-bit Mach-O and fat Mach-O rewriting",
+          "Windows / macOS native execution beyond the existing Mach-O path"
+        ]
+      },
+      "repair": {
+        "disposition": "verified_patch",
+        "strategy": "capacity",
+        "candidate_produced": true,
+        "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+        "patched_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+        "integrity": true,
+        "gate_outcome": "success_within_scope",
+        "poc_status": "pass",
+        "runtime_tier": "emulated_run",
+        "patch_plan_sha256": "0fd173593e8e7cc66693521430d7a3c7427182edfcf807f4d557adfadcd2edb7",
+        "abi_blocks": [
+          {
+            "function": "reviewed-function",
+            "va": 4200784,
+            "size": 2864,
+            "arch": "x86_64",
+            "abi_id": "sysv-amd64",
+            "evidence_sha256": "490b7e317530f602a2b3cdf6c6ce8862a65a8451017703db493cf73e8477790c"
+          }
+        ],
+        "layout_status": "passed",
+        "false_verified": false,
+        "deterministic_claim_withdrawn": false,
+        "deterministic_verified": true
+      },
+      "verification": {
+        "independent_decision": "verified",
+        "verifier_id": "independent-verifier/1",
+        "reason": "plan replay covers every changed byte; raw-diff bytes not declared by the plan are rejected",
+        "oracle_status": "pass",
+        "layout_status": "passed",
+        "real_verification": true,
+        "evidence_files_expected": true
+      },
+      "checks": [
+        {
+          "id": "identity",
+          "title": "Original/candidate identity and candidate change",
+          "status": "passed",
+          "required": true,
+          "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2"
+        },
+        {
+          "id": "container",
+          "title": "Container re-parse and metadata agreement",
+          "status": "passed",
+          "required": true,
+          "detail": "format=elf arch=x86_64 bits=64 endian=little"
+        },
+        {
+          "id": "layout-plan",
+          "title": "Patch-plan replay (layout/cave/associated changes)",
+          "status": "passed",
+          "required": true,
+          "detail": "plan 05503398723dc60e replay matches the candidate: operations=3 changed_ranges=3 cave=no associated=1"
+        },
+        {
+          "id": "action-replay",
+          "title": "Byte-level action replay from raw images",
+          "status": "passed",
+          "required": true,
+          "detail": "plan replay covers all changed bytes: changed_ranges=3"
+        },
+        {
+          "id": "target-scope",
+          "title": "Candidate modifications stay inside the declared target scope",
+          "status": "passed",
+          "required": true,
+          "detail": "policy=target_scoped_associated scope=[0x4020d9, 0x4020e9) ops=3 reviewed_sites=2"
+        },
+        {
+          "id": "abi",
+          "title": "Candidate instruction-block ABI validation",
+          "status": "passed",
+          "required": true,
+          "detail": "ABI ok for 1 derived block(s) sources=plan.abi_blocks"
+        },
+        {
+          "id": "runtime-oracle",
+          "title": "Independent external PoC differential and regression",
+          "status": "passed",
+          "required": true,
+          "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)"
+        },
+        {
+          "id": "evidence-completeness",
+          "title": "At least one independent oracle (no generator-only evidence)",
+          "status": "passed",
+          "required": true,
+          "detail": "one independent external oracle passed"
+        },
+        {
+          "id": "independence",
+          "title": "Generator/verifier independence and generator-evidence exclusion",
+          "status": "passed",
+          "required": true,
+          "detail": "generator identity is distinct and its evidence is excluded from the decision"
+        }
+      ],
+      "limitations": [
+        "plan replay covers every changed byte; raw-diff bytes not declared by the plan are rejected"
+      ],
+      "not_run": [],
+      "engine_summary": {
+        "samples": 1,
+        "executed": 1,
+        "not_run": 0,
+        "detected": 1,
+        "candidate_produced": 1,
+        "deterministic_verified": 1,
+        "independently_verified": 1,
+        "false_verified": 0,
+        "verification_disagreements": 0,
+        "deterministic_claim_withdrawn": 0,
+        "vuln_eliminated": 1,
+        "regression_ok": 1
+      },
+      "evidence_root": "evidence/marcx-capacity"
+    },
+    {
+      "fixture": "unsupported-bigendian",
+      "label": "synthetic big-endian ELF64 header (fail-closed negative control)",
+      "expected": "refused",
+      "status": "REFUSED",
+      "reason": "big-endian elf/x86_64 is outside the repair matrix",
+      "input": {
+        "path": "tools/product/fixtures/unsupported-bigendian-elf64.bin",
+        "sha256": "edab70b4d85df86a65e9732954db669fd4aad7b2347ec36e042d150aaa5b98c4"
+      },
+      "provenance": {
+        "fixture": "tools/product/fixtures/unsupported-bigendian-elf64.bin",
+        "fixture_sha256": "edab70b4d85df86a65e9732954db669fd4aad7b2347ec36e042d150aaa5b98c4",
+        "fixture_bytes": 64,
+        "kind": "synthetic_negative_control",
+        "note": "64-byte big-endian ELF64 header only; it is not a real vulnerability or a real program. It exists to prove the product refuses matrix-outside input without producing bytes."
+      },
+      "sample_id": "unsupported-bigendian-negative-control",
+      "scan": {
+        "format": "elf",
+        "arch": "x86_64",
+        "bits": 64,
+        "endian": "big",
+        "supported": true,
+        "repair_supported": false,
+        "findings_count": 0,
+        "findings": [],
+        "matrix_cell": null,
+        "matrix_strategies": [],
+        "runtime_tiers": [],
+        "container_limitations": [
+          "no executable section; nothing to analyze",
+          "elf/x86_64/64: outside the repair matrix"
+        ],
+        "coverage_non_goals": [
+          "copy sinks whose destination capacity is not recoverable by the same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations)",
+          "sprintf/format-string expansion, use-after-free and other integer/loop defects",
+          "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+          "32-bit Mach-O and fat Mach-O rewriting",
+          "Windows / macOS native execution beyond the existing Mach-O path"
+        ]
+      },
+      "repair": {
+        "disposition": "unsupported",
+        "strategy": "none",
+        "candidate_produced": false,
+        "candidate_sha256": null,
+        "patched_sha256": "edab70b4d85df86a65e9732954db669fd4aad7b2347ec36e042d150aaa5b98c4",
+        "integrity": null,
+        "gate_outcome": null,
+        "poc_status": null,
+        "runtime_tier": null,
+        "patch_plan_sha256": null,
+        "abi_blocks": [],
+        "layout_status": "not_run",
+        "false_verified": false,
+        "deterministic_claim_withdrawn": false,
+        "deterministic_verified": false
+      },
+      "verification": {
+        "independent_decision": "not_run",
+        "verifier_id": null,
+        "reason": "no verified candidate exists to independently verify",
+        "oracle_status": "not_run",
+        "layout_status": "not_run",
+        "real_verification": false,
+        "evidence_files_expected": true
+      },
+      "checks": [
+        {
+          "id": "independent_verification",
+          "title": "independent verifier report",
+          "status": "not_run",
+          "required": true,
+          "detail": "no verified candidate exists to independently verify"
+        }
+      ],
+      "limitations": [
+        "no executable section; nothing to analyze",
+        "elf/x86_64/64: outside the repair matrix",
+        "negative control: the input is a synthetic header-only container, not a real program or vulnerability"
+      ],
+      "not_run": [
+        "independent verification not_run: no verified candidate exists to independently verify",
+        "runtime oracle status=not_run; no runtime evidence",
+        "no candidate produced (disposition=unsupported); nothing is downloadable"
+      ],
+      "engine_summary": {
+        "samples": 1,
+        "executed": 1,
+        "not_run": 0,
+        "detected": 0,
+        "candidate_produced": 0,
+        "deterministic_verified": 0,
+        "independently_verified": 0,
+        "false_verified": 0,
+        "verification_disagreements": 0,
+        "deterministic_claim_withdrawn": 0,
+        "vuln_eliminated": 0,
+        "regression_ok": 0
+      },
+      "evidence_root": "evidence/unsupported-bigendian"
+    }
+  ],
+  "boundary": {
+    "positioning": "bounded binary repair with auditable evidence; not universal repair",
+    "public_benchmark": "2/24 verified (8.3%)",
+    "hidden_benchmark": "0/8 verified",
+    "detection_localization": "detection/root-cause/localization 3/24 (12.5%) each",
+    "repair_scope": "one target function/sink per candidate; deterministic matrix only",
+    "verification": "deterministic unified gate + independent verifier; scope is the supplied PoC/regression cases and the one repaired function, not a whole-program proof",
+    "not_claimed": [
+      "arbitrary binary / arbitrary vulnerability / whole-program repair",
+      "hidden generalisation or independently verified hidden repairs",
+      "cross-compiler verification with a second toolchain",
+      "new vulnerability-repair capability or automatic capability promotion",
+      "that a repaired binary is safe for production use"
+    ]
+  }
+}

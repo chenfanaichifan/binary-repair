@@ -1,0 +1,41 @@
+{
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "endian": "little",
+  "supported": true,
+  "repair_supported": true,
+  "findings_count": 1,
+  "findings": [
+    {
+      "kind": "syscall_length",
+      "callee": "syscall read/write",
+      "address": "0x42a5bc",
+      "strategy": "immediate",
+      "capacity": 8,
+      "before": 158,
+      "after": 8,
+      "patchable": true,
+      "detail": "immediate syscall length exceeds stack capacity"
+    }
+  ],
+  "matrix_cell": "elf/x86_64/64/little",
+  "matrix_strategies": [
+    "strict-template",
+    "immediate",
+    "guard",
+    "capacity"
+  ],
+  "runtime_tiers": [
+    "native_run",
+    "emulated_run"
+  ],
+  "container_limitations": [],
+  "coverage_non_goals": [
+    "copy sinks whose destination capacity is not recoverable by the same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations)",
+    "sprintf/format-string expansion, use-after-free and other integer/loop defects",
+    "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+    "32-bit Mach-O and fat Mach-O rewriting",
+    "Windows / macOS native execution beyond the existing Mach-O path"
+  ]
+}
