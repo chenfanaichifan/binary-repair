@@ -1,20 +1,23 @@
-# 交接任务包（2026-11-16）
+# Handoff task package (2026-11-16)
 
-四名成员的完整接手包（自包含；读完即可开工）：
+Four self-contained member handoff packages (Chinese text, kept outside the
+ASCII-only `docs/` tree so the repository language gate stays green):
 
-| 成员 | 任务 | 文件 |
+| Member | Task | File |
 |---|---|---|
-| M1 | 非 loop / CWE-121 / CWE-134 能力攻关（最高优先） | `M1任务.md` |
-| M2 | 跨函数语义最小原型（Phase-9 起点，只读分析） | `M2任务.md` |
-| M3 | 产品化与端到端交付（SaaS 产品视角） | `M3任务.md` |
-| M4 | 安全 / 备份 / 发布治理与口径复核 | `M4任务.md` |
+| M1 | Non-loop / CWE-121 / CWE-134 capability work (top priority) | `delivery/zh/handoff/M1-task.md` |
+| M2 | Cross-function semantic minimal prototype (Phase-9 start, read-only analysis) | `delivery/zh/handoff/M2-task.md` |
+| M3 | Productization and end-to-end delivery (SaaS product view) | `delivery/zh/handoff/M3-task.md` |
+| M4 | Security / backup / release governance / consistency review | `delivery/zh/handoff/M4-task.md` |
 
-公共前提（已由 Lead 完成）：
+Workspace copies are kept at the workspace root with the requested Chinese names
+(`M1任务.md`, `M2任务.md`, `M3任务.md`, `M4任务.md`).
 
-- 总报告已按组长 2026-11-16 复核修订：新增 §1.5（安全 P0、非 loop 口径 0/6→3/6、战略重排、备份/默认分支），并修正全文矛盾。
-- 环境工具区：`tools/handoff/`（check-env / run-scope-tests / member-report / scan-secrets / offsite-backup）。
-- 自我认知库：`review/STATE.md`（当前认知与交接决议）。
-- 任务看板：共享任务已建立并写入写范围；成员只改自己 scope，git 由 Lead 统一集成。
+Shared prerequisites (done by the Lead):
 
-工作区路径：`/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证`
-仓库路径：`binary-repair-gui/`（分支 `final/consolidated-2026-11-16`）
+- Lead-review corrections applied to the master report (section 1.5): API-key rotation P0, non-loop 3/6 correction, strategy re-prioritization (capability/product before Phase-8D/13/14), backup/default-branch actions.
+- Tool area: `tools/handoff/` (check-env / run-scope-tests / member-report / scan-secrets / offsite-backup).
+- Self-cognition library: `review/STATE.md`.
+- Team task board: shared tasks with disjoint write scopes; members do not run git writes; the Lead integrates.
+
+Repository: `binary-repair-gui/` (branch `final/consolidated-2026-11-16`)

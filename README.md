@@ -3,7 +3,7 @@
 > **2026-11-16 consolidation**: the complete delivery of the two focus sessions
 > (Linux VM verification + all-type binary repair) is consolidated into branch
 > `final/consolidated-2026-11-16`. Start from [CONSOLIDATION.md](CONSOLIDATION.md)
-> and the master report [docs/consolidation/PROJECT-MASTER-REPORT-2026-11-16.md](docs/consolidation/PROJECT-MASTER-REPORT-2026-11-16.md).
+> and the master report [delivery/zh/consolidation/PROJECT-MASTER-REPORT-2026-11-16.md](delivery/zh/consolidation/PROJECT-MASTER-REPORT-2026-11-16.md).
 > The gated release SHA remains `4a7b235` (Phase-8C); this branch adds
 > docs/evidence only.
 
