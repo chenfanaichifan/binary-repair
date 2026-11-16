@@ -73,10 +73,41 @@
 - **不声称 hidden benchmark 泛化能力**：Phase-8C hidden 8 样本 0 candidate、0 verified；`hidden_available=false`。
 - **不把 `not_run`/`unavailable` 当 `pass`**：self-hosted Lima nightly、国际 provider 矩阵、external ingestion、GDB trace、AFL fuzzing 等未运行项均显式记录。
 - **不把 AI 评审/模型解释当验收**：AI 只能 hold/要求更多检查，不能把失败 gate 提升为成功。
-- **不把 fixture 绿灯当通用能力**：公开集 2/24 verified、hidden 0 verified、非 loop 家族 0/6 等负结果是项目结论的一部分。
+- **不把 fixture 绿灯当通用能力**：公开集 2/24 verified、hidden 0 verified、非 loop 家族 3/6（仅 hard-multicall / hard-sprintf / hard-nonconst，单模型 deepseek-flash；CWE-121 public / UAF-noinput / heap-canary 仍 0，多模型/多二进制泛化未证明）等负结果是项目结论的一部分。
 
 ---
 
+# 1.5 组长复核结论与优先级修正（2026-11-16，本报告据此修订）
+
+> 组长（外部评审）对初版总报告给出复核结论。以下四条为**本次修订的执行口径**，优先级高于第 7.2 节的默认顺序。
+
+## 1.5.1 P0 安全：会话中泄露的 API key 视为已泄露
+
+- 会话日志/聊天中出现过明文 key（SiliconFlow CN/US、DashScope、DeepSeek 等），**全部立刻轮换/吊销**，不等任何 Phase。
+- 本报告与 `docs/consolidation/` 不记录、不复现任何 key 明文；仓库/工作区需要 secret 扫描（M4 负责，见 `M4任务.md`）。
+
+## 1.5.2 口径修正：非 loop 不是 0/6，而是 3/6（单模型）
+
+- 正确表述：Path A 12-case 矩阵曾为 **0/6**；a8934fe 后 **hard-multicall / hard-sprintf / hard-nonconst 3 例 AI VERIFIED → 3/6**（单模型 deepseek-flash；v4-pro 0/3）；P16-R3 严格 7/10 含这三例。
+- 剩余非 loop 案例（CWE-121 public、UAF-noinput、heap-canary）仍 0；**多模型/多二进制泛化未证明**。本报告 §1.4、§3.6.1、§3.8、§5.3.3、§6.1 A1、§6.5、§7.3、§7.5 已同步修正。
+
+## 1.5.3 战略重排：从"自主化大教堂"拉回"能力扩展 + 产品交付"
+
+- 现状事实：**公开 benchmark 2/24 verified（8.3%）、hidden 0/8**；治理设施已很完备（13/13 gate、17 合同、240 cells、30 场景 meta-audit、64 条 gap registry）。
+- 结论：**继续堆治理是边际递减**。路线图不得先做 Phase-8D/13/14（自主化基础设施），必须按以下顺序：
+  1. **P0 能力**：Phase-10（CWE-121 Behavior Contract、CWE-134、非 loop 3/6→4/6+、整数/字符串/UAF 矩阵）——直接对应 hidden 0/8 与公开 8.3%；
+  2. **P0 能力前置**：Phase-9 的**最小**跨函数语义（CFG/call graph + 跨函数数据流/alias）只做能解锁 Phase-10 案例的部分；
+  3. **P1 产品化**：把当前有限能力做成**可交付产品**（产品定位、一键 CLI/API/GUI 流程、演示、部署、SLA/边界说明、试用路径与定价/包装原型）；产品视角优先于自主化设施；
+  4. **P2 验证强化**：Phase-11 的真实独立验证增强（CaveABIBlock/Authorization Record/GDB trace/副作用）；
+  5. **P3 后续**：Phase-8D/13/14/15/16 的自主化设施（Discovery/Reflection/Autonomy）降为后续，不阻塞能力与产品。
+- 产品定义（用户明确）：这是一个**产品（全自动 SaaS 形态）**，不是只交研究报告；任何阶段都必须回答"客户怎么用、交付什么、边界是什么"。
+
+## 1.5.4 备份与默认分支
+
+- `workbench-v3` 已删除，全量备份**只在本机**（mirror 129MB + bundle 127MB）→ 必须另存移动硬盘/云盘（M4 负责执行与校验）；单机备份不算备份。
+- GitHub 默认分支仍是旧 `main`（8869b07）→ 需要 owner 在 Settings 把 `final/consolidated-2026-11-16` 设为默认（M4 提供步骤与校验命令；本机无 gh/token）。
+
+---
 # 2. 从头到尾的完整执行计划与阶段划分
 
 ## 2.1 总时间线（2026-10-15 → 2026-11-16）
@@ -275,8 +306,8 @@ L3 CGC POV replay（exploratory，不作 gate）：
 | P0b Route A 自动符号 | 新增 `available_symbols()`（.symtab/.dynsym + .plt/.plt.sec），GOT/PLT 重名时唯一可执行地址否则 ambiguous；CWE121 不传显式符号产物 SHA 与旧版一致 `463a9758…` | `artifacts/route-a-auto-symbols-2026-11-14` |
 | P1 动态依赖白名单 | malloc/calloc/realloc/free 目标有 PLT 才允许，否则 blocked；fork/execve/system/popen/dlopen 绝对拒绝；CWE416 参考 UAF 通过 auto symbols + Patcherex2 + native PoC | `artifacts/dynamic-symbols-2026-11-14` |
 | P2 errno 探针 | `runtime/errno_dumper.c` + LD_PRELOAD，捕获**进程退出前 TLS errno**（不是函数返回瞬间），仅 native dynamic ELF；CI 断言 `errno_probe=ld_preload`、精确数值；其它显式 `not_run` | `artifacts/errno-*` |
-| P3 非 loop 泛化 | DeepSeek flash 三例：hard-multicall 注入成功但 native fail（模型语义）、hard-sprintf assembler 拒绝 `^`、hard-nonconst 注入成功但 native fail；**AI 非 loop 新增 verified = 0**；但 CWE416 参考修复 PASS 证明工具链可行 | `artifacts/generalization-2026-11-14`、`generalization-uaf-2026-11-14` |
-| Path A 选择性调用白名单 | 12 case × 2 DeepSeek 模型：loop 仍 6/12 verified，non-loop 仍 0/6；heap 安全 PoC 过但 valid-input stdout 回归失败 | `artifacts/path-a-call-whitelist-2026-11-14` |
+| P3 非 loop 泛化 | DeepSeek flash 三例：hard-multicall 注入成功但 native fail（模型语义）、hard-sprintf assembler 拒绝 `^`、hard-nonconst 注入成功但 native fail；**该轮 AI 非 loop 新增 verified = 0**；但 CWE416 参考修复 PASS 证明工具链可行。**后续 a8934fe 已把这三例转为 AI VERIFIED（3/3，单模型 flash；v4-pro 0/3）——见 §3.6.1 / P16-R3** | `artifacts/generalization-2026-11-14`、`generalization-uaf-2026-11-14`、`artifacts/ai-repair-planning-2026-11-15` |
+| Path A 选择性调用白名单 | 12 case × 2 DeepSeek 模型：loop 6/12 verified，non-loop 0/6（**该轮白名单实验**；非 loop 硬案例在 a8934fe 后另达 3/3）；heap 安全 PoC 过但 valid-input stdout 回归失败 | `artifacts/path-a-call-whitelist-2026-11-14` |
 | 范式 A 最小闭环 | Ghidra C 反编译 → LLM → Patcherex2 → PoC 的 loop 闭环跑通；CWE121 `badSink` 函数级 A gate PASS（模型生成 guard + 人工审核 syscall glue） | `artifacts/paradigm-a-loop-2026-11-14`、`paradigm-a-cwe121-2026-11-14` |
 | 4 模型真实矩阵 | DeepSeek 2 模型 exact identity 6/12 each；SiliconFlow CN 免费 Qwen3-8B/Qwen2.5-7B 0/12 each；GLM-Z1 身份探测超时；国际站 HTTP 402 余额不足 → 5–6 模型矩阵 not_satisfied | `artifacts/multi-model-matrix-cn-2026-11-14`、`multi-model-matrix-intl-2026-11-14` |
 | 工具链 | JDK 25 + Ghidra 12.2 在 M2 Mac 安装并跑通；有效 DeepSeek key 跑通双模型实验 | `docs/reference/ghidra-macos.md` |
@@ -357,7 +388,7 @@ L3 CGC POV replay（exploratory，不作 gate）：
 4. P19 N3–N6 缺 GDB 未运行；
 5. P20 无真实 fuzzing campaign；
 6. P25–P30 全部未实现（CaveABIBlock 完整出口语义、Authorization Record、CWE-121/134、GDB、AFL）；
-7. 非 loop AI verified 仍为 0/6（Path A 未提升）；总体成功率约 53%（P11 历史数据）；
+7. **非 loop 口径（已修正）**：Path A 12-case 矩阵上曾为 0/6；a8934fe 后 hard-multicall / hard-sprintf / hard-nonconst 三例 AI VERIFIED（**3/6**，单模型 deepseek-flash；v4-pro 0/3），P16-R3 严格验证 7/10 含这三例；CWE-121 public / UAF-noinput / heap-canary 仍 0，多模型/多二进制泛化未证明；总体成功率约 53%（P11 历史数据）；
 8. F1（legacy ELF 验证 fail-open）冻结源码未修；
 9. 国际 provider 5–6 模型矩阵被 402 阻断；SiliconFlow 余额问题未解决；
 10. 通用性边界：stripped/PIE/static/多架构未扩展；errno 仅进程退出级；ABI cave 出口语义不完整。
@@ -716,7 +747,7 @@ L3 CGC POV replay（exploratory，不作 gate）：
 
 | 路径 | 说明 | 真实成绩 |
 |---|---|---|
-| `asm_roundtrip` | 二进制 → 汇编文本 → AI 修复 → clang 汇编 → 注入 → 重定向（ELF i386/x86_64/arm64） | 非 loop 3/3（deepseek-flash，a8934fe）；P11 36 次 19/36；P16-R3 严格 7/10 |
+| `asm_roundtrip` | 二进制 → 汇编文本 → AI 修复 → clang 汇编 → 注入 → 重定向（ELF i386/x86_64/arm64） | 非 loop 硬案例 3/3（deepseek-flash，a8934fe；同 12-case 矩阵非 loop 合计 3/6，v4-pro 0/3）；P11 36 次 19/36；P16-R3 严格 7/10 |
 | `binary_direct` | AI 直接输出机器码/同长字节补丁 → Capstone 白名单/范围校验 → 写回（ELF/PE/Mach-O x86-64/arm64 + i386） | 6 组脚本化 verified（证明协议/校验/写回/gate 集成，**不代表真实 LLM 质量**） |
 | 范式 A（C 反编译-重编译） | Ghidra C → LLM → Patcherex2 → PoC | loop 闭环跑通；CWE121 函数级 PASS（1 个函数，非通用） |
 
@@ -852,12 +883,12 @@ L3 CGC POV replay（exploratory，不作 gate）：
 
 ## 6.1 A 类：修复能力缺口（核心研究线）
 
-### A1. 非 loop 家族 AI 修复仍为 0/6（P0）
-- **现象**：Path A 12 case × 2 DeepSeek 模型：loop 6/12 verified、non-loop 0/6；P3 triage 三例非 loop 全部失败（hard-multicall/hard-nonconst 注入成功但 native fail；hard-sprintf assembler 拒绝 `^`）。
+### A1. 非 loop 家族 AI 修复：3/6（单模型，剩余 3 例仍 0）（P0）
+- **正确口径（修正时间线混用）**：Path A 12-case 矩阵（2 模型）曾为 **0/6**；a8934fe 后 **hard-multicall / hard-sprintf / hard-nonconst 三例转为 AI VERIFIED → 3/6**（单模型 deepseek-flash；deepseek-v4-pro 0/3）；P16-R3 严格验证 7/10 含这三例。剩余非 loop 案例（CWE-121 public、UAF-noinput、heap-canary）仍 0；多模型/多二进制泛化未证明。
 - **根因**：leaf-only 汇编路径禁止外部调用（printLine/exit/strlen）→ 无法实现"拒绝并打印错误"的行为契约；符号/stub 解析靠人工 helper；模型语义（RepairSpec 约束后才有 guard）与真实行为契约之间存在差距；早期把"符号/空间"当根因是误判。
-- **证据**：`artifacts/generalization-2026-11-14/README.md`、`artifacts/path-a-call-whitelist-2026-11-14`、`docs/acceptance/p16-p20-2026-11-16.md`。
-- **影响**：项目只能证明 loop 家族可修；非 loop 是"通用性"最关键的一步。
-- **优先级**：P0（Phase-10 核心）。
+- **证据**：`artifacts/generalization-2026-11-14/README.md`、`artifacts/path-a-call-whitelist-2026-11-14`、`artifacts/ai-repair-planning-2026-11-15/README.md`、`artifacts/independent-verification-p16r3-2026-11-16/README.md`、`docs/acceptance/p16-r3-2026-11-16.md`。
+- **影响**：非 loop 已不是"全 0"，但离"通用"仍有 3 个具体案例与多模型泛化缺口；这是 Phase-10 的核心输入。
+- **优先级**：P0（Phase-10 核心，见组长决议）。
 
 ### A2. CWE-121 Behavior Contract 未满足（P0）
 - **现象**：plan valid / assembly valid / injection success，但 candidate 运行 `stdout="" / exit=0`；PoC 要求 `exit=1 + 精确 stderr`。
@@ -1094,14 +1125,14 @@ L3 CGC POV replay（exploratory，不作 gate）：
 |---|---|---|---|---|
 | 1 | 公开 benchmark 仅 2/24 verified | Phase-8C results：30 executed、2 verified、1 rejected、false_verified=0 | 不夸大：这是 deterministic fixture repair，不是通用能力 | A10/A11 + Phase-9/10 |
 | 2 | hidden 0 candidate / 0 verified | hidden 8/8 executed、0 verified | 明确"hidden 泛化未成立"；不得当 pass | A10 + Phase-13/15 |
-| 3 | 非 loop 0/6 | Path A 12 case × 2 模型；P3 triage 三例全失败 | 研究型非目标（NG-ai-leaf-only），按五步毕业路径推进 | A1 + Phase-10 |
+| 3 | 非 loop 3/6（单模型；其余 3 例 0） | Path A 12-case 曾 0/6；a8934fe 后 hard-multicall/sprintf/nonconst 3/3 AI verified（flash；v4-pro 0/3）；P16-R3 7/10 含 3 例；CWE-121 public/UAF/heap-canary 仍 0 | 从"研究非目标"升级为 Phase-10 首要攻关项（详见组长决议） | A1 + Phase-10 |
 | 4 | `heap-malloc` plan/ABI 冲突被撤回 | verifier 要求可派生 ABI block；该样本 branch_target_unknown / call_target_not_allowed / no_ret | 修 engine 的 plan 生成或 verifier 语义（**不放宽验证**） | A13 + Phase-11 |
 | 5 | Phase-8A 两个 deterministic claim 被撤回（8B 已闭合） | 8A disagreements 2 → 8B V8B-01..07 confirmed、0 disagreement、2/2 verified | 已闭合；保留回归测试防复发 | A12 |
 | 6 | G01–G30 真正语义能力缺失（G04/05/06/09–17） | readiness implemented 13 / partial 7 / missing 5 / not_run 1 / non_goal 4 | 以 blocker/next_action 为输入排期 | A4/A5/A6 + Phase-9/10 |
 | 7 | "implemented 13" 易被误读为能力晋级 | 规则是 code+test(+artifact/ground truth) 的探针级工程证据 | 对外固定表述"探针级"；capability graduation 仍为 0 | B10 文档口径 |
 | 8 | Provider 只 2 providers / 4 models | SiliconFlow intl 402、GLM-Z1 超时、DashScope 无 key；pooled 36/96=0.375，Wilson [0.285,0.475]；cost/seed null | 记录 not_satisfied + sha 证据；不外推 | A18 + Phase-15 |
 | 9 | served-model 身份不匹配 | 请求 deepseek-chat 实际 deepseek-flash（identity_ok=false） | 6/12 只归因 served model，不计 requested-model | A18；模型 registry K-04 |
-| 10 | non-loop 0/6、多 provider 统计缺失 | AI 路径非验收 owner；统计口径未建立 | 作为研究非目标，按五步毕业路径推进 | A11 + Phase-15 |
+| 10 | non-loop 3/6（单模型，剩余 3 例 0）、多 provider 统计缺失 | AI 路径非验收 owner；统计口径未建立；v4-pro 0/3 | 剩余案例按 Phase-10 攻关；多 provider 统计按 Phase-15 | A1/A11 + Phase-10/15 |
 | 11 | self-hosted Lima nightly not_run | 无 self-hosted runner；job inert 保护 | 配置 runner 或长期 not_run + signoff | B1 |
 | 12 | 浏览器证据分层 | Linux CI 无 Chromium 时显式 skip；本地 macOS Chrome 12/12 | 保留本地证据定位，不并入 CI 结论 | B4 |
 | 13 | 平台限制（不可用能力） | 32-bit Mach-O 原生/PE external PoC/macho x86_64 外部 PoC 在 arm64 仅 Rosetta 函数级 | 显式 unavailable/not_run，不伪造 | A7/A25 |
@@ -1182,7 +1213,7 @@ L3 CGC POV replay（exploratory，不作 gate）：
 |---|---|---|
 | F-01 CWE-121 Behavior Contract | RepairSpec 增加 `failure_behavior`（exit code/stderr 精确消息）+ 允许 `exit/fputs` 的**受控** syscall/PLT 模板 | CWE-121 至少 1 个候选独立 verified（stdout/stderr/exit 精确匹配） |
 | F-02 CWE-134 格式串 | 字段级 `PLAN_INVALID` 诊断 + 格式串修复策略（固定格式/边界） | 至少 1 个 PLAN 通过；否则明确 non_goal 并记录 |
-| F-03 非 loop 通用化 | 符号解析器（fputs/exit/strlen 等 PLT 模板）+ selective whitelist + call-graph 约束 | 非 loop verified 从 0/6 提升到 ≥2/6（多模型、多二进制） |
+| F-03 非 loop 通用化 | 符号解析器（fputs/exit/strlen 等 PLT 模板）+ selective whitelist + call-graph 约束 | 非 loop 从 3/6（单模型）提升到 ≥4/6 且多模型可复现；剩余 3 例至少攻克 1 例 |
 | F-04 整数/字符串/UAF 修复矩阵 | 每类 ≥2 fixture（PoC+regression+reference fix） | 每类 ≥1 独立 verified；否则 not_run |
 | F-05 60 次稳定性矩阵 | 冻结 profile + 断点续跑 + 成本预算 + 统计（Wilson CI） | 2 模型 × 10 case × 3 重复全部真实执行；结果可复现 |
 | F-06 模型矩阵 5–6 模型（如可获得） | SiliconFlow 国际余额/新 provider key | 5–6 模型 exact identity；served-only 不计 requested |
@@ -1250,7 +1281,7 @@ L3 CGC POV replay（exploratory，不作 gate）：
 
 | 问题 | 解决方案 | 验收标准 | 阶段 |
 |---|---|---|---|
-| A1 非 loop 0/6 | 符号解析器泛化（PLT 模板 fputs/exit/strlen）+ selective whitelist + call-graph 约束；RepairSpec 约束 failure_behavior；多模型矩阵 | 非 loop ≥2/6 独立 verified；多模型可复现 | Phase-10 |
+| A1 非 loop 3/6 → 4/6+ | 符号解析器泛化（PLT 模板 fputs/exit/strlen）+ selective whitelist + call-graph 约束；RepairSpec 约束 failure_behavior；多模型矩阵 | 剩余 3 例至少 1 例独立 verified；同一结果在 ≥2 模型复现；非 loop ≥4/6 | Phase-10（组长决议：优先于 Phase-8D/13/14） |
 | A2 CWE-121 Behavior Contract | RepairSpec 增加 `failure_behavior`（exit/stderr 精确）；受控 `exit/fputs` 调用模板；PoC expectations 进入 planner + gate 断言 | ≥1 个 CWE-121 候选独立 verified（stdout/stderr/exit 精确匹配） | Phase-10 |
 | A3 CWE-134 | 字段级 PLAN_INVALID 诊断子类型；格式串修复策略（固定格式/边界）；或明确 non_goal | ≥1 个 plan 通过；否则记录 non_goal + 证据 | Phase-10 |
 | A4 跨函数/别名/全局/结构体 | CFG/call graph + reaching-def + points-to + DWARF 类型；Phase-9 E-01..E-04 | cross-function fixture 上当前失败/新成功；不产生错误别名 | Phase-9 |
@@ -1346,7 +1377,7 @@ L3 CGC POV replay（exploratory，不作 gate）：
 4. **不伪造证据**：CI run id/head_sha/conclusion 必须机器核对；provenance/evidence 强绑定；
 5. **hidden 不泄漏**：hidden 语料不参与训练/调参，不进入公开报告；只公开 commitment/aggregate；
 6. **模型只产生候选**：AI 评审不能提升失败 gate；served-model-only 不计 requested-model；
-7. **负结果保留**：CWE-121/134、hidden 0、非 loop 0/6、AI 增量 0 等必须写入报告/LIMITATIONS。
+7. **负结果保留**：CWE-121/134、hidden 0、非 loop 剩余 3 例（3/6 口径）、AI 增量 0 等必须写入报告/LIMITATIONS。
 
 ## 7.6 资源与风险
 
@@ -1475,7 +1506,7 @@ L3 CGC POV replay（exploratory，不作 gate）：
 
 | 检查 | 结果 |
 |---|---|
-| 新分支在 GitHub | `refs/heads/final/consolidated-2026-11-16` = `4322a51811463eedcfee98bae6e03ae48b6c911f` |
+| 新分支在 GitHub | `refs/heads/final/consolidated-2026-11-16`；tip 以 `git log -1` 为准（初版 4322a518…；执行记录 fb807e2；时间戳修正 8d4ba1c；**本次修订后又新增 docs 提交，见分支日志**） |
 | 新分支历史包含两会话 commit | 是（`ec503e4` 祖先链包含 `3d5d0f0`、`72db891`、`aa45b36`、`a1755a5`、`090ad94`、`0aa9f54`、`956ee10`、`f65ed53`、`fd6ca41`、`a8934fe`、`2bfa112`、`bd9cbf6`、`227f45b`、`4a7b235`） |
 | 补归档证据 | `artifacts/marcx-repair-2026-11-14/`（10 文件）、`artifacts/marcx-capacity-gui-2026-11-14/`、6 个 release-gate bundle、4 份 release note 均在树中 |
 | 整合文档 | `docs/consolidation/` 5 份（总报告/两会话分析/早期历史/整合说明） |
