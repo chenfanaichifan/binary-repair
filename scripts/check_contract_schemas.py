@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the six Phase-7 JSON contracts and their fixtures.
+"""Validate all registered JSON contracts and their fixtures.
 
 The contracts directory is the machine-readable interface between the Phase-7
 modules (acceptance intelligence, capability universe, gap registry, repair
@@ -7,7 +7,7 @@ state machine, evidence binding, reflection engine) and the audit/CI layers.  A
 contract is only useful if it is strict and if valid samples pass while invalid
 samples are rejected, so this checker:
 
-* loads exactly the six schemas and validates their own structure (``$schema``,
+* loads every registered schema and validates its own structure (``$schema``,
   ``$id``, title/description, ``type=object``, non-empty ``required``,
   non-empty enums, compilable patterns, ASCII-only schema text);
 * validates 6 committed valid fixtures against their schema (must pass) and 6
@@ -55,6 +55,9 @@ SCHEMA_NAMES: tuple[str, ...] = (
     "benchmark-manifest-v2",
     "hidden-benchmark-commitment",
     "benchmark-results-v2",
+    "phase8d-capability-universe",
+    "acceptance-2",
+    "phase8d-experiment-bundle",
 )
 CONTRACTS_DIRNAME = "contracts"
 FIXTURES_DIRNAME = "artifacts/contract-fixtures-2026-11-16"
@@ -918,6 +921,9 @@ CONTRACT_SEMANTICS = {
     "benchmark-manifest-v2": _benchmark_manifest_v2_semantics,
     "hidden-benchmark-commitment": _hidden_commitment_semantics,
     "benchmark-results-v2": _benchmark_results_v2_semantics,
+    "phase8d-capability-universe": lambda instance: [],
+    "acceptance-2": lambda instance: [],
+    "phase8d-experiment-bundle": lambda instance: [],
 }
 
 
@@ -1265,7 +1271,7 @@ def _format_text(report: Mapping[str, Any]) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="validate the six Phase-7 JSON contracts and fixtures")
+        description="validate all registered JSON contracts and fixtures")
     parser.add_argument("--root", type=Path, default=ROOT,
                         help="repository root the SUMS paths are relative to")
     parser.add_argument("--contracts-dir", type=Path, default=None,

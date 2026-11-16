@@ -1,0 +1,446 @@
+{
+  "capability_promotion": false,
+  "decisions": [
+    {
+      "auto_promotion": false,
+      "checks": [
+        {
+          "detail": "public verification evidence is required",
+          "id": "generalization.public_verified",
+          "status": "passed"
+        },
+        {
+          "detail": "hidden verification is required",
+          "id": "generalization.hidden_verified",
+          "status": "failed"
+        },
+        {
+          "detail": "at least one independently verified hidden sample is required",
+          "id": "generalization.hidden_verified_count",
+          "status": "failed"
+        },
+        {
+          "detail": "holdout verification is required",
+          "id": "generalization.holdout_verified",
+          "status": "failed"
+        },
+        {
+          "detail": "regression must pass on public and hidden cases",
+          "id": "generalization.regression_pass",
+          "status": "passed"
+        },
+        {
+          "detail": "hidden/aggregate false_verified must be 0",
+          "id": "generalization.false_verified",
+          "status": "passed"
+        },
+        {
+          "detail": "hidden commitment digest is required",
+          "id": "generalization.hidden_commitment_sha256",
+          "status": "passed"
+        },
+        {
+          "detail": "hidden aggregate digest is required",
+          "id": "generalization.hidden_aggregate_sha256",
+          "status": "passed"
+        },
+        {
+          "detail": "generalization evidence refs are required",
+          "id": "generalization.evidence_refs",
+          "status": "passed"
+        },
+        {
+          "detail": "prior levels must be evidenced before the next transition",
+          "id": "prior_state_evidence_complete",
+          "status": "passed"
+        },
+        {
+          "detail": "prior evidence refs are required",
+          "id": "prior_evidence_refs",
+          "status": "passed"
+        },
+        {
+          "detail": "auto-promotion must be false",
+          "id": "auto_promotion",
+          "status": "passed"
+        },
+        {
+          "detail": "no required evidence may be not_run/blocked",
+          "id": "no_not_run_evidence",
+          "status": "passed"
+        },
+        {
+          "detail": "record status may not be not_run/blocked",
+          "id": "record_status",
+          "status": "passed"
+        }
+      ],
+      "decision": "denied",
+      "evidence_refs": [
+        "artifacts/phase8c-benchmark-2026-11-16/samples/stack-strcpy-x86_64/verifier-report.json",
+        "artifacts/phase8c-hidden-2026-11-16/aggregate.json#aggregate",
+        "benchmark/phase8c/hidden-commitment.json#commitment_sha256",
+        "benchmark/phase8c/manifest.json#samples[id=stack-strcpy-x86_64]",
+        "benchmark/phase8c/results.json#samples[id=stack-strcpy-x86_64]"
+      ],
+      "from_state": "independently_verified",
+      "human_review_required": true,
+      "independent_approval_required": false,
+      "kind": "phase8d_promotion_decision",
+      "not_run_is_pass": false,
+      "ok": false,
+      "record_id": "phase8c-stack-strcpy-x86_64",
+      "schema_version": 1,
+      "target_state": "generalized",
+      "violations": [
+        "generalization.hidden_verified: hidden verification is required",
+        "generalization.hidden_verified_count: at least one independently verified hidden sample is required",
+        "generalization.holdout_verified: holdout verification is required"
+      ]
+    },
+    {
+      "auto_promotion": false,
+      "checks": [
+        {
+          "detail": "public verification evidence is required",
+          "id": "generalization.public_verified",
+          "status": "passed"
+        },
+        {
+          "detail": "hidden verification is required",
+          "id": "generalization.hidden_verified",
+          "status": "failed"
+        },
+        {
+          "detail": "at least one independently verified hidden sample is required",
+          "id": "generalization.hidden_verified_count",
+          "status": "failed"
+        },
+        {
+          "detail": "holdout verification is required",
+          "id": "generalization.holdout_verified",
+          "status": "failed"
+        },
+        {
+          "detail": "regression must pass on public and hidden cases",
+          "id": "generalization.regression_pass",
+          "status": "passed"
+        },
+        {
+          "detail": "hidden/aggregate false_verified must be 0",
+          "id": "generalization.false_verified",
+          "status": "passed"
+        },
+        {
+          "detail": "hidden commitment digest is required",
+          "id": "generalization.hidden_commitment_sha256",
+          "status": "passed"
+        },
+        {
+          "detail": "hidden aggregate digest is required",
+          "id": "generalization.hidden_aggregate_sha256",
+          "status": "passed"
+        },
+        {
+          "detail": "generalization evidence refs are required",
+          "id": "generalization.evidence_refs",
+          "status": "passed"
+        },
+        {
+          "detail": "no unresolved blockers may remain before promotion",
+          "id": "generalization.no_unresolved_blockers",
+          "status": "failed"
+        },
+        {
+          "detail": "a human/independent approver id is required",
+          "id": "approval.approved_by",
+          "status": "failed"
+        },
+        {
+          "detail": "approval must be independent of the repair/verification author",
+          "id": "approval.independent",
+          "status": "failed"
+        },
+        {
+          "detail": "approval role must be an independent reviewer/security/governance role",
+          "id": "approval.role",
+          "status": "failed"
+        },
+        {
+          "detail": "approval must cite an auditable approval reference",
+          "id": "approval.approval_ref",
+          "status": "failed"
+        },
+        {
+          "detail": "approval date must be YYYY-MM-DD",
+          "id": "approval.approved_at",
+          "status": "failed"
+        },
+        {
+          "detail": "prior levels must be evidenced before the next transition",
+          "id": "prior_state_evidence_complete",
+          "status": "passed"
+        },
+        {
+          "detail": "prior evidence refs are required",
+          "id": "prior_evidence_refs",
+          "status": "passed"
+        },
+        {
+          "detail": "auto-promotion must be false",
+          "id": "auto_promotion",
+          "status": "passed"
+        },
+        {
+          "detail": "no required evidence may be not_run/blocked",
+          "id": "no_not_run_evidence",
+          "status": "passed"
+        },
+        {
+          "detail": "record status may not be not_run/blocked",
+          "id": "record_status",
+          "status": "passed"
+        }
+      ],
+      "decision": "denied",
+      "evidence_refs": [
+        "artifacts/phase8c-benchmark-2026-11-16/samples/stack-strcpy-x86_64/verifier-report.json",
+        "artifacts/phase8c-hidden-2026-11-16/aggregate.json#aggregate",
+        "benchmark/phase8c/hidden-commitment.json#commitment_sha256",
+        "benchmark/phase8c/manifest.json#samples[id=stack-strcpy-x86_64]",
+        "benchmark/phase8c/results.json#samples[id=stack-strcpy-x86_64]"
+      ],
+      "from_state": "independently_verified",
+      "human_review_required": true,
+      "independent_approval_required": true,
+      "kind": "phase8d_promotion_decision",
+      "not_run_is_pass": false,
+      "ok": false,
+      "record_id": "phase8c-stack-strcpy-x86_64",
+      "schema_version": 1,
+      "target_state": "promoted",
+      "violations": [
+        "illegal transition independently_verified->promoted; legal next is 'generalized'",
+        "generalization.hidden_verified: hidden verification is required",
+        "generalization.hidden_verified_count: at least one independently verified hidden sample is required",
+        "generalization.holdout_verified: holdout verification is required",
+        "generalization.no_unresolved_blockers: no unresolved blockers may remain before promotion",
+        "approval.approved_by: a human/independent approver id is required",
+        "approval.independent: approval must be independent of the repair/verification author",
+        "approval.role: approval role must be an independent reviewer/security/governance role",
+        "approval.approval_ref: approval must cite an auditable approval reference",
+        "approval.approved_at: approval date must be YYYY-MM-DD"
+      ]
+    },
+    {
+      "auto_promotion": false,
+      "checks": [
+        {
+          "detail": "independent verifier must decide verified",
+          "id": "verification.decision",
+          "status": "failed"
+        },
+        {
+          "detail": "verifier must be independent",
+          "id": "verification.independent",
+          "status": "passed"
+        },
+        {
+          "detail": "an oracle must actually execute",
+          "id": "verification.oracle_executed",
+          "status": "passed"
+        },
+        {
+          "detail": "false_verified must be exactly 0",
+          "id": "verification.false_verified",
+          "status": "passed"
+        },
+        {
+          "detail": "bounded regression evidence must pass",
+          "id": "verification.regression_pass",
+          "status": "passed"
+        },
+        {
+          "detail": "verification evidence refs are required",
+          "id": "verification.evidence_refs",
+          "status": "passed"
+        },
+        {
+          "detail": "prior levels must be evidenced before the next transition",
+          "id": "prior_state_evidence_complete",
+          "status": "passed"
+        },
+        {
+          "detail": "prior evidence refs are required",
+          "id": "prior_evidence_refs",
+          "status": "passed"
+        },
+        {
+          "detail": "auto-promotion must be false",
+          "id": "auto_promotion",
+          "status": "passed"
+        },
+        {
+          "detail": "no required evidence may be not_run/blocked",
+          "id": "no_not_run_evidence",
+          "status": "passed"
+        },
+        {
+          "detail": "record status may not be not_run/blocked",
+          "id": "record_status",
+          "status": "passed"
+        }
+      ],
+      "decision": "denied",
+      "evidence_refs": [
+        "artifacts/phase8c-benchmark-2026-11-16/disagreements.json#0",
+        "artifacts/phase8c-benchmark-2026-11-16/samples/heap-malloc/verifier-report.json",
+        "benchmark/phase8c/manifest.json#samples[id=heap-malloc]",
+        "benchmark/phase8c/results.json#samples[id=heap-malloc]"
+      ],
+      "from_state": "candidate_generated",
+      "human_review_required": false,
+      "independent_approval_required": false,
+      "kind": "phase8d_promotion_decision",
+      "not_run_is_pass": false,
+      "ok": false,
+      "record_id": "phase8c-heap-malloc",
+      "schema_version": 1,
+      "target_state": "independently_verified",
+      "violations": [
+        "verification.false_verified_internal=1 must be 0",
+        "verification.decision: independent verifier must decide verified"
+      ]
+    },
+    {
+      "auto_promotion": false,
+      "checks": [
+        {
+          "detail": "candidate sha256 is required",
+          "id": "candidate.candidate_sha256",
+          "status": "failed"
+        },
+        {
+          "detail": "patch plan sha256 is required",
+          "id": "candidate.patch_plan_sha256",
+          "status": "failed"
+        },
+        {
+          "detail": "candidate integrity evidence is required",
+          "id": "candidate.integrity_evidence_refs",
+          "status": "failed"
+        },
+        {
+          "detail": "prior levels must be evidenced before the next transition",
+          "id": "prior_state_evidence_complete",
+          "status": "passed"
+        },
+        {
+          "detail": "prior evidence refs are required",
+          "id": "prior_evidence_refs",
+          "status": "passed"
+        },
+        {
+          "detail": "auto-promotion must be false",
+          "id": "auto_promotion",
+          "status": "passed"
+        },
+        {
+          "detail": "no required evidence may be not_run/blocked",
+          "id": "no_not_run_evidence",
+          "status": "passed"
+        },
+        {
+          "detail": "record status may not be not_run/blocked",
+          "id": "record_status",
+          "status": "passed"
+        }
+      ],
+      "decision": "denied",
+      "evidence_refs": [],
+      "from_state": "analysis_only",
+      "human_review_required": false,
+      "independent_approval_required": false,
+      "kind": "phase8d_promotion_decision",
+      "not_run_is_pass": false,
+      "ok": false,
+      "record_id": "phase8c-hidden-runtime",
+      "schema_version": 1,
+      "target_state": "candidate_generated",
+      "violations": [
+        "candidate.candidate_sha256: candidate sha256 is required",
+        "candidate.patch_plan_sha256: patch plan sha256 is required",
+        "candidate.integrity_evidence_refs: candidate integrity evidence is required"
+      ]
+    }
+  ],
+  "generated_at": "2026-11-17T00:00:00Z",
+  "inputs": {
+    "hidden_aggregate": {
+      "path": "artifacts/phase8c-hidden-2026-11-16/aggregate.json",
+      "sha256": "18f7e39a396304307367fa64abf63fe35814ecd3c0200f97767912e94da91ef2"
+    },
+    "hidden_commitment": {
+      "path": "benchmark/phase8c/hidden-commitment.json",
+      "sha256": "3ebf29016bd2fae21f2f078de66ebde7fccbf503493f1bbe777feab5b573755f"
+    },
+    "public_manifest": {
+      "path": "benchmark/phase8c/manifest.json",
+      "sha256": "d46f06bfef59ae7116d888ea2b5810fcf518a9d5c5a178a5cef73996fac72b78"
+    },
+    "public_results": {
+      "path": "benchmark/phase8c/results.json",
+      "sha256": "22f19119dcfc8c9609875ab26b93c3c7d2012dd7224043f01ba556eb0da68edf"
+    }
+  },
+  "kind": "phase8d_promotion_evaluation",
+  "limitations": [
+    "no capability was promoted; all Phase-8C transitions above are denied",
+    "the public fixture's verification is not hidden or holdout generalization evidence",
+    "heap-malloc's independent ABI rejection is preserved; its deterministic claim is withdrawn",
+    "hidden has 0 candidates and 0 independently verified samples; hidden generalisation is not established",
+    "a promotion decision would also require independent human approval and a complete generalized evidence bundle",
+    "not_run/blocked evidence is never treated as a pass"
+  ],
+  "policy": {
+    "auto_promotion": false,
+    "hidden_and_holdout_required_for": [
+      "generalized",
+      "promoted"
+    ],
+    "human_review_required_for": [
+      "generalized",
+      "promoted"
+    ],
+    "legal_next": {
+      "analysis_only": "candidate_generated",
+      "candidate_generated": "independently_verified",
+      "discovered": "analysis_only",
+      "generalized": "promoted",
+      "independently_verified": "generalized"
+    },
+    "not_run_is_pass": false,
+    "states": [
+      "discovered",
+      "analysis_only",
+      "candidate_generated",
+      "independently_verified",
+      "generalized",
+      "promoted"
+    ]
+  },
+  "purpose": "Evaluate Phase-8C evidence through the Phase-8D promotion gate; no capability promotion.",
+  "schema_version": 1,
+  "summary": {
+    "allowed_count": 0,
+    "capability_promotion": false,
+    "decision_count": 4,
+    "denied_count": 4,
+    "hidden_verified_count": 0,
+    "internal_withdrawn": 1,
+    "promoted_count": 0,
+    "public_verified_count": 2,
+    "published_false_verified": 0
+  },
+  "verification_is_not_capability": true
+}

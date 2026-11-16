@@ -1691,14 +1691,14 @@
       },
       {
         "path": "docs/status/claims.json",
-        "sha256": "8d9cc585c574daf33b7b8cc0548b3fe8593eb1d62187690c0b8b0e0da6150710"
+        "sha256": "f4a2c22615bebf9dab9acf3157beb42c1efee6f47106a22b8464a12ee5476e3c"
       },
       {
         "path": "artifacts/capability-universe-2026-11-15/methodology.json",
         "sha256": "e6b35563c8df7755b78a147e2e05388fb8136536d910290e6a93454ac775acc7"
       }
     ],
-    "source_digest_sha256": "8837190c0505dacd41ba5fe48b6b30501b046b86e8fd723a8d4348ba88cba0ff"
+    "source_digest_sha256": "6f54c3142f1355b4f0f17f29515c6b97465d277005b4d244d02b44501bee6d6c"
   },
   "limitations": [
     "This registry maps the declared universe; it does not prove new repair capability.",

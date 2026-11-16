@@ -59,3 +59,6 @@ worklogs/
 
 # Local dataset binaries (large; fetched separately)
 datasets/
+
+# Phase-8D private hidden-attribution detail (aggregate is public; raw report is not)
+artifacts/phase8d-hidden-attribution-2026-11-17/private/

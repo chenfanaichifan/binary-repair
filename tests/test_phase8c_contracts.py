@@ -68,19 +68,21 @@ def test_v2_schemas_exist_and_are_structurally_valid() -> None:
         assert all(ord(char) < 128 for char in raw), name
 
 
-def test_v2_fixtures_exist_and_checker_registers_seventeen() -> None:
-    assert len(checker.SCHEMA_NAMES) == 17
+def test_v2_fixtures_exist_and_checker_registers_at_least_seventeen() -> None:
+    # Phase-8C introduced exactly 17 contracts. Later phases may add contracts
+    # (Phase-8D adds three); the historical 17 must remain registered and green.
+    assert len(checker.SCHEMA_NAMES) >= 17
     for name in V2_SCHEMAS:
         assert (FIXTURES / f"{name}.valid.json").is_file(), name
         assert (FIXTURES / f"{name}.invalid.json").is_file(), name
     report = checker.run_check(ROOT, check_sums=True)
     assert report["ok"] is True, report["violations"]
-    assert report["schema_count"] == 17
-    assert report["fixtures"]["valid_passed"] == 17
-    assert report["fixtures"]["invalid_rejected"] == 17
+    assert report["schema_count"] == len(checker.SCHEMA_NAMES)
+    assert report["fixtures"]["valid_passed"] == len(checker.SCHEMA_NAMES)
+    assert report["fixtures"]["invalid_rejected"] == len(checker.SCHEMA_NAMES)
     lines = [line for line in SUMS.read_text(encoding="utf-8").splitlines()
              if line.strip()]
-    assert len(lines) == 51
+    assert len(lines) == len(checker.SCHEMA_NAMES) * 3
 
 
 def test_old_contract_fixtures_and_artifacts_stay_green() -> None:

@@ -1,0 +1,24 @@
+{
+  "baseline_sha": "f1bb1f41eba1e0be61be09cea56091e8a03a9896",
+  "generated_at": "2026-11-17T00:00:00Z",
+  "kind": "phase8d_experiment_bundle",
+  "limitations": [
+    "The bundle binds evidence; it does not re-run the experiments or independently verify every claim.",
+    "No experiment changes a capability state; all promotion_effect values are none.",
+    "The Phase-8D audit gaps remain open until executed experiments and independent evidence close them."
+  ],
+  "phase": "Phase-8D",
+  "provenance": {
+    "builder": "scripts/build_phase8d_experiment_bundle.py",
+    "execution": "binds previously produced artifacts; does not execute them",
+    "hidden": "aggregate-only; no hidden bytes/ids/paths"
+  },
+  "schema_version": 1,
+  "summary": {
+    "capability_promotion": false,
+    "experiment_count": 10,
+    "false_verified_observed": 0,
+    "not_run_count": 0,
+    "verified_true_count": 0
+  }
+}

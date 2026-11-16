@@ -885,5 +885,156 @@
       "ubuntu_verification_run_id": 43744573230,
       "final_gate_sha_note": "final local nightly gate is recorded in the evidence branch; this CI run covers the gated code SHA"
     }
+  },
+  "phase8d_open_world": {
+    "phase": "Phase-8D",
+    "base_sha": "f1bb1f41eba1e0be61be09cea56091e8a03a9896",
+    "phase8c_release_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+    "phase8c_evidence_tip_sha": "ec503e4b1df53ad39fa836bd34d93a18564d78f9",
+    "status": "delivered_evidence_only_no_capability_promotion",
+    "capability_promotion_this_phase": false,
+    "new_vulnerability_repair_capability_this_phase": false,
+    "capability_universe": {
+      "unit_count": 297,
+      "dimension_count": 20,
+      "declared_cell_count": 240,
+      "state_counts": {
+        "discovered": 98,
+        "not_applicable": 131,
+        "unmeasurable": 24,
+        "unknown": 7,
+        "independently_verified": 2,
+        "candidate_generated": 1,
+        "analysis_only": 32,
+        "unsupported": 2,
+        "generalized": 0,
+        "promoted": 0,
+        "not_run": 0
+      },
+      "public_runtime_denominator": 24,
+      "public_runtime_verified": 2,
+      "hidden_runtime_denominator": 6,
+      "hidden_runtime_verified": 0,
+      "outside_catalog_unknown_count": null,
+      "outside_catalog_state": "unmeasurable"
+    },
+    "gap_registry": {
+      "record_count": 8,
+      "status": "all_open",
+      "categories": {
+        "acceptance_gap": 2,
+        "discovery_gap": 1,
+        "governance_gap": 1,
+        "hidden_evidence_gap": 1,
+        "isolation_gap": 1,
+        "reflection_gap": 1,
+        "verifier_root_cause_gap": 1
+      }
+    },
+    "acceptance_2": {
+      "layers": "L0-L7",
+      "mutation_count": 14,
+      "mutations_detected": 14,
+      "false_accepts": 0,
+      "false_rejects_in_fixtures": 0,
+      "inconclusive_cases": 2,
+      "not_run_cases": 2,
+      "historical_replay_ok": true
+    },
+    "heap_malloc": {
+      "verdict": "rejected",
+      "candidate_sha256": "ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73",
+      "primary_roots": [
+        "generator_plan_incorrect",
+        "abi_proof_insufficient"
+      ],
+      "contributing_roots": [
+        "verifier_rule_incorrect"
+      ],
+      "rule_changed": false
+    },
+    "hidden_attribution": {
+      "runtime_count": 6,
+      "runtime_executed": 6,
+      "runtime_candidates": 0,
+      "runtime_verified": 0,
+      "first_blocking_stage_counts": {
+        "detection": 6
+      },
+      "no_candidate_reason_counts": {
+        "detection_missed": 6
+      },
+      "analysis_only_count": 2,
+      "public_material": "anonymous aggregate only"
+    },
+    "external_knowledge": {
+      "cwe_version": "5.0",
+      "entries": 984,
+      "mapped_candidates": 232,
+      "unmapped": 752,
+      "new_relative_to_snapshot": 15,
+      "support_claimed": false,
+      "live_fetch_used_for_analysis": false
+    },
+    "discovery": {
+      "variant_count": 4,
+      "engine_differences": 2,
+      "engine_not_run_or_unsupported": 2,
+      "input_mutations": 11,
+      "mutations_executed": 11,
+      "mechanism_effective_run_count": 6,
+      "mechanism_integrated_run_count": 3,
+      "mechanism_standalone_run_count": 3,
+      "sample_based_status": "not_run"
+    },
+    "hidden_isolation": {
+      "operational_checks": "passed",
+      "cryptographic_isolation": false,
+      "same_uid_readable": true
+    },
+    "promotion": {
+      "evaluated": 4,
+      "denied": 4,
+      "allowed": 0,
+      "promoted": 0,
+      "hidden_verified": 0
+    },
+    "evidence": {
+      "baseline": "artifacts/phase8d-baseline-2026-11-17/baseline.json",
+      "capability_universe": "artifacts/phase8d-capability-universe-2026-11-17/registry.json",
+      "gap_registry": "artifacts/phase8d-gap-registry-2026-11-17/gaps.json",
+      "acceptance_2": "artifacts/phase8d-acceptance-2-2026-11-17/report.json",
+      "heap_malloc": "artifacts/phase8d-heap-malloc-abi-2026-11-17/abi-analysis.json",
+      "hidden_attribution": "artifacts/phase8d-hidden-attribution-2026-11-17/aggregate.json",
+      "external_knowledge": "artifacts/phase8d-external-knowledge-2026-11-17/external-knowledge.json",
+      "metamorphic_discovery": "artifacts/phase8d-discovery-2026-11-17/discovery.json",
+      "discovery_registry": "artifacts/phase8d-discovery-registry-2026-11-17/registry.json",
+      "hidden_isolation": "artifacts/phase8d-hidden-isolation-2026-11-17/isolation.json",
+      "promotion": "artifacts/phase8d-promotion-2026-11-17/promotion.json",
+      "experiments": "artifacts/phase8d-experiments-2026-11-17/experiments.json",
+      "release_note": "docs/release-2026-11-17-phase8d.md"
+    },
+    "not_claimed": [
+      "hidden_generalisation",
+      "arbitrary_binary_repair",
+      "whole_program_semantic_equivalence",
+      "cross_compiler_support",
+      "capability_promotion",
+      "phase8e_9_to_16_completion"
+    ],
+    "contracts": {
+      "added": [
+        "phase8d-capability-universe",
+        "acceptance-2",
+        "phase8d-experiment-bundle"
+      ],
+      "total": 20
+    },
+    "experiments": {
+      "count": 10,
+      "verified_true": 0,
+      "promotion_effect": "none",
+      "bundle": "artifacts/phase8d-experiments-2026-11-17/experiments.json"
+    }
   }
 }

@@ -1,0 +1,626 @@
+{
+  "case_count": 18,
+  "false_accept_cases": [],
+  "false_reject_cases": [],
+  "false_reject_gaps": [
+    {
+      "case_id": "correct-new-layout-unknown-abi",
+      "expected": "not_run",
+      "observed": "not_run",
+      "reason": "ABI metadata is not derivable; the detector refuses a verified claim rather than guessing an ABI block"
+    },
+    {
+      "case_id": "correct-candidate-inconclusive",
+      "expected": "inconclusive",
+      "observed": "inconclusive",
+      "reason": "the acceptance state is explicitly inconclusive; a correct candidate cannot be promoted by this audit alone"
+    },
+    {
+      "case_id": "whole-image-semantic-equivalence",
+      "expected": "unsupported",
+      "observed": "not modelled as verified",
+      "reason": "full semantic equivalence is undecidable in general; Acceptance 2.0 keeps whole_image non-promotable"
+    }
+  ],
+  "generated_at": "2026-11-17T00:00:00Z",
+  "historical_replay": {
+    "legacy": {
+      "available": true,
+      "covered_am_classes": [
+        "AM01",
+        "AM02",
+        "AM03",
+        "AM04",
+        "AM05",
+        "AM06",
+        "AM07",
+        "AM08",
+        "AM09",
+        "AM10",
+        "AM11",
+        "AM12",
+        "AM13",
+        "AM14",
+        "AM15",
+        "AM16",
+        "AM17",
+        "AM18",
+        "AM19",
+        "AM20",
+        "AM21",
+        "AM22",
+        "AM23",
+        "AM24",
+        "AM25",
+        "AM26",
+        "AM27",
+        "AM28"
+      ],
+      "legacy_schema_version": 1,
+      "legacy_verified_claims": null,
+      "policy": "read-only historical facts; no legacy verified claim is upgraded",
+      "source_case_count": 62
+    },
+    "ok": true,
+    "replay": {
+      "case_id": "positive-new-layout",
+      "decision": "not_run",
+      "historical_note": "historical replay: legacy acceptance registries are replayed as not_run, never promoted",
+      "reasons": [
+        "unsupported acceptance registry version '1.0.0'; historical replay is not upgraded"
+      ],
+      "upgraded": false
+    }
+  },
+  "kind": "phase8d_acceptance_2",
+  "layers": [
+    {
+      "id": "L0",
+      "title": "input identity and basic integrity"
+    },
+    {
+      "id": "L1",
+      "title": "structural/target/scope integrity"
+    },
+    {
+      "id": "L2",
+      "title": "patch plan and byte replay integrity"
+    },
+    {
+      "id": "L3",
+      "title": "ABI and control-flow integrity"
+    },
+    {
+      "id": "L4",
+      "title": "vulnerability elimination"
+    },
+    {
+      "id": "L5",
+      "title": "semantic preservation"
+    },
+    {
+      "id": "L6",
+      "title": "regression and robustness"
+    },
+    {
+      "id": "L7",
+      "title": "evidence, independence and non-promotion"
+    }
+  ],
+  "limitations": [
+    "Acceptance 2.0 is a pure rule/mutation audit, not a replacement for an independent binary verifier; verified means the declared rules passed, not that arbitrary semantic equivalence was proved.",
+    "The L0-L7 rules are deterministic and offline; no network or AI provider is used.",
+    "Correct-but-new-layout candidates with unavailable ABI/unknown semantic state are reported not_run/inconclusive, not verified; these remain measured False Reject capability gaps.",
+    "Whole-image/full semantic equivalence is not modelled as a verifiable claim; the audit never promotes it.",
+    "Rule mutation coverage is finite and cannot prove the rule set complete; it only proves the tested mutations were detected.",
+    "Historical AM01-AM28 cases are replayed as facts and old-version evidence is never silently upgraded to the new registry."
+  ],
+  "matched": 18,
+  "mutation_results": {
+    "by_family": {
+      "evidence": {
+        "detected": 2,
+        "false_accept": 0,
+        "total": 2
+      },
+      "layout": {
+        "detected": 2,
+        "false_accept": 0,
+        "total": 2
+      },
+      "oracle": {
+        "detected": 2,
+        "false_accept": 0,
+        "total": 2
+      },
+      "regression": {
+        "detected": 1,
+        "false_accept": 0,
+        "total": 1
+      },
+      "rule": {
+        "detected": 1,
+        "false_accept": 0,
+        "total": 1
+      },
+      "scope": {
+        "detected": 2,
+        "false_accept": 0,
+        "total": 2
+      },
+      "state": {
+        "detected": 4,
+        "false_accept": 0,
+        "total": 4
+      }
+    },
+    "detected": 14,
+    "detection_rate": 1.0,
+    "false_accepts": 0,
+    "mutations": [
+      {
+        "decision": "rejected",
+        "description": "disable a required patch rule in the registry",
+        "detected": true,
+        "detected_rules": [
+          "L7.registry_integrity"
+        ],
+        "expected_rule": "L7.registry_integrity",
+        "false_accept": false,
+        "family": "rule",
+        "mutation_id": "M-rule-required-disabled",
+        "reasons": [
+          "failed required rules: L7.registry_integrity"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "remove all evidence records",
+        "detected": true,
+        "detected_rules": [
+          "L7.evidence_refs"
+        ],
+        "expected_rule": "L7.evidence_refs",
+        "false_accept": false,
+        "family": "evidence",
+        "mutation_id": "M-evidence-refs-missing",
+        "reasons": [
+          "failed required rules: L7.evidence_refs"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "replace an evidence digest with a malformed value",
+        "detected": true,
+        "detected_rules": [
+          "L7.evidence_refs"
+        ],
+        "expected_rule": "L7.evidence_refs",
+        "false_accept": false,
+        "family": "evidence",
+        "mutation_id": "M-evidence-hash-tampered",
+        "reasons": [
+          "failed required rules: L7.evidence_refs"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "inflate the acceptance scope to whole_program",
+        "detected": true,
+        "detected_rules": [
+          "L1.scope_policy",
+          "L7.claims"
+        ],
+        "expected_rule": "L1.scope_policy",
+        "false_accept": false,
+        "family": "scope",
+        "mutation_id": "M-scope-inflation",
+        "reasons": [
+          "failed required rules: L1.scope_policy, L7.claims"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "claim verified on an analysis_only state",
+        "detected": true,
+        "detected_rules": [
+          "L1.analysis_only_state",
+          "L1.scope_policy",
+          "L7.claims",
+          "L7.no_state_promotion"
+        ],
+        "expected_rule": "L7.no_state_promotion",
+        "false_accept": false,
+        "family": "state",
+        "mutation_id": "M-analysis-only-verified",
+        "reasons": [
+          "failed required rules: L1.scope_policy, L1.analysis_only_state, L7.no_state_promotion, L7.claims"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "claim verified on a not_run state",
+        "detected": true,
+        "detected_rules": [
+          "L7.no_state_promotion"
+        ],
+        "expected_rule": "L7.no_state_promotion",
+        "false_accept": false,
+        "family": "state",
+        "mutation_id": "M-not-run-verified",
+        "reasons": [
+          "failed required rules: L7.no_state_promotion"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "claim verified on an inconclusive state",
+        "detected": true,
+        "detected_rules": [
+          "L7.no_state_promotion"
+        ],
+        "expected_rule": "L7.no_state_promotion",
+        "false_accept": false,
+        "family": "state",
+        "mutation_id": "M-inconclusive-verified",
+        "reasons": [
+          "failed required rules: L7.no_state_promotion"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "remove the oracle execution evidence",
+        "detected": true,
+        "detected_rules": [
+          "L4.oracle_executed"
+        ],
+        "expected_rule": "L4.oracle_executed",
+        "false_accept": false,
+        "family": "oracle",
+        "mutation_id": "M-oracle-not-run",
+        "reasons": [
+          "failed required rules: L4.oracle_executed"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "use the generator verdict as the oracle",
+        "detected": true,
+        "detected_rules": [
+          "L4.independent_oracle"
+        ],
+        "expected_rule": "L4.independent_oracle",
+        "false_accept": false,
+        "family": "oracle",
+        "mutation_id": "M-oracle-self-verdict",
+        "reasons": [
+          "failed required rules: L4.independent_oracle"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "resized candidate without a patch plan",
+        "detected": true,
+        "detected_rules": [
+          "L2.patch_plan"
+        ],
+        "expected_rule": "L2.patch_plan",
+        "false_accept": false,
+        "family": "layout",
+        "mutation_id": "M-layout-no-plan",
+        "reasons": [
+          "failed required rules: L2.patch_plan"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "layout candidate without ABI blocks",
+        "detected": true,
+        "detected_rules": [
+          "L3.abi_blocks"
+        ],
+        "expected_rule": "L3.abi_blocks",
+        "false_accept": false,
+        "family": "layout",
+        "mutation_id": "M-abi-missing",
+        "reasons": [
+          "failed required rules: L3.abi_blocks"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "unauthorized associated rodata/header change",
+        "detected": true,
+        "detected_rules": [
+          "L2.associated_changes"
+        ],
+        "expected_rule": "L2.associated_changes",
+        "false_accept": false,
+        "family": "scope",
+        "mutation_id": "M-associated-unauthorized",
+        "reasons": [
+          "failed required rules: L2.associated_changes"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "remove regression cases",
+        "detected": true,
+        "detected_rules": [
+          "L6.regression",
+          "L6.robustness"
+        ],
+        "expected_rule": "L6.regression",
+        "false_accept": false,
+        "family": "regression",
+        "mutation_id": "M-regression-missing",
+        "reasons": [
+          "failed required rules: L6.regression, L6.robustness"
+        ]
+      },
+      {
+        "decision": "rejected",
+        "description": "replace independent review with self review",
+        "detected": true,
+        "detected_rules": [
+          "L7.independence"
+        ],
+        "expected_rule": "L7.independence",
+        "false_accept": false,
+        "family": "state",
+        "mutation_id": "M-independence-self-review",
+        "reasons": [
+          "failed required rules: L7.independence"
+        ]
+      }
+    ],
+    "schema_version": 2,
+    "total": 14
+  },
+  "registry": {
+    "digest": "2fe5082989ecf52b1bc8582d29e82df548a8d062d25f781cfcae9718ae074ee6",
+    "layers": [
+      {
+        "id": "L0",
+        "title": "input identity and basic integrity"
+      },
+      {
+        "id": "L1",
+        "title": "structural/target/scope integrity"
+      },
+      {
+        "id": "L2",
+        "title": "patch plan and byte replay integrity"
+      },
+      {
+        "id": "L3",
+        "title": "ABI and control-flow integrity"
+      },
+      {
+        "id": "L4",
+        "title": "vulnerability elimination"
+      },
+      {
+        "id": "L5",
+        "title": "semantic preservation"
+      },
+      {
+        "id": "L6",
+        "title": "regression and robustness"
+      },
+      {
+        "id": "L7",
+        "title": "evidence, independence and non-promotion"
+      }
+    ],
+    "rules": [
+      {
+        "id": "L0.required_sections",
+        "layer": "L0",
+        "required": true,
+        "severity": "critical",
+        "title": "task and acceptance sections are present"
+      },
+      {
+        "id": "L0.identity_hashes",
+        "layer": "L0",
+        "required": true,
+        "severity": "critical",
+        "title": "identity hashes are well formed"
+      },
+      {
+        "id": "L0.registry_version",
+        "layer": "L0",
+        "required": true,
+        "severity": "critical",
+        "title": "acceptance registry version is known"
+      },
+      {
+        "id": "L1.target_identity",
+        "layer": "L1",
+        "required": true,
+        "severity": "critical",
+        "title": "target identity matches the task"
+      },
+      {
+        "id": "L1.scope_policy",
+        "layer": "L1",
+        "required": true,
+        "severity": "critical",
+        "title": "scope is not inflated"
+      },
+      {
+        "id": "L1.analysis_only_state",
+        "layer": "L1",
+        "required": true,
+        "severity": "critical",
+        "title": "analysis_only is never a verified claim"
+      },
+      {
+        "id": "L2.candidate_present",
+        "layer": "L2",
+        "required": true,
+        "severity": "critical",
+        "title": "candidate bytes and digest are present"
+      },
+      {
+        "id": "L2.patch_plan",
+        "layer": "L2",
+        "required": true,
+        "severity": "critical",
+        "title": "layout-changing candidate has a plan"
+      },
+      {
+        "id": "L2.replay_exact",
+        "layer": "L2",
+        "required": true,
+        "severity": "critical",
+        "title": "plan replay reproduces candidate bytes"
+      },
+      {
+        "id": "L2.target_scope",
+        "layer": "L2",
+        "required": true,
+        "severity": "critical",
+        "title": "changed ranges stay in resolved scope"
+      },
+      {
+        "id": "L2.associated_changes",
+        "layer": "L2",
+        "required": true,
+        "severity": "critical",
+        "title": "associated changes are authorized"
+      },
+      {
+        "id": "L3.abi_blocks",
+        "layer": "L3",
+        "required": true,
+        "severity": "critical",
+        "title": "derived ABI blocks are available"
+      },
+      {
+        "id": "L3.control_flow",
+        "layer": "L3",
+        "required": true,
+        "severity": "critical",
+        "title": "control-flow targets are resolved/allowed"
+      },
+      {
+        "id": "L4.oracle_executed",
+        "layer": "L4",
+        "required": true,
+        "severity": "critical",
+        "title": "independent oracle executed"
+      },
+      {
+        "id": "L4.original_vulnerable",
+        "layer": "L4",
+        "required": true,
+        "severity": "critical",
+        "title": "original vulnerability was observed"
+      },
+      {
+        "id": "L4.candidate_eliminated",
+        "layer": "L4",
+        "required": true,
+        "severity": "critical",
+        "title": "candidate no longer triggers the oracle"
+      },
+      {
+        "id": "L4.independent_oracle",
+        "layer": "L4",
+        "required": true,
+        "severity": "critical",
+        "title": "oracle is independent of the generator"
+      },
+      {
+        "id": "L5.semantic_cases",
+        "layer": "L5",
+        "required": true,
+        "severity": "high",
+        "title": "semantic cases were executed"
+      },
+      {
+        "id": "L5.semantic_preserved",
+        "layer": "L5",
+        "required": true,
+        "severity": "critical",
+        "title": "semantic behaviour is preserved"
+      },
+      {
+        "id": "L5.bounded_claim",
+        "layer": "L5",
+        "required": true,
+        "severity": "high",
+        "title": "semantic claim is bounded"
+      },
+      {
+        "id": "L6.regression",
+        "layer": "L6",
+        "required": true,
+        "severity": "high",
+        "title": "regression cases pass"
+      },
+      {
+        "id": "L6.robustness",
+        "layer": "L6",
+        "required": true,
+        "severity": "high",
+        "title": "boundary, environment and repeats pass"
+      },
+      {
+        "id": "L7.evidence_refs",
+        "layer": "L7",
+        "required": true,
+        "severity": "critical",
+        "title": "evidence references and hashes exist"
+      },
+      {
+        "id": "L7.independence",
+        "layer": "L7",
+        "required": true,
+        "severity": "critical",
+        "title": "review independence is present"
+      },
+      {
+        "id": "L7.no_state_promotion",
+        "layer": "L7",
+        "required": true,
+        "severity": "critical",
+        "title": "not_run/inconclusive/analysis_only not promoted"
+      },
+      {
+        "id": "L7.claims",
+        "layer": "L7",
+        "required": true,
+        "severity": "critical",
+        "title": "claims stay within the declared scope"
+      },
+      {
+        "id": "L7.registry_integrity",
+        "layer": "L7",
+        "required": true,
+        "severity": "critical",
+        "title": "rule registry digest is canonical"
+      }
+    ],
+    "supported_versions": [
+      "2.0.0"
+    ],
+    "version": "2.0.0"
+  },
+  "schema_version": 2,
+  "summary": {
+    "analysis_only_cases": 1,
+    "cases_ok": true,
+    "false_accepts": 0,
+    "false_rejects": 0,
+    "historical_replay_ok": true,
+    "inconclusive_cases": 2,
+    "mutation_detection_rate": 1.0,
+    "mutation_false_accepts": 0,
+    "no_false_promotion": true,
+    "not_run_cases": 2,
+    "ok": true
+  }
+}

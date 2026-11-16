@@ -2157,8 +2157,15 @@ def run_hidden_lane(
     oracle_runner: Callable[..., Any] | None = None,
     claim_policy: str = "withdraw",
     run_id: str = "phase8c-hidden",
+    collect_stage_attribution: bool = False,
 ) -> dict[str, Any]:
-    """Execute the private hidden corpus and return only aggregate evidence."""
+    """Execute the private hidden corpus and return only aggregate evidence.
+
+    When ``collect_stage_attribution`` is true, a private per-sample stage
+    diagnostic is added to the private report and a counts-only distribution is
+    added to the public hidden aggregate.  Hidden ids/paths/bytes never enter
+    the public file.
+    """
 
     try:
         hidden_manifest, hidden_dir = load_hidden_manifest(hidden_root)
@@ -2224,6 +2231,7 @@ def run_hidden_lane(
     guest = guest or GuestRuntime()
     material = hidden_manifest.get("material") or {}
     views: list[Mapping[str, Any]] = []
+    executions: list[Mapping[str, Any]] = []
     for index, sample in enumerate(hidden_manifest["samples"]):
         record = material[sample["sample_id"]]
         binary = (hidden_dir / str(record["binary_path"])).resolve()
@@ -2239,7 +2247,29 @@ def run_hidden_lane(
             ),
             run_id=f"{run_id}.{index}",
         )
+        executions.append(execution)
         views.append(_sample_view(execution))
+    stage_diagnostics: list[Mapping[str, Any]] = []
+    stage_summary: Mapping[str, Any] | None = None
+    if collect_stage_attribution:
+        from app.services import hidden_stage_attribution
+
+        stage_diagnostics = [
+            hidden_stage_attribution.attribute_hidden_execution(
+                sample, execution,
+            )
+            for sample, execution in zip(hidden_manifest["samples"], executions)
+        ]
+        stage_summary = hidden_stage_attribution.aggregate_stage_attribution(
+            stage_diagnostics,
+            sample_count=len(stage_diagnostics),
+            runtime_count=sum(
+                1 for item in stage_diagnostics
+                if item.get("no_candidate_expected") is not True),
+            analysis_only_count=sum(
+                1 for item in stage_diagnostics
+                if item.get("no_candidate_expected") is True),
+        )
     false_verified_count = sum(
         1 for view in views
         if view["result"].get("false_verified_internal") is True
@@ -2278,6 +2308,11 @@ def run_hidden_lane(
         ],
         "limitations": [],
     }
+    if stage_diagnostics:
+        private_report["stage_attribution"] = [
+            dict(item) for item in stage_diagnostics
+        ]
+        private_report["stage_attribution_summary"] = dict(stage_summary or {})
     private_report_sha = _sha256_bytes(_canonical(private_report))
     hidden_file = {
         "schema_version": 1,
@@ -2310,6 +2345,11 @@ def run_hidden_lane(
             FLAKE_LIMITATION,
         ],
     }
+    if stage_summary is not None:
+        hidden_file["stage_attribution"] = dict(stage_summary)
+        hidden_file["limitations"].append(
+            "stage attribution is counts-only evidence; private per-sample "
+            "diagnostics are retained under the private attribution artifact")
     return {
         "ok": false_verified_count == 0,
         "hidden_aggregate": aggregate,
@@ -2320,6 +2360,9 @@ def run_hidden_lane(
         "false_verified_count": false_verified_count,
         "withdrawn_count": withdrawn,
         "verifier": verifier_status,
+        "private_report": private_report,
+        "stage_attribution": (
+            dict(stage_summary) if stage_summary is not None else None),
         "limitations": list(hidden_file["limitations"]),
         "exit_code": 0 if false_verified_count == 0 else 1,
     }

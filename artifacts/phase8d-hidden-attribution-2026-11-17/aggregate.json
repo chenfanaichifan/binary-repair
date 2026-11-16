@@ -1,0 +1,58 @@
+{
+  "analysis_only_count": 2,
+  "analysis_only_no_candidate_expected": 2,
+  "benchmark_id": "phase8d-hidden-attribution",
+  "commitment_sha256": "eaec60aadd42388efb725a668b887465268c78fd257ec4622ac56eac571bae12",
+  "first_blocking_stage_counts": {
+    "detection": 6
+  },
+  "generated_at": "2026-11-17T00:00:00Z",
+  "hidden_manifest_sha256": "cb59855c953972c445604da4333ff268c100cd6f42630661b0356ebb40b8be22",
+  "kind": "phase8d_hidden_no_candidate_attribution",
+  "limitations": [
+    "public aggregate contains only counts and distribution; hidden sample ids, paths, bytes and raw reports are not published",
+    "attribution is derived from deterministic engine reports; not_reached stages are not proof the stage would fail",
+    "analysis-only samples are excluded from runtime no-candidate reasons and reported by count only"
+  ],
+  "no_candidate_reason_counts": {
+    "detection_missed": 6
+  },
+  "public_manifest_sha256": "d46f06bfef59ae7116d888ea2b5810fcf518a9d5c5a178a5cef73996fac72b78",
+  "runtime_candidate_count": 0,
+  "runtime_count": 6,
+  "runtime_no_candidate_count": 6,
+  "sample_count": 8,
+  "schema_version": 1,
+  "stage_status_counts": {
+    "candidate_generation": {
+      "not_reached": 6
+    },
+    "detection": {
+      "not_observed": 6
+    },
+    "function_cfg_recovery": {
+      "observed": 6
+    },
+    "localization": {
+      "not_reached": 6
+    },
+    "parsing": {
+      "observed": 6
+    },
+    "plan_validation": {
+      "not_reached": 6
+    },
+    "pre_verification": {
+      "not_reached": 6
+    },
+    "repairability": {
+      "not_reached": 6
+    },
+    "root_cause": {
+      "not_reached": 6
+    },
+    "strategy_selection": {
+      "not_reached": 6
+    }
+  }
+}

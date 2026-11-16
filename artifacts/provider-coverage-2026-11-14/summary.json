@@ -9,7 +9,7 @@
     "generated_at": "2026-11-14T13:08:04Z",
     "generated_at_source": "artifacts/provider-matrix-2026-11-14/summary.json#generated_at",
     "generated_at_note": "generated_at is the latest timestamp recorded in a cited source artifact so a fresh build is byte-identical; it is not the build time",
-    "source_digest_sha256": "7aba4f032a826fe33b7efaa4ffb83bcc7f541ace9af3f85f65998efbd761444a",
+    "source_digest_sha256": "4ec1cf3dfc947b6571015b1f202f575f84078b37923dbe45dcdcaf3c7b8454b4",
     "cited_source_count": 32
   },
   "purpose": "Machine-readable provider/model coverage: which models have real 12-case benchmark evidence, with sha256-bound source artifacts, strict model-identity policy, Wilson 95% intervals and honest blocked/unavailable rows.",
@@ -614,7 +614,7 @@
         "reference_docs": [
           {
             "path": "docs/acceptance/LIMITATIONS.md",
-            "sha256": "0c4082a6e81e1d058d6c8616280b9153ed5e89cc945ea5835a7ee41bba2e35b7"
+            "sha256": "a90c96315c1952e76945b97f7fae119edde7d1aee05e0b9ffa96e80650bd26d0"
           },
           {
             "path": "artifacts/siliconflow-key-2026-11-14/README.md",

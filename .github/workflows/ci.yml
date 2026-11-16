@@ -129,6 +129,42 @@ jobs:
       - name: Phase-8C shadow release evidence (non-gating)
         continue-on-error: true
         run: python scripts/audit_phase8c_evidence.py --check
+      # Phase-8D shadow checks: additive, public/offline evidence. Hidden raw
+      # material is never read by hosted CI; hidden-attribution checks only the
+      # committed anonymous aggregate.
+      - name: Phase-8D shadow capability universe (non-gating)
+        continue-on-error: true
+        run: python scripts/build_phase8d_capability_universe.py --check
+      - name: Phase-8D shadow gap registry (non-gating)
+        continue-on-error: true
+        run: python scripts/build_phase8d_gap_registry.py --check
+      - name: Phase-8D shadow Acceptance 2.0 (non-gating)
+        continue-on-error: true
+        run: python scripts/audit_acceptance_2.py --check
+      - name: Phase-8D shadow heap-malloc ABI analysis (non-gating)
+        continue-on-error: true
+        run: python scripts/analyze_phase8d_heap_malloc_abi.py --check
+      - name: Phase-8D shadow hidden stage aggregate (non-gating)
+        continue-on-error: true
+        run: python scripts/run_phase8d_hidden_attribution.py --check
+      - name: Phase-8D shadow external knowledge (non-gating)
+        continue-on-error: true
+        run: python scripts/scan_external_knowledge.py --check
+      - name: Phase-8D shadow metamorphic discovery (non-gating)
+        continue-on-error: true
+        run: python scripts/run_metamorphic_discovery.py --check
+      - name: Phase-8D shadow discovery registry (non-gating)
+        continue-on-error: true
+        run: python scripts/build_phase8d_discovery_registry.py --check
+      - name: Phase-8D shadow hidden isolation audit (non-gating)
+        continue-on-error: true
+        run: python scripts/audit_hidden_isolation.py --check
+      - name: Phase-8D shadow promotion gate (non-gating)
+        continue-on-error: true
+        run: python scripts/evaluate_promotion.py --check
+      - name: Phase-8D shadow experiment bundle (non-gating)
+        continue-on-error: true
+        run: python scripts/build_phase8d_experiment_bundle.py --check
       - name: Coverage regression gate (static, no network)
         run: python scripts/verify_coverage_gate.py --static-only
       # Serial execution by policy: Lima guests and the real PoC differential are

@@ -1,0 +1,926 @@
+{
+  "base_repo": "phase8d-open-world",
+  "candidate": {
+    "matches_phase8c_candidate": true,
+    "sha256": "ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73",
+    "size": 16422
+  },
+  "cave_abi": {
+    "block_sha256": "d6851587df2a4afe678216a354867a086c99a3609228c7dbf6327b5649f2d917",
+    "fatal": 0,
+    "findings": [],
+    "ok": true
+  },
+  "cave_block": {
+    "abi": {
+      "block_sha256": "d6851587df2a4afe678216a354867a086c99a3609228c7dbf6327b5649f2d917",
+      "fatal": 0,
+      "findings": [],
+      "ok": true
+    },
+    "control_flow_resolution": [
+      {
+        "address": "0x405007",
+        "kind": "direct",
+        "mnemonic": "jae",
+        "offset": 7,
+        "op_str": "0x40501b",
+        "slot_symbol": null,
+        "slot_va": null,
+        "tail_call": false,
+        "target_symbol": null,
+        "target_va": 4214811
+      },
+      {
+        "address": "0x405016",
+        "kind": "direct",
+        "mnemonic": "jne",
+        "offset": 22,
+        "op_str": "0x405002",
+        "slot_symbol": null,
+        "slot_va": null,
+        "tail_call": false,
+        "target_symbol": null,
+        "target_va": 4214786
+      }
+    ],
+    "disassembly": [
+      {
+        "address": "0x405000",
+        "bytes": "31c0",
+        "control_flow": false,
+        "mnemonic": "xor",
+        "offset": 0,
+        "op_str": "eax, eax"
+      },
+      {
+        "address": "0x405002",
+        "bytes": "3d10000000",
+        "control_flow": false,
+        "mnemonic": "cmp",
+        "offset": 2,
+        "op_str": "eax, 0x10"
+      },
+      {
+        "address": "0x405007",
+        "bytes": "7312",
+        "control_flow": true,
+        "direct_target_va": 4214811,
+        "memory_operands": [],
+        "mnemonic": "jae",
+        "offset": 7,
+        "op_str": "0x40501b"
+      },
+      {
+        "address": "0x405009",
+        "bytes": "448a1406",
+        "control_flow": false,
+        "mnemonic": "mov",
+        "offset": 9,
+        "op_str": "r10b, byte ptr [rsi + rax]"
+      },
+      {
+        "address": "0x40500d",
+        "bytes": "44881407",
+        "control_flow": false,
+        "mnemonic": "mov",
+        "offset": 13,
+        "op_str": "byte ptr [rdi + rax], r10b"
+      },
+      {
+        "address": "0x405011",
+        "bytes": "ffc0",
+        "control_flow": false,
+        "mnemonic": "inc",
+        "offset": 17,
+        "op_str": "eax"
+      },
+      {
+        "address": "0x405013",
+        "bytes": "4584d2",
+        "control_flow": false,
+        "mnemonic": "test",
+        "offset": 19,
+        "op_str": "r10b, r10b"
+      },
+      {
+        "address": "0x405016",
+        "bytes": "75ea",
+        "control_flow": true,
+        "direct_target_va": 4214786,
+        "memory_operands": [],
+        "mnemonic": "jne",
+        "offset": 22,
+        "op_str": "0x405002"
+      },
+      {
+        "address": "0x405018",
+        "bytes": "31c0",
+        "control_flow": false,
+        "mnemonic": "xor",
+        "offset": 24,
+        "op_str": "eax, eax"
+      },
+      {
+        "address": "0x40501a",
+        "bytes": "c3",
+        "control_flow": false,
+        "mnemonic": "ret",
+        "offset": 26,
+        "op_str": ""
+      },
+      {
+        "address": "0x40501b",
+        "bytes": "c64407ff00",
+        "control_flow": false,
+        "mnemonic": "mov",
+        "offset": 27,
+        "op_str": "byte ptr [rdi + rax - 1], 0"
+      },
+      {
+        "address": "0x405020",
+        "bytes": "b801000000",
+        "control_flow": false,
+        "mnemonic": "mov",
+        "offset": 32,
+        "op_str": "eax, 1"
+      },
+      {
+        "address": "0x405025",
+        "bytes": "c3",
+        "control_flow": false,
+        "mnemonic": "ret",
+        "offset": 37,
+        "op_str": ""
+      }
+    ],
+    "mapping": {
+      "file_offset": 16384,
+      "mapping": "program_header",
+      "section": null
+    }
+  },
+  "classifications": [
+    {
+      "confidence": "high",
+      "detail": "patch_plan.abi_blocks[0] covers the pre-existing target function VA 0x401130 size 59 and does not cover the injected executable cave VA 0x405000 size 38; the candidate's cave ABI check is ok=True while the declared function-block check is ok=False.",
+      "evidence": {
+        "cave": {
+          "executable": true,
+          "method": "new-pt-load",
+          "size": 38,
+          "va": 4214784
+        },
+        "cave_abi_ok": true,
+        "function_abi_ok": false,
+        "plan_abi_block": {
+          "abi_id": "sysv-amd64",
+          "arch": "x86_64",
+          "evidence_sha256": "c15420fcf575024f6404b97d43bdf1522fa6cdd3a9376e666ba22431db008c9c",
+          "function": "reviewed-function",
+          "size": 59,
+          "va": 4198704
+        }
+      },
+      "primary": true,
+      "root": "generator_plan_incorrect"
+    },
+    {
+      "confidence": "high",
+      "detail": "ABI evidence binds the function block hash, not the injected cave block; a passing or failing function-block check therefore does not prove the injected guard's ABI discipline. The plan carries a cave but no independent ABI block for it.",
+      "evidence": {
+        "abi_block_evidence_sha256": "c15420fcf575024f6404b97d43bdf1522fa6cdd3a9376e666ba22431db008c9c",
+        "cave_sha256": "d6851587df2a4afe678216a354867a086c99a3609228c7dbf6327b5649f2d917",
+        "plan_has_cave": true
+      },
+      "primary": true,
+      "root": "abi_proof_insufficient"
+    },
+    {
+      "confidence": "medium",
+      "detail": "The verifier's x86-64 ABI checker does not resolve RIP-relative memory-indirect call/jump targets and does not model a tail call. On the declared function block it reports call_target_not_allowed for legal malloc/puts calls and no_ret for a legal free tail call. This is conservative for injected-only blocks, but insufficient when the declared block is a whole function; it is a contributing rule/expression gap, not the primary reason this plan should not have declared that block.",
+      "evidence": {
+        "branch_findings": [
+          {
+            "address": "0x35",
+            "code": "branch_target_unknown",
+            "detail": "jmp target None is outside the block",
+            "severity": "warning"
+          }
+        ],
+        "call_findings": [
+          {
+            "address": "0xe",
+            "code": "call_target_not_allowed",
+            "detail": "call target None not in allowed targets",
+            "severity": "fatal"
+          },
+          {
+            "address": "0x26",
+            "code": "call_target_not_allowed",
+            "detail": "call target None not in allowed targets",
+            "severity": "fatal"
+          }
+        ],
+        "no_ret_findings": [
+          {
+            "address": null,
+            "code": "no_ret",
+            "detail": "block has no ret",
+            "severity": "fatal"
+          }
+        ],
+        "resolved_calls": [
+          {
+            "address": "0x40113e",
+            "kind": "memory_indirect",
+            "mnemonic": "call",
+            "offset": 14,
+            "op_str": "qword ptr [rip + 0x2e9c]",
+            "slot_relocation": ".rela.dyn",
+            "slot_relocation_type": 6,
+            "slot_symbol": "malloc",
+            "slot_va": "0x403fe0",
+            "tail_call": false,
+            "target_symbol": null,
+            "target_va": null
+          },
+          {
+            "address": "0x40114d",
+            "kind": "direct",
+            "mnemonic": "call",
+            "offset": 29,
+            "op_str": "0x405000",
+            "slot_symbol": null,
+            "slot_va": null,
+            "tail_call": false,
+            "target_symbol": null,
+            "target_va": 4214784
+          },
+          {
+            "address": "0x401156",
+            "kind": "memory_indirect",
+            "mnemonic": "call",
+            "offset": 38,
+            "op_str": "qword ptr [rip + 0x2e74]",
+            "slot_relocation": ".rela.dyn",
+            "slot_relocation_type": 6,
+            "slot_symbol": "puts",
+            "slot_va": "0x403fd0",
+            "tail_call": false,
+            "target_symbol": null,
+            "target_va": null
+          }
+        ],
+        "resolved_tail_calls": [
+          {
+            "address": "0x401165",
+            "kind": "memory_indirect",
+            "mnemonic": "jmp",
+            "offset": 53,
+            "op_str": "qword ptr [rip + 0x2e4d]",
+            "slot_relocation": ".rela.dyn",
+            "slot_relocation_type": 6,
+            "slot_symbol": "free",
+            "slot_va": "0x403fb8",
+            "tail_call": true,
+            "target_symbol": null,
+            "target_va": null
+          }
+        ]
+      },
+      "primary": false,
+      "root": "verifier_rule_incorrect"
+    },
+    {
+      "confidence": "high",
+      "detail": "The Phase-8C rejection report exposes only finding codes and no resolved call slots/symbols; it cannot by itself distinguish an invalid candidate from a mis-scoped ABI block. This artifact resolves the memory-indirect targets to malloc/puts and the tail jump to free via .rela.dyn.",
+      "evidence": {
+        "phase8c_reason": "ABI report not ok: plan.abi_blocks@4198704: fatal=3 findings=['branch_target_unknown', 'call_target_not_allowed', 'no_ret']",
+        "resolved_control_flow": [
+          {
+            "address": "0x40113e",
+            "kind": "memory_indirect",
+            "mnemonic": "call",
+            "offset": 14,
+            "op_str": "qword ptr [rip + 0x2e9c]",
+            "slot_relocation": ".rela.dyn",
+            "slot_relocation_type": 6,
+            "slot_symbol": "malloc",
+            "slot_va": "0x403fe0",
+            "tail_call": false,
+            "target_symbol": null,
+            "target_va": null
+          },
+          {
+            "address": "0x40114d",
+            "kind": "direct",
+            "mnemonic": "call",
+            "offset": 29,
+            "op_str": "0x405000",
+            "slot_symbol": null,
+            "slot_va": null,
+            "tail_call": false,
+            "target_symbol": null,
+            "target_va": 4214784
+          },
+          {
+            "address": "0x401156",
+            "kind": "memory_indirect",
+            "mnemonic": "call",
+            "offset": 38,
+            "op_str": "qword ptr [rip + 0x2e74]",
+            "slot_relocation": ".rela.dyn",
+            "slot_relocation_type": 6,
+            "slot_symbol": "puts",
+            "slot_va": "0x403fd0",
+            "tail_call": false,
+            "target_symbol": null,
+            "target_va": null
+          },
+          {
+            "address": "0x401165",
+            "kind": "memory_indirect",
+            "mnemonic": "jmp",
+            "offset": 53,
+            "op_str": "qword ptr [rip + 0x2e4d]",
+            "slot_relocation": ".rela.dyn",
+            "slot_relocation_type": 6,
+            "slot_symbol": "free",
+            "slot_va": "0x403fb8",
+            "tail_call": true,
+            "target_symbol": null,
+            "target_va": null
+          }
+        ]
+      },
+      "primary": false,
+      "root": "analysis_evidence_insufficient"
+    },
+    {
+      "confidence": "high",
+      "detail": "No evidence the candidate patch is invalid: independent oracle status=passed, layout replay=True, target scope=True, and the injected cave ABI check is ok=True.",
+      "evidence": {
+        "cave_abi": {
+          "block_sha256": "d6851587df2a4afe678216a354867a086c99a3609228c7dbf6327b5649f2d917",
+          "fatal": 0,
+          "findings": [],
+          "ok": true
+        },
+        "oracle": {
+          "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=4)",
+          "id": "runtime-oracle",
+          "independent": true,
+          "required": true,
+          "status": "passed",
+          "title": "Independent external PoC differential and regression"
+        }
+      },
+      "excluded": true,
+      "primary": false,
+      "root": "generator_patch_invalid"
+    },
+    {
+      "confidence": "high",
+      "detail": "Root cause is conclusive at the plan/ABI-evidence layer: the plan declares the function block, the candidate cave is valid, and the independent oracle passes while the verifier remains fail-closed. No rule was changed and the candidate remains rejected.",
+      "evidence": {
+        "decision": "rejected"
+      },
+      "excluded": true,
+      "primary": false,
+      "root": "root_cause_inconclusive"
+    }
+  ],
+  "control_flow_resolution": [
+    {
+      "address": "0x40113e",
+      "kind": "memory_indirect",
+      "mnemonic": "call",
+      "offset": 14,
+      "op_str": "qword ptr [rip + 0x2e9c]",
+      "slot_relocation": ".rela.dyn",
+      "slot_relocation_type": 6,
+      "slot_symbol": "malloc",
+      "slot_va": "0x403fe0",
+      "tail_call": false,
+      "target_symbol": null,
+      "target_va": null
+    },
+    {
+      "address": "0x40114d",
+      "kind": "direct",
+      "mnemonic": "call",
+      "offset": 29,
+      "op_str": "0x405000",
+      "slot_symbol": null,
+      "slot_va": null,
+      "tail_call": false,
+      "target_symbol": null,
+      "target_va": 4214784
+    },
+    {
+      "address": "0x401156",
+      "kind": "memory_indirect",
+      "mnemonic": "call",
+      "offset": 38,
+      "op_str": "qword ptr [rip + 0x2e74]",
+      "slot_relocation": ".rela.dyn",
+      "slot_relocation_type": 6,
+      "slot_symbol": "puts",
+      "slot_va": "0x403fd0",
+      "tail_call": false,
+      "target_symbol": null,
+      "target_va": null
+    },
+    {
+      "address": "0x401165",
+      "kind": "memory_indirect",
+      "mnemonic": "jmp",
+      "offset": 53,
+      "op_str": "qword ptr [rip + 0x2e4d]",
+      "slot_relocation": ".rela.dyn",
+      "slot_relocation_type": 6,
+      "slot_symbol": "free",
+      "slot_va": "0x403fb8",
+      "tail_call": true,
+      "target_symbol": null,
+      "target_va": null
+    }
+  ],
+  "expected_hashes": {
+    "candidate": "ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73",
+    "original": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f"
+  },
+  "fixture": {
+    "path": "fixtures/hard-cases/vuln-heap-malloc-x86_64.elf",
+    "sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f",
+    "size": 15816
+  },
+  "function_abi": {
+    "block_sha256": "c15420fcf575024f6404b97d43bdf1522fa6cdd3a9376e666ba22431db008c9c",
+    "fatal": 3,
+    "findings": [
+      {
+        "address": "0xe",
+        "code": "call_target_not_allowed",
+        "detail": "call target None not in allowed targets",
+        "severity": "fatal"
+      },
+      {
+        "address": "0x26",
+        "code": "call_target_not_allowed",
+        "detail": "call target None not in allowed targets",
+        "severity": "fatal"
+      },
+      {
+        "address": "0x35",
+        "code": "branch_target_unknown",
+        "detail": "jmp target None is outside the block",
+        "severity": "warning"
+      },
+      {
+        "address": null,
+        "code": "no_ret",
+        "detail": "block has no ret",
+        "severity": "fatal"
+      }
+    ],
+    "ok": false
+  },
+  "function_block": {
+    "abi": {
+      "block_sha256": "c15420fcf575024f6404b97d43bdf1522fa6cdd3a9376e666ba22431db008c9c",
+      "fatal": 3,
+      "findings": [
+        {
+          "address": "0xe",
+          "code": "call_target_not_allowed",
+          "detail": "call target None not in allowed targets",
+          "severity": "fatal"
+        },
+        {
+          "address": "0x26",
+          "code": "call_target_not_allowed",
+          "detail": "call target None not in allowed targets",
+          "severity": "fatal"
+        },
+        {
+          "address": "0x35",
+          "code": "branch_target_unknown",
+          "detail": "jmp target None is outside the block",
+          "severity": "warning"
+        },
+        {
+          "address": null,
+          "code": "no_ret",
+          "detail": "block has no ret",
+          "severity": "fatal"
+        }
+      ],
+      "ok": false
+    },
+    "control_flow_resolution": [
+      {
+        "address": "0x40113e",
+        "kind": "memory_indirect",
+        "mnemonic": "call",
+        "offset": 14,
+        "op_str": "qword ptr [rip + 0x2e9c]",
+        "slot_relocation": ".rela.dyn",
+        "slot_relocation_type": 6,
+        "slot_symbol": "malloc",
+        "slot_va": "0x403fe0",
+        "tail_call": false,
+        "target_symbol": null,
+        "target_va": null
+      },
+      {
+        "address": "0x40114d",
+        "kind": "direct",
+        "mnemonic": "call",
+        "offset": 29,
+        "op_str": "0x405000",
+        "slot_symbol": null,
+        "slot_va": null,
+        "tail_call": false,
+        "target_symbol": null,
+        "target_va": 4214784
+      },
+      {
+        "address": "0x401156",
+        "kind": "memory_indirect",
+        "mnemonic": "call",
+        "offset": 38,
+        "op_str": "qword ptr [rip + 0x2e74]",
+        "slot_relocation": ".rela.dyn",
+        "slot_relocation_type": 6,
+        "slot_symbol": "puts",
+        "slot_va": "0x403fd0",
+        "tail_call": false,
+        "target_symbol": null,
+        "target_va": null
+      },
+      {
+        "address": "0x401165",
+        "kind": "memory_indirect",
+        "mnemonic": "jmp",
+        "offset": 53,
+        "op_str": "qword ptr [rip + 0x2e4d]",
+        "slot_relocation": ".rela.dyn",
+        "slot_relocation_type": 6,
+        "slot_symbol": "free",
+        "slot_va": "0x403fb8",
+        "tail_call": true,
+        "target_symbol": null,
+        "target_va": null
+      }
+    ],
+    "disassembly": [
+      {
+        "address": "0x401130",
+        "bytes": "55",
+        "control_flow": false,
+        "mnemonic": "push",
+        "offset": 0,
+        "op_str": "rbp"
+      },
+      {
+        "address": "0x401131",
+        "bytes": "4889fd",
+        "control_flow": false,
+        "mnemonic": "mov",
+        "offset": 1,
+        "op_str": "rbp, rdi"
+      },
+      {
+        "address": "0x401134",
+        "bytes": "bf10000000",
+        "control_flow": false,
+        "mnemonic": "mov",
+        "offset": 4,
+        "op_str": "edi, 0x10"
+      },
+      {
+        "address": "0x401139",
+        "bytes": "53",
+        "control_flow": false,
+        "mnemonic": "push",
+        "offset": 9,
+        "op_str": "rbx"
+      },
+      {
+        "address": "0x40113a",
+        "bytes": "4883ec08",
+        "control_flow": false,
+        "mnemonic": "sub",
+        "offset": 10,
+        "op_str": "rsp, 8"
+      },
+      {
+        "address": "0x40113e",
+        "bytes": "ff159c2e0000",
+        "control_flow": true,
+        "direct_target_va": null,
+        "memory_operands": [
+          {
+            "base": "rip",
+            "disp": 11932,
+            "index": "",
+            "segment": ""
+          }
+        ],
+        "mnemonic": "call",
+        "offset": 14,
+        "op_str": "qword ptr [rip + 0x2e9c]"
+      },
+      {
+        "address": "0x401144",
+        "bytes": "4889ee",
+        "control_flow": false,
+        "mnemonic": "mov",
+        "offset": 20,
+        "op_str": "rsi, rbp"
+      },
+      {
+        "address": "0x401147",
+        "bytes": "4889c3",
+        "control_flow": false,
+        "mnemonic": "mov",
+        "offset": 23,
+        "op_str": "rbx, rax"
+      },
+      {
+        "address": "0x40114a",
+        "bytes": "4889c7",
+        "control_flow": false,
+        "mnemonic": "mov",
+        "offset": 26,
+        "op_str": "rdi, rax"
+      },
+      {
+        "address": "0x40114d",
+        "bytes": "e8ae3e0000",
+        "control_flow": true,
+        "direct_target_va": 4214784,
+        "memory_operands": [],
+        "mnemonic": "call",
+        "offset": 29,
+        "op_str": "0x405000"
+      },
+      {
+        "address": "0x401152",
+        "bytes": "90",
+        "control_flow": false,
+        "mnemonic": "nop",
+        "offset": 34,
+        "op_str": ""
+      },
+      {
+        "address": "0x401153",
+        "bytes": "4889df",
+        "control_flow": false,
+        "mnemonic": "mov",
+        "offset": 35,
+        "op_str": "rdi, rbx"
+      },
+      {
+        "address": "0x401156",
+        "bytes": "ff15742e0000",
+        "control_flow": true,
+        "direct_target_va": null,
+        "memory_operands": [
+          {
+            "base": "rip",
+            "disp": 11892,
+            "index": "",
+            "segment": ""
+          }
+        ],
+        "mnemonic": "call",
+        "offset": 38,
+        "op_str": "qword ptr [rip + 0x2e74]"
+      },
+      {
+        "address": "0x40115c",
+        "bytes": "4883c408",
+        "control_flow": false,
+        "mnemonic": "add",
+        "offset": 44,
+        "op_str": "rsp, 8"
+      },
+      {
+        "address": "0x401160",
+        "bytes": "4889df",
+        "control_flow": false,
+        "mnemonic": "mov",
+        "offset": 48,
+        "op_str": "rdi, rbx"
+      },
+      {
+        "address": "0x401163",
+        "bytes": "5b",
+        "control_flow": false,
+        "mnemonic": "pop",
+        "offset": 51,
+        "op_str": "rbx"
+      },
+      {
+        "address": "0x401164",
+        "bytes": "5d",
+        "control_flow": false,
+        "mnemonic": "pop",
+        "offset": 52,
+        "op_str": "rbp"
+      },
+      {
+        "address": "0x401165",
+        "bytes": "ff254d2e0000",
+        "control_flow": true,
+        "direct_target_va": null,
+        "memory_operands": [
+          {
+            "base": "rip",
+            "disp": 11853,
+            "index": "",
+            "segment": ""
+          }
+        ],
+        "mnemonic": "jmp",
+        "offset": 53,
+        "op_str": "qword ptr [rip + 0x2e4d]"
+      }
+    ],
+    "mapping": {
+      "file_offset": 4400,
+      "mapping": "section",
+      "section": {
+        "name": ".text",
+        "offset": 4128,
+        "size": 331,
+        "va": 4198432
+      }
+    }
+  },
+  "generated_at": "2026-11-17T00:00:00Z",
+  "kind": "phase8d_heap_malloc_abi_analysis",
+  "limitations": [
+    "This analysis does not prove full semantic equivalence; the independent PoC oracle is function-level behavioural evidence.",
+    "The ABI checker is conservative and static; GOT/PLT slot resolution is relocation-name based, not runtime-load resolved.",
+    "The candidate remains rejected by the independent verifier; no verified claim is made.",
+    "The original Phase-8C candidate bytes are reconstructed from the deterministic repair; hash equality with the committed Phase-8C candidate is recorded, not assumed."
+  ],
+  "plan": {
+    "abi_blocks": [
+      {
+        "abi_id": "sysv-amd64",
+        "arch": "x86_64",
+        "evidence_sha256": "c15420fcf575024f6404b97d43bdf1522fa6cdd3a9376e666ba22431db008c9c",
+        "function": "reviewed-function",
+        "size": 59,
+        "va": 4198704
+      }
+    ],
+    "cave": {
+      "executable": true,
+      "method": "new-pt-load",
+      "size": 38,
+      "va": 4214784
+    },
+    "operations": [
+      {
+        "after_hex": "e8ae3e000090",
+        "before_hex": "ff15752e0000",
+        "candidate_offset": 4429,
+        "kind": "write",
+        "original_offset": 4429,
+        "reason": "reviewed_site",
+        "site_va": 4198733,
+        "size": 6
+      },
+      {
+        "after_hex": "01",
+        "authorization_ref": "authorization:elf-metadata:v1",
+        "before_hex": "04",
+        "candidate_offset": 512,
+        "kind": "write",
+        "original_offset": 512,
+        "reason": "header_update",
+        "size": 1
+      },
+      {
+        "after_hex": "05",
+        "authorization_ref": "authorization:elf-metadata:v1",
+        "before_hex": "04",
+        "candidate_offset": 516,
+        "kind": "write",
+        "original_offset": 516,
+        "reason": "header_update",
+        "size": 1
+      },
+      {
+        "after_hex": "0040",
+        "authorization_ref": "authorization:elf-metadata:v1",
+        "before_hex": "5803",
+        "candidate_offset": 520,
+        "kind": "write",
+        "original_offset": 520,
+        "reason": "header_update",
+        "size": 2
+      },
+      {
+        "after_hex": "0050",
+        "authorization_ref": "authorization:elf-metadata:v1",
+        "before_hex": "5803",
+        "candidate_offset": 528,
+        "kind": "write",
+        "original_offset": 528,
+        "reason": "header_update",
+        "size": 2
+      },
+      {
+        "after_hex": "0050",
+        "authorization_ref": "authorization:elf-metadata:v1",
+        "before_hex": "5803",
+        "candidate_offset": 536,
+        "kind": "write",
+        "original_offset": 536,
+        "reason": "header_update",
+        "size": 2
+      },
+      {
+        "after_hex": "26",
+        "authorization_ref": "authorization:elf-metadata:v1",
+        "before_hex": "44",
+        "candidate_offset": 544,
+        "kind": "write",
+        "original_offset": 544,
+        "reason": "header_update",
+        "size": 1
+      },
+      {
+        "after_hex": "26",
+        "authorization_ref": "authorization:elf-metadata:v1",
+        "before_hex": "44",
+        "candidate_offset": 552,
+        "kind": "write",
+        "original_offset": 552,
+        "reason": "header_update",
+        "size": 1
+      },
+      {
+        "after_hex": "0010",
+        "authorization_ref": "authorization:elf-metadata:v1",
+        "before_hex": "0400",
+        "candidate_offset": 560,
+        "kind": "write",
+        "original_offset": 560,
+        "reason": "header_update",
+        "size": 2
+      },
+      {
+        "after_hex": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000031c03d100000007312448a140644881407ffc04584d275ea31c0c3c64407ff00b801000000c3",
+        "authorization_ref": "authorization:guard-cave:v1",
+        "before_hex": "",
+        "candidate_offset": 15816,
+        "kind": "insert",
+        "original_offset": 15816,
+        "reason": "guard_cave",
+        "size": 606
+      }
+    ],
+    "plan_id": "plan-15242f2a9355487f321fdd14",
+    "plan_sha256": "c4b03a9cff52804bfee832f7368667cb6096fdc80d47725b81cd2ef3575fa987",
+    "target_scope": {
+      "end": 4198764,
+      "name": "heap_bad",
+      "policy": "target_scoped_associated",
+      "va": 4198704
+    }
+  },
+  "poc": {
+    "manifest_sha256": "1c76afbcf1ee72d8bde99210bb2fb6d53e02e4e8b7470cade4309e092c9a8a2a",
+    "path": "fixtures/poc/heap-malloc.json"
+  },
+  "rule_modifications": [],
+  "schema_version": 1,
+  "target": "heap_bad",
+  "verifier": {
+    "abi_detail": "ABI report not ok: plan.abi_blocks@4198704: fatal=3 findings=['branch_target_unknown', 'call_target_not_allowed', 'no_ret']",
+    "abi_status": "failed",
+    "decision": "rejected",
+    "layout_passed": true,
+    "oracle": {
+      "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=4)",
+      "id": "runtime-oracle",
+      "independent": true,
+      "required": true,
+      "status": "passed",
+      "title": "Independent external PoC differential and regression"
+    },
+    "phase8c_rejection_detail": "ABI report not ok: plan.abi_blocks@4198704: fatal=3 findings=['branch_target_unknown', 'call_target_not_allowed', 'no_ret']",
+    "runtime_oracle_detail": "independent oracle passed (runner=limactl tier=emulated_run cases=4)",
+    "runtime_oracle_status": "passed",
+    "target_scope_passed": true
+  },
+  "worktree_head": "f1bb1f41eba1e0be61be09cea56091e8a03a9896"
+}

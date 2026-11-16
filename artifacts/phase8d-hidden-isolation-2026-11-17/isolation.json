@@ -1,0 +1,155 @@
+{
+  "benchmark_version": "phase8c-v2",
+  "capability_promotion": false,
+  "checks": [
+    {
+      "detail": "exists=True dir=True",
+      "id": "root-exists",
+      "status": "passed"
+    },
+    {
+      "detail": "private root must not be a symlink",
+      "id": "root-not-symlink",
+      "status": "passed"
+    },
+    {
+      "detail": "mode=0o700 owner_ok=True",
+      "id": "root-owner-only-0700",
+      "status": "passed"
+    },
+    {
+      "detail": "commitment kind/counts are 8/6/2",
+      "id": "commitment-shape",
+      "status": "passed"
+    },
+    {
+      "detail": "commitment binds the current public manifest bytes",
+      "id": "commitment-public-manifest-sha",
+      "status": "passed"
+    },
+    {
+      "detail": "private hidden manifest kind",
+      "id": "private-manifest-kind",
+      "status": "passed"
+    },
+    {
+      "detail": "private manifest commitment digest matches the public commitment",
+      "id": "private-manifest-commitment",
+      "status": "passed"
+    },
+    {
+      "detail": "private manifest binds the current public manifest",
+      "id": "private-manifest-public-sha",
+      "status": "passed"
+    },
+    {
+      "detail": "samples=8",
+      "id": "private-sample-count",
+      "status": "passed"
+    },
+    {
+      "detail": "runtime=6 analysis_only=2",
+      "id": "private-runtime-analysis-counts",
+      "status": "passed"
+    },
+    {
+      "detail": "0 problem(s)",
+      "id": "private-material-integrity",
+      "status": "passed"
+    },
+    {
+      "detail": "opaque commitment samples match the private manifest",
+      "id": "commitment-private-material-match",
+      "status": "passed"
+    },
+    {
+      "detail": "material_entries=8",
+      "id": "private-material-count",
+      "status": "passed"
+    },
+    {
+      "detail": "sample_count=8 executed=8 verified=0 false_verified=0",
+      "id": "aggregate-consistency",
+      "status": "passed"
+    },
+    {
+      "detail": "0 forbidden field(s)",
+      "id": "aggregate-no-per-sample-fields",
+      "status": "passed"
+    },
+    {
+      "detail": "results.hidden_aggregate matches the aggregate file",
+      "id": "results-hidden-aggregate-consistent",
+      "status": "passed"
+    },
+    {
+      "detail": "dynamic tracked-file scan; findings=0",
+      "id": "no-hidden-id-or-material-in-public-files",
+      "status": "passed"
+    },
+    {
+      "detail": "dynamic tracked-file scan; exact-digest matches=0",
+      "id": "no-hidden-binary-material-in-public-files",
+      "status": "passed"
+    },
+    {
+      "detail": "private root material/ids are not referenced by public findings",
+      "id": "no-private-root-reference",
+      "status": "passed"
+    }
+  ],
+  "commitment": {
+    "analysis_only_count": 2,
+    "commitment_sha256": "eaec60aadd42388efb725a668b887465268c78fd257ec4622ac56eac571bae12",
+    "public_manifest_sha256": "d46f06bfef59ae7116d888ea2b5810fcf518a9d5c5a178a5cef73996fac72b78",
+    "runtime_count": 6,
+    "sample_count": 8
+  },
+  "counts": {
+    "analysis_only_count": 2,
+    "material_entries": 8,
+    "runtime_count": 6,
+    "sample_count": 8
+  },
+  "cryptographic_isolation": false,
+  "generated_at": "2026-11-17T00:00:00Z",
+  "kind": "phase8d_hidden_isolation_audit",
+  "limitations": [
+    "isolation is operational, not cryptographic: same-UID/root processes can read the private root",
+    "the audit reads private metadata/material only to hash and compare; it never copies hidden bytes, ids, paths or content into public artifacts",
+    "a green isolation audit does not imply hidden benchmark quality, hidden generalisation or capability promotion",
+    "the hidden aggregate is aggregate-only; no per-sample hidden identifiers are permitted",
+    "the tracked-file scan is dynamic; the exact count is not retained because this artifact itself becomes tracked"
+  ],
+  "no_hidden_content_published": true,
+  "ok": true,
+  "operational_isolation": true,
+  "public_leak_scan": {
+    "findings": [],
+    "material_matches": [],
+    "tracked_files_scanned": "dynamic"
+  },
+  "reads": [
+    "private_manifest_metadata",
+    "private_material_hashes",
+    "public_commitment",
+    "public_manifest",
+    "hidden_aggregate",
+    "public_results"
+  ],
+  "reason": null,
+  "root": {
+    "configured_env": false,
+    "exists": true,
+    "is_dir": true,
+    "is_symlink": false,
+    "mode": "0o700",
+    "owner_only": true,
+    "path_published": false
+  },
+  "schema_version": 1,
+  "status": "ok",
+  "writes": [
+    "artifacts/phase8d-hidden-isolation-2026-11-17"
+  ]
+}

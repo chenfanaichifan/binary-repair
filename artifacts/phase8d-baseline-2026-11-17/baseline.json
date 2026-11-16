@@ -1,0 +1,135 @@
+{
+  "ancestry": {
+    "note": "Verified by tests with git merge-base; commit objects remain reachable after ref cleanup.",
+    "phase8c_evidence_tip_is_ancestor_of_base": true,
+    "phase8c_release_is_ancestor_of_base": true
+  },
+  "base_sha": "f1bb1f41eba1e0be61be09cea56091e8a03a9896",
+  "ci": {
+    "claims_latest_run": 43744573286,
+    "final_ci_conclusion": "success",
+    "final_ci_run": 43748886046,
+    "final_ubuntu_conclusion": "success",
+    "final_ubuntu_run": 43748886289,
+    "gated_code_ci_run": 43744573286,
+    "gated_code_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
+    "gated_code_ubuntu_run": 43744573230,
+    "note": "Final-SHA CI is recorded in the evidence addendum; claims cites the earlier gated-code CI.",
+    "source": "docs/release-phase8c-final-evidence-2026-11-16.md"
+  },
+  "consolidation": {
+    "contains_phase8c_evidence_tip": true,
+    "contains_phase8c_release": true,
+    "head_sha": "f1bb1f41eba1e0be61be09cea56091e8a03a9896",
+    "note": "The consolidation preserved commit and annotated-tag objects but not the original Phase-8C refs; tag object SHAs are recoverable with git fsck.",
+    "refs_removed_or_renamed": true
+  },
+  "gate": {
+    "check_ids": [
+      "release-tree-identity",
+      "static-coverage-gate",
+      "claims-measurement-diff",
+      "acceptance-contract",
+      "local-coverage-gate",
+      "meta-audit",
+      "acceptance-invariants",
+      "universe-unknown-zero",
+      "provenance-complete",
+      "provider-matrix",
+      "provider-coverage",
+      "nightly-real-lima-acceptance",
+      "full-pytest"
+    ],
+    "failed": 0,
+    "mode": "nightly",
+    "ok": true,
+    "passed": 13,
+    "path": "artifacts/release-gate-2026-11-16-phase8c/gate.json",
+    "release_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+    "required": 13,
+    "sha256": "5d8c33b4547783ddfa164b7c39b25316d0f86650e28c2028f42781c5556944ba",
+    "tree_sha": "4bf501314b6469328d0256031990bfc402ce6677"
+  },
+  "generated_at": "2026-11-17T00:00:00Z",
+  "kind": "phase8d_baseline",
+  "limitations": [
+    "The Phase-8C tag/evidence refs were deleted or renamed by consolidation; target commits are recorded by SHA and ancestry is tested, but the original refs are not resolvable.",
+    "The Phase-8C public result is 2 independently verified fixture repairs out of 24 eligible repair cases; it is not a general repair capability.",
+    "The hidden benchmark has 0 independently verified repairs and aggregate-only evidence.",
+    "Final-SHA hosted CI is recorded in the evidence addendum; claims.json cites the earlier gated-code CI run, not the final SHA CI run.",
+    "No new vulnerability-repair capability or capability promotion is claimed."
+  ],
+  "phase": "8D",
+  "phase8b": {
+    "note": "2/2 independently verified in the C1 reproduction; candidates match Phase-8B.",
+    "phase8b_artifact": "artifacts/phase8b-benchmark-2026-11-16/results.json",
+    "reproduction_artifact": "artifacts/phase8c-baseline-2026-11-16/phase8c-baseline-audit.json",
+    "samples": {
+      "heap-capacity-x86_64": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+      "stack-strcpy-x86_64": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4"
+    },
+    "verified": 2
+  },
+  "phase8c": {
+    "evidence_branch": {
+      "name": "release/2026-11-16-phase8c-evidence",
+      "status": "deleted_or_renamed_by_consolidation",
+      "target_sha": "ec503e4b1df53ad39fa836bd34d93a18564d78f9"
+    },
+    "evidence_tag": {
+      "name": "release-2026-11-16-phase8c-evidence",
+      "status": "deleted_or_renamed_by_consolidation",
+      "tag_object_sha": "08cc3719193d037335518d17bb3b5cb8b179475f",
+      "target_sha": "ec503e4b1df53ad39fa836bd34d93a18564d78f9"
+    },
+    "evidence_tip": "ec503e4b1df53ad39fa836bd34d93a18564d78f9",
+    "release_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+    "release_tag": {
+      "name": "release-2026-11-16-phase8c",
+      "status": "deleted_or_renamed_by_consolidation",
+      "tag_object_sha": "b03a0a461bb8cdacfa722c4cbd37e46b15b1ac9b",
+      "target_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944"
+    },
+    "tree_sha": "4bf501314b6469328d0256031990bfc402ce6677"
+  },
+  "phase8c_results": {
+    "hidden_analysis_only_count": 2,
+    "hidden_false_verified": 0,
+    "hidden_material_committed": false,
+    "hidden_runtime_count": 6,
+    "hidden_sample_count": 8,
+    "hidden_verified": 0,
+    "no_capability_promotion": true,
+    "no_hidden_generalization_claim": true,
+    "public_analysis_only_samples": 8,
+    "public_deterministic_claim_withdrawn": 1,
+    "public_false_verified": 0,
+    "public_rejected": 1,
+    "public_runtime_oracle_samples": 24,
+    "public_sample_count": 32,
+    "public_verified": 2
+  },
+  "schema_version": 1,
+  "sources": [
+    {
+      "path": "artifacts/release-gate-2026-11-16-phase8c/gate.json",
+      "sha256": "5d8c33b4547783ddfa164b7c39b25316d0f86650e28c2028f42781c5556944ba"
+    },
+    {
+      "path": "artifacts/release-gate-2026-11-16-phase8c/freeze.json",
+      "sha256": "1f2b1703258d48c80e86034fec8d9d22412b65957b3b40b63e84cdf4cbbb8ba2"
+    },
+    {
+      "path": "docs/release-phase8c-final-evidence-2026-11-16.md",
+      "sha256": "0c3ace9a3b0c74c4a4d4407ed38cfaefc90da8fb2321d224112b02f4765c8fb1"
+    },
+    {
+      "path": "artifacts/phase8c-release-2026-11-16/summary.json",
+      "sha256": "a4561cb48c5eff0b72f866f4597288c8261fef84f26ab3ffab1d9b52980c858d"
+    },
+    {
+      "path": "artifacts/phase8c-baseline-2026-11-16/phase8c-baseline-audit.json",
+      "sha256": "ba3fd5400a3c7614af8f396733cb32d38402a9ba8e43a5334c746b38cdba16af"
+    }
+  ]
+}

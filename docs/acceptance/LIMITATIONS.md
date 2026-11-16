@@ -813,3 +813,24 @@ generalisation.
   remains the existing 13 required nightly checks; self-hosted Lima nightly is
   `not_run` and is not claimed. Phase-8D open-world discovery/Acceptance 2.0 and
   Phase-9-16 semantic/repair/reflection expansion are not implemented.
+
+## Phase-8D (2026-11-17)
+
+- Phase-8D is a discovery/acceptance/governance phase; it adds no vulnerability
+  repair capability and promotes no capability.
+- The 297-unit capability registry is declared-space coverage, not coverage of
+  all possible binaries or vulnerabilities; outside-catalog unknown is
+  explicitly unmeasurable with a null count.
+- Acceptance 2.0 detected the 14 declared mutations, but the rule set is finite
+  and correct-but-new-layout False Reject remains incompletely measured.
+- The heap-malloc deterministic candidate remains rejected. Its root cause is a
+  generator plan/ABI-evidence defect plus a conservative verifier limitation;
+  verifier rules were not relaxed to force a pass.
+- Hidden runtime attribution reports `detection_missed` for 6/6 samples; hidden
+  material remains aggregate-only and hidden generalisation is not established.
+- Hidden isolation is operational, not cryptographic; same-UID/root readers can
+  inspect the private root.
+- The external CWE snapshot is a discovery input, not evidence of repair
+  support; 752 entries remain unmapped.
+- sample-based discovery and external corpus ingestion remain not_run; the
+  Phase-8C frozen evidence and historical benchmark results are not rewritten.

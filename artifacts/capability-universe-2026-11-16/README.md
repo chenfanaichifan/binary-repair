@@ -5,7 +5,7 @@ No provider calls, no network, no git commands, no wall-clock timestamps.
 
 - generated_at: `2026-11-14T00:00:00Z` (artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#audit_date)
 - registry digest: `7da89f2765a1b2103d9c78d81d95ab69da664ca275a625f153561cfeba9ca225`
-- source digest: `8837190c0505dacd41ba5fe48b6b30501b046b86e8fd723a8d4348ba88cba0ff`
+- source digest: `6f54c3142f1355b4f0f17f29515c6b97465d277005b4d244d02b44501bee6d6c`
 
 Artifact files: `dimension-registry.json` (machine-readable), `README.md` (this file), `SHA256SUMS` (covers both; never itself).
 

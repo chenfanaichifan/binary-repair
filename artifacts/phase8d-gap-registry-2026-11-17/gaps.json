@@ -1,0 +1,572 @@
+{
+  "audit_ids": [
+    "AUDIT-8D-01",
+    "AUDIT-8D-02",
+    "AUDIT-8D-03",
+    "AUDIT-8D-04",
+    "AUDIT-8D-05",
+    "AUDIT-8D-06",
+    "AUDIT-8D-07",
+    "AUDIT-8D-08"
+  ],
+  "capability_dimensions": [
+    "D02",
+    "D03",
+    "D09",
+    "D10",
+    "D13",
+    "D14",
+    "D19",
+    "D20"
+  ],
+  "capability_promotion": false,
+  "generated_at": "2026-11-17T00:00:00Z",
+  "historical_registry": {
+    "kind": "gap_registry",
+    "path": "artifacts/gap-registry-2026-11-16/gaps.json",
+    "record_count": 64,
+    "rewritten": false,
+    "sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c"
+  },
+  "kind": "phase8d_gap_registry",
+  "limitations": [
+    "these are audit findings, not repair capability claims",
+    "reproduction_status=reproduced means the evidence was inspected/replayed, not that the gap is fixed",
+    "no record may be promoted by this builder; only the separate promotion gate can evaluate a capability state",
+    "the historical Phase-7 registry bytes must remain unchanged; lineage is by reference only",
+    "hidden evidence remains aggregate-only; no hidden sample ids/paths/content are included"
+  ],
+  "no_auto_promotion": true,
+  "no_capability_promotion": true,
+  "phase8d_dimensions_covered": [
+    "D02",
+    "D09",
+    "D10"
+  ],
+  "purpose": "Additive Phase-8D audit gap registry: eight AUDIT-8D findings with reproduction status, confidence, dependencies, historical lineage and concrete experiments. The historical Phase-7 registry is read-only and is never rewritten; no record is promoted to a capability.",
+  "record_count": 8,
+  "records": [
+    {
+      "audit_id": "AUDIT-8D-01",
+      "capability_dimensions": [
+        "D02",
+        "D19"
+      ],
+      "category": "hidden_evidence_gap",
+      "confidence": "high",
+      "dependencies": [],
+      "discovery_source": "phase8d_audit",
+      "evidence_refs": [
+        "artifacts/phase8c-hidden-2026-11-16/aggregate.json#aggregate.denominator",
+        "artifacts/phase8c-hidden-2026-11-16/aggregate.json#by_arch.x86_64",
+        "benchmark/phase8c/hidden-commitment.json#samples",
+        "artifacts/phase8c-quality-2026-11-16/full/quality.json#checks[id=hidden-aggregate]"
+      ],
+      "existing_capability": "Phase-8C emits per-public-sample stage metrics and hidden aggregate-only counts; hidden per-stage attribution is not implemented and hidden per-sample identifiers must stay private.",
+      "false_verified_risk": "high",
+      "gap_id": "GAP-8D-AUDIT-01",
+      "kind": "phase8d_gap_record",
+      "limitations": [
+        "hidden stage attribution must remain aggregate-only; private sample ids/paths cannot be public",
+        "a zero-candidate result is a measured coverage gap, not a capability success"
+      ],
+      "lineage": {
+        "blocks": [],
+        "derived_from": [
+          "GAP-FAIL-META-GATE-MISMATCH-GATE-SCENARIO-EXECUTION",
+          "GAP-KNOW-4E20E505D6BE"
+        ],
+        "extends": [],
+        "related_to": [],
+        "supersedes": []
+      },
+      "observed_failure": "The final hidden lane executed 8 samples (6 runtime, 2 analysis-only) but produced 0 candidates and 0 independent verifications. The public aggregate has only final status counts/rates; it cannot attribute the zero-candidate outcome to detection, root-cause, localization, strategy, candidate generation or verification. A zero result without stage attribution is an evaluation gap, not evidence of capability.",
+      "owner": "benchmark",
+      "proposed_experiment": {
+        "experiment_id": "EXP-8D-HIDDEN-STAGE-ATTRIBUTION",
+        "status": "proposed",
+        "steps": [
+          "extend the hidden aggregate with private-stage counters for detection, root cause, localization, strategy and candidate generation, and publish only the aggregate counts",
+          "replay the final hidden lane with D00/D01 instrumentation and verify the counters sum to the 8 executed samples without exposing per-sample ids",
+          "record stage attribution as evidence; do not promote any capability from the hidden result"
+        ]
+      },
+      "reproduction_status": "reproduced",
+      "review_by": "2027-02-28",
+      "schema_version": 1,
+      "severity": "high",
+      "status": "open",
+      "subcategory": "hidden-zero-candidates-stage-unattributed",
+      "target": {
+        "benchmark_id": "phase8c-hidden",
+        "kind": "hidden_benchmark_aggregate"
+      },
+      "verification_required": true
+    },
+    {
+      "audit_id": "AUDIT-8D-02",
+      "capability_dimensions": [
+        "D03",
+        "D09",
+        "D10"
+      ],
+      "category": "verifier_root_cause_gap",
+      "confidence": "high",
+      "dependencies": [
+        "AUDIT-8D-01"
+      ],
+      "discovery_source": "phase8d_audit",
+      "evidence_refs": [
+        "benchmark/phase8c/results.json#samples[id=heap-malloc]",
+        "artifacts/phase8c-benchmark-2026-11-16/disagreements.json#0",
+        "app/services/independent_verifier.py#abi_blocks",
+        "app/services/benchmark_runner.py#disagreements"
+      ],
+      "existing_capability": "Phase-8B/C verifier fails closed and the benchmark runner withdraws the deterministic claim; no root-cause probe classifies the ABI rejection.",
+      "false_verified_risk": "critical",
+      "gap_id": "GAP-8D-AUDIT-02",
+      "kind": "phase8d_gap_record",
+      "limitations": [
+        "no verifier loosening is permitted; a root-cause explanation does not verify the candidate",
+        "ABI evidence unavailable must remain not_run, never pass"
+      ],
+      "lineage": {
+        "blocks": [],
+        "derived_from": [
+          "GAP-FAIL-META-GATE-MISMATCH-GATE-REWRITE",
+          "GAP-KNOW-2449225E53BC",
+          "GAP-KNOW-0046331D4CF9"
+        ],
+        "extends": [],
+        "related_to": [],
+        "supersedes": []
+      },
+      "observed_failure": "The public heap-malloc candidate was claimed deterministic-verified, then independently rejected by the ABI check with branch_target_unknown, call_target_not_allowed and no_ret. The disagreement is preserved, but no root-cause classification exists yet, so it is unclear whether the engine's plan omitted ABI evidence, the verifier required evidence the sample cannot supply, or both.",
+      "owner": "verifier",
+      "proposed_experiment": {
+        "experiment_id": "EXP-8D-HEAP-MALLOC-ABI-ROOT-CAUSE",
+        "status": "proposed",
+        "steps": [
+          "replay the exact heap-malloc candidate/plan/verifier metadata without changing verifier acceptance rules",
+          "classify the rejection as engine-plan omission, verifier-evidence limitation or sample limitation using provenance evidence",
+          "add the classification to the finding and rerun the benchmark; keep published false_verified=0 and the withdrawal intact"
+        ]
+      },
+      "reproduction_status": "reproduced",
+      "review_by": "2027-02-28",
+      "schema_version": 1,
+      "severity": "high",
+      "status": "open",
+      "subcategory": "heap-malloc-abi-rejection-unclassified",
+      "target": {
+        "kind": "benchmark_sample",
+        "public_results": "benchmark/phase8c/results.json",
+        "sample_id": "heap-malloc"
+      },
+      "verification_required": true
+    },
+    {
+      "audit_id": "AUDIT-8D-03",
+      "capability_dimensions": [
+        "D09",
+        "D14",
+        "D20"
+      ],
+      "category": "discovery_gap",
+      "confidence": "high",
+      "dependencies": [],
+      "discovery_source": "phase8d_audit",
+      "evidence_refs": [
+        "artifacts/gap-registry-2026-11-16/README.md#mechanism-runs",
+        "artifacts/gap-registry-2026-11-16/gaps.json#validation",
+        "scripts/discover_capability_gaps.py#mechanisms"
+      ],
+      "existing_capability": "Three deterministic mechanisms produce 64 records; four mechanisms are not_run and must not be counted as zero-gap evidence.",
+      "false_verified_risk": "high",
+      "gap_id": "GAP-8D-AUDIT-03",
+      "kind": "phase8d_gap_record",
+      "limitations": [
+        "no fabricated mutation/metamorphic corpus; absent corpora remain not_run",
+        "discovery candidates are never capability promotion evidence"
+      ],
+      "lineage": {
+        "blocks": [],
+        "derived_from": [
+          "GAP-KNOW-8CFA10A33EE8",
+          "GAP-KNOW-E9D869738D70"
+        ],
+        "extends": [],
+        "related_to": [],
+        "supersedes": []
+      },
+      "observed_failure": "The historical discovery report runs only knowledge, failure_driven and differential (3/7). Mutation, metamorphic, sample_based and knowledge_source_scan are explicit not_run with no engine/corpus; the absence of four mechanisms means the capability space is only partially searched.",
+      "owner": "discovery",
+      "proposed_experiment": {
+        "experiment_id": "EXP-8D-DISCOVERY-ADAPTERS",
+        "status": "proposed",
+        "steps": [
+          "implement one deterministic mutation/metamorphic adapter with a versioned local corpus and provenance",
+          "implement sample_based/knowledge_source_scan only when a local, licensed corpus/feed is provisioned; otherwise keep explicit not_run",
+          "run all mechanisms together and compare newly discovered gaps against the historical registry without rewriting it"
+        ]
+      },
+      "reproduction_status": "reproduced",
+      "review_by": "2027-03-31",
+      "schema_version": 1,
+      "severity": "high",
+      "status": "open",
+      "subcategory": "four-of-seven-discovery-mechanisms-not-run",
+      "target": {
+        "kind": "gap_registry_mechanisms",
+        "registry": "artifacts/gap-registry-2026-11-16"
+      },
+      "verification_required": true
+    },
+    {
+      "audit_id": "AUDIT-8D-04",
+      "capability_dimensions": [
+        "D19"
+      ],
+      "category": "acceptance_gap",
+      "confidence": "high",
+      "dependencies": [],
+      "discovery_source": "phase8d_audit",
+      "evidence_refs": [
+        "artifacts/acceptance-model-audit-2026-11-16/report.json#positive_case_count",
+        "artifacts/acceptance-model-audit-2026-11-16/report.json#negative_case_count",
+        "app/services/acceptance_models.py#AM01-AM28"
+      ],
+      "existing_capability": "13 positive and 49 negative cases exist; there is no measured valid-repair-acceptance suite or False Reject rate.",
+      "false_verified_risk": "critical",
+      "gap_id": "GAP-8D-AUDIT-04",
+      "kind": "phase8d_gap_record",
+      "limitations": [
+        "a valid-repair fixture needs independent review; generator-only self-acceptance is not evidence",
+        "false-reject coverage is not a capability promotion"
+      ],
+      "lineage": {
+        "blocks": [],
+        "derived_from": [
+          "GAP-FAIL-META-GATE-MISMATCH-SAFE-DEFAULT",
+          "GAP-FAIL-META-GATE-MISMATCH-GATE-PROFILE-ENFORCEMENT"
+        ],
+        "extends": [],
+        "related_to": [],
+        "supersedes": []
+      },
+      "observed_failure": "The acceptance audit covers 62 positive/negative cases across AM01-AM28 with precision/recall 1.0, but it has no systematic False Reject set: valid repairs that a correct rule must accept are not independently tested as a class. A rule set can reject all repairs and still pass the current negative-heavy matrix.",
+      "owner": "acceptance",
+      "proposed_experiment": {
+        "experiment_id": "EXP-8D-FALSE-REJECT-SUITE",
+        "status": "proposed",
+        "steps": [
+          "construct independently reviewed valid-repair fixtures whose acceptance is required for each affected AM class",
+          "add a false-reject metric and a differential valid-vs-invalid decision table; never pass by rejecting all inputs",
+          "run the suite and publish false_reject_count/rate with failures counted, not hidden"
+        ]
+      },
+      "reproduction_status": "reproduced",
+      "review_by": "2027-03-31",
+      "schema_version": 1,
+      "severity": "high",
+      "status": "open",
+      "subcategory": "acceptance-false-reject-coverage-absent",
+      "target": {
+        "kind": "acceptance_model",
+        "report": "artifacts/acceptance-model-audit-2026-11-16/report.json"
+      },
+      "verification_required": true
+    },
+    {
+      "audit_id": "AUDIT-8D-05",
+      "capability_dimensions": [
+        "D19"
+      ],
+      "category": "acceptance_gap",
+      "confidence": "high",
+      "dependencies": [
+        "AUDIT-8D-04"
+      ],
+      "discovery_source": "phase8d_audit",
+      "evidence_refs": [
+        "artifacts/acceptance-model-audit-2026-11-16/report.json#case_count",
+        "scripts/audit_acceptance_models.py#cases",
+        "app/services/acceptance_models.py#thresholds"
+      ],
+      "existing_capability": "62 static cases; no acceptance mutation harness, no threshold/scope mutation results, no negative test of the acceptance rule engine.",
+      "false_verified_risk": "critical",
+      "gap_id": "GAP-8D-AUDIT-05",
+      "kind": "phase8d_gap_record",
+      "limitations": [
+        "rule mutation is a test of the acceptance model, not a license to change production thresholds",
+        "mutation survival=0 is required before any promotion evidence is trusted"
+      ],
+      "lineage": {
+        "blocks": [],
+        "derived_from": [
+          "GAP-FAIL-META-GATE-MISMATCH-GATE-SATISFIABILITY"
+        ],
+        "extends": [],
+        "related_to": [],
+        "supersedes": []
+      },
+      "observed_failure": "The acceptance model has no systematic rule-mutation suite: thresholds, scope rules and required-evidence gates are not deliberately weakened/altered to prove the audit still rejects invalid candidates. The current audit tests known invalid fixtures, not the audit's own rules.",
+      "owner": "acceptance",
+      "proposed_experiment": {
+        "experiment_id": "EXP-8D-ACCEPTANCE-MUTATION",
+        "status": "proposed",
+        "steps": [
+          "inject bounded mutations into thresholds, scope checks and required-evidence rules in a test-only copy",
+          "verify the audit detects every mutation that would admit an invalid candidate and that legal-rule changes are review-gated",
+          "record mutation survival counts and never mutate the production acceptance model"
+        ]
+      },
+      "reproduction_status": "reproduced",
+      "review_by": "2027-03-31",
+      "schema_version": 1,
+      "severity": "high",
+      "status": "open",
+      "subcategory": "acceptance-rule-mutation-absent",
+      "target": {
+        "kind": "acceptance_model",
+        "report": "artifacts/acceptance-model-audit-2026-11-16/report.json"
+      },
+      "verification_required": true
+    },
+    {
+      "audit_id": "AUDIT-8D-06",
+      "capability_dimensions": [
+        "D20"
+      ],
+      "category": "reflection_gap",
+      "confidence": "high",
+      "dependencies": [],
+      "discovery_source": "phase8d_audit",
+      "evidence_refs": [
+        "artifacts/autonomous-reflection-2026-11-16/reflection.json#summary",
+        "artifacts/autonomous-reflection-2026-11-16/reflection.json#contract.capability_decisions",
+        "app/services/reflection_engine.py"
+      ],
+      "existing_capability": "Reflection produces analysis-only records; verified is always false and no experiment execution or result analyzer exists.",
+      "false_verified_risk": "high",
+      "gap_id": "GAP-8D-AUDIT-06",
+      "kind": "phase8d_gap_record",
+      "limitations": [
+        "executing a reflection experiment does not promote a capability",
+        "untrusted experiment output must not be treated as verification without an independent verifier"
+      ],
+      "lineage": {
+        "blocks": [],
+        "derived_from": [
+          "GAP-KNOW-E9D869738D70"
+        ],
+        "extends": [],
+        "related_to": [],
+        "supersedes": []
+      },
+      "observed_failure": "The reflection artifact contains 101 records and 12 candidate decisions with proposed experiments, but there is no execution runner/result artifact: plans are not executed, falsification conditions are not evaluated, and no regression/promotion decision follows from them.",
+      "owner": "reflection",
+      "proposed_experiment": {
+        "experiment_id": "EXP-8D-REFLECTION-EXECUTION",
+        "status": "proposed",
+        "steps": [
+          "select one bounded proposed experiment with a falsification condition and an isolated fixture",
+          "execute it in a sandboxed runner and persist input/output/exit/oracle evidence under a new artifact directory",
+          "feed the result back into reflection only as an analysis input; any capability change still needs the promotion gate"
+        ]
+      },
+      "reproduction_status": "reproduced",
+      "review_by": "2027-03-31",
+      "schema_version": 1,
+      "severity": "high",
+      "status": "open",
+      "subcategory": "reflection-plans-without-execution",
+      "target": {
+        "artifact": "artifacts/autonomous-reflection-2026-11-16/reflection.json",
+        "kind": "reflection_artifact"
+      },
+      "verification_required": true
+    },
+    {
+      "audit_id": "AUDIT-8D-07",
+      "capability_dimensions": [
+        "D19",
+        "D20"
+      ],
+      "category": "governance_gap",
+      "confidence": "high",
+      "dependencies": [
+        "AUDIT-8D-01",
+        "AUDIT-8D-02"
+      ],
+      "discovery_source": "phase8d_audit",
+      "evidence_refs": [
+        "docs/status/claims.json#phase8c_ground_truth.status",
+        "docs/acceptance/LIMITATIONS.md#phase-8c",
+        "scripts/audit_repair_readiness.py#G30"
+      ],
+      "existing_capability": "Phase-8B/C evidence records verified/rejected/not_run but there is no promotion state machine, no auto-promotion ban, and no independent approval contract.",
+      "false_verified_risk": "critical",
+      "gap_id": "GAP-8D-AUDIT-07",
+      "kind": "phase8d_gap_record",
+      "limitations": [
+        "a gate decision is not a capability claim; promoted remains false until independent approval",
+        "hidden evidence cannot be exposed per sample just to satisfy generalization"
+      ],
+      "lineage": {
+        "blocks": [],
+        "derived_from": [
+          "GAP-FAIL-META-GATE-MISMATCH-GATE-PROFILE-ENFORCEMENT",
+          "GAP-FAIL-META-GATE-MISMATCH-GATE-PROFILE-CHECKS"
+        ],
+        "extends": [],
+        "related_to": [],
+        "supersedes": []
+      },
+      "observed_failure": "No promotion gate enforces discovered -> analysis_only -> candidate_generated -> independently_verified -> generalized -> promoted. There is no legal-transition checker, no evidence requirements per level, no hidden/holdout and regression requirements, and no independent/human approval for promotion. A record can therefore be described as a capability without a verifiable state history.",
+      "owner": "governance",
+      "proposed_experiment": {
+        "experiment_id": "EXP-8D-PROMOTION-GATE",
+        "status": "proposed",
+        "steps": [
+          "implement the additive promotion_gate service with legal transitions, per-level evidence requirements and an independent-approval field",
+          "evaluate the Phase-8C public/hidden evidence: independently_verified may be reached only by public fixture evidence; generalized must fail while hidden verified=0; promoted must fail without independent approval",
+          "publish denied/allowed decisions; never auto-promote and never treat not_run as pass"
+        ]
+      },
+      "reproduction_status": "reproduced",
+      "review_by": "2027-02-28",
+      "schema_version": 1,
+      "severity": "critical",
+      "status": "open",
+      "subcategory": "no-promotion-state-machine",
+      "target": {
+        "kind": "capability_promotion",
+        "policy": "missing"
+      },
+      "verification_required": true
+    },
+    {
+      "audit_id": "AUDIT-8D-08",
+      "capability_dimensions": [
+        "D02",
+        "D13",
+        "D19"
+      ],
+      "category": "isolation_gap",
+      "confidence": "high",
+      "dependencies": [],
+      "discovery_source": "phase8d_audit",
+      "evidence_refs": [
+        "docs/operations/phase8c-hidden-corpus.md#isolation-is-operational-not-cryptographic",
+        "benchmark/phase8c/hidden-commitment.json#limitations",
+        "artifacts/phase8c-hidden-2026-11-16/aggregate.json#aggregate",
+        "artifacts/phase8c-contamination-2026-11-16/hidden/contamination.json#verdict"
+      ],
+      "existing_capability": "C4/C5 enforce 0700, public commitment and contamination checks at build time; no independent Phase-8D isolation audit artifact exists.",
+      "false_verified_risk": "critical",
+      "gap_id": "GAP-8D-AUDIT-08",
+      "kind": "phase8d_gap_record",
+      "limitations": [
+        "operational isolation is not cryptographic; same-UID/root readers remain a limitation",
+        "the audit must not copy hidden bytes, sample ids or private paths into public artifacts"
+      ],
+      "lineage": {
+        "blocks": [],
+        "derived_from": [
+          "GAP-CLAIM-RG-EXTERNAL-POC-DOC-MACHO-X86-64",
+          "GAP-FAIL-META-GATE-MISMATCH-GATE-POC-UNAVAILABLE"
+        ],
+        "extends": [],
+        "related_to": [],
+        "supersedes": []
+      },
+      "observed_failure": "The hidden corpus root is 0700 and commitment-only publicly, but isolation is operational: same-UID/root readers can inspect it, and no automated audit checks root permissions, commitment/aggregate consistency, public leakage and material integrity together. A clean hidden contamination result is not a cryptographic isolation proof.",
+      "owner": "security",
+      "proposed_experiment": {
+        "experiment_id": "EXP-8D-HIDDEN-ISOLATION-AUDIT",
+        "status": "proposed",
+        "steps": [
+          "implement a read-only audit for root mode, commitment/aggregate consistency, private material integrity and public leak scanning",
+          "fail closed on 0700 violation, tamper, missing commitment or hidden id/path leakage; record operational-not-cryptographic limitation explicitly",
+          "run it against the real private root read-only and publish only the audit summary/hashes"
+        ]
+      },
+      "reproduction_status": "reproduced",
+      "review_by": "2027-02-28",
+      "schema_version": 1,
+      "severity": "critical",
+      "status": "open",
+      "subcategory": "hidden-isolation-operational-not-cryptographic",
+      "target": {
+        "commitment": "benchmark/phase8c/hidden-commitment.json",
+        "kind": "hidden_corpus",
+        "root": "private"
+      },
+      "verification_required": true
+    }
+  ],
+  "records_by_category": {
+    "acceptance_gap": 2,
+    "discovery_gap": 1,
+    "governance_gap": 1,
+    "hidden_evidence_gap": 1,
+    "isolation_gap": 1,
+    "reflection_gap": 1,
+    "verifier_root_cause_gap": 1
+  },
+  "records_by_reproduction": {
+    "reproduced": 8
+  },
+  "records_by_status": {
+    "open": 8
+  },
+  "schema_version": 1,
+  "validation": {
+    "audit_ids": [
+      "AUDIT-8D-01",
+      "AUDIT-8D-02",
+      "AUDIT-8D-03",
+      "AUDIT-8D-04",
+      "AUDIT-8D-05",
+      "AUDIT-8D-06",
+      "AUDIT-8D-07",
+      "AUDIT-8D-08"
+    ],
+    "auto_promotion": false,
+    "capability_promotion": false,
+    "dimensions": [
+      "D02",
+      "D03",
+      "D09",
+      "D10",
+      "D13",
+      "D14",
+      "D19",
+      "D20"
+    ],
+    "historical_ids": 64,
+    "historical_ids_checked": 64,
+    "historical_registry_rewritten": false,
+    "historical_sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c",
+    "lineage_parent_ids": [
+      "GAP-CLAIM-RG-EXTERNAL-POC-DOC-MACHO-X86-64",
+      "GAP-FAIL-META-GATE-MISMATCH-GATE-POC-UNAVAILABLE",
+      "GAP-FAIL-META-GATE-MISMATCH-GATE-PROFILE-CHECKS",
+      "GAP-FAIL-META-GATE-MISMATCH-GATE-PROFILE-ENFORCEMENT",
+      "GAP-FAIL-META-GATE-MISMATCH-GATE-REWRITE",
+      "GAP-FAIL-META-GATE-MISMATCH-GATE-SATISFIABILITY",
+      "GAP-FAIL-META-GATE-MISMATCH-GATE-SCENARIO-EXECUTION",
+      "GAP-FAIL-META-GATE-MISMATCH-SAFE-DEFAULT",
+      "GAP-KNOW-0046331D4CF9",
+      "GAP-KNOW-2449225E53BC",
+      "GAP-KNOW-4E20E505D6BE",
+      "GAP-KNOW-8CFA10A33EE8",
+      "GAP-KNOW-E9D869738D70"
+    ],
+    "ok": true,
+    "record_count": 8,
+    "unique_gap_ids": 8,
+    "violations": []
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "generated_at": "2026-11-17T00:00:00Z",
+  "historical_registry": "artifacts/gap-registry-2026-11-16/gaps.json",
+  "historical_registry_sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c",
+  "kind": "phase8d_discovery_mechanism_registry",
+  "limitations": [
+    "This is an additive registry; the historical seven-mechanism artifact is not rewritten.",
+    "Standalone mechanisms have real Phase-8D evidence but are not integrated into scripts/discover_capability_gaps.py.",
+    "sample_based discovery remains not_run; no external sample corpus was ingested.",
+    "Candidate counts are discovery inputs, not repaired or independently verified capabilities."
+  ],
+  "mechanism_count": 7,
+  "records": [
+    {
+      "detail": "Historical knowledge adapter remains the only integrated catalog mapper; no new support claim.",
+      "evidence": "artifacts/gap-registry-2026-11-16/gaps.json",
+      "evidence_sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c",
+      "mechanism": "knowledge",
+      "phase7_status": "run",
+      "phase8d_status": "run",
+      "support_claimed": false
+    },
+    {
+      "detail": "Historical failure-driven adapter remains integrated; Phase-8D gap records reference it.",
+      "evidence": "artifacts/gap-registry-2026-11-16/gaps.json",
+      "evidence_sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c",
+      "mechanism": "failure_driven",
+      "phase7_status": "run",
+      "phase8d_status": "run",
+      "support_claimed": false
+    },
+    {
+      "detail": "Historical declared-vs-measured differential adapter remains integrated.",
+      "evidence": "artifacts/gap-registry-2026-11-16/gaps.json",
+      "evidence_sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c",
+      "mechanism": "differential",
+      "phase7_status": "run",
+      "phase8d_status": "run",
+      "support_claimed": false
+    },
+    {
+      "detail": "11 family-specific input mutations executed through the real guest oracle; adapter is standalone, not wired into scripts/discover_capability_gaps.py.",
+      "evidence": "artifacts/phase8d-discovery-2026-11-17/discovery.json",
+      "evidence_sha256": "f1aa6037ddd0a4e9c477ef9341b8d3b552965d29103a47b7f9ee17589424ba62",
+      "mechanism": "mutation",
+      "phase7_status": "not_run",
+      "phase8d_status": "run_standalone",
+      "support_claimed": false
+    },
+    {
+      "detail": "Four same-source compiler variants compared with actual deterministic-engine records; adapter is standalone.",
+      "evidence": "artifacts/phase8d-discovery-2026-11-17/discovery.json",
+      "evidence_sha256": "f1aa6037ddd0a4e9c477ef9341b8d3b552965d29103a47b7f9ee17589424ba62",
+      "mechanism": "metamorphic",
+      "phase7_status": "not_run",
+      "phase8d_status": "run_standalone",
+      "support_claimed": false
+    },
+    {
+      "evidence": null,
+      "evidence_sha256": null,
+      "mechanism": "sample_based",
+      "phase7_status": "not_run",
+      "phase8d_status": "not_run",
+      "reason": "no external sample corpus was ingested into this Phase-8D tree; not_run instead of inventing samples",
+      "support_claimed": false
+    },
+    {
+      "detail": "Versioned CWE 5.0 snapshot parsed into 232 candidates and drift facts; adapter is standalone and does not claim support.",
+      "evidence": "artifacts/phase8d-external-knowledge-2026-11-17/external-knowledge.json",
+      "evidence_sha256": "98d27be7c449fb57b9c7013a1ae534819b859aa57a90dc5732b4e0322e5d9786",
+      "mechanism": "knowledge_source_scan",
+      "phase7_status": "not_run",
+      "phase8d_status": "run_standalone",
+      "support_claimed": false
+    }
+  ],
+  "schema_version": 1,
+  "summary": {
+    "capability_promotion": false,
+    "effective_run_count": 6,
+    "integrated_run_count": 3,
+    "not_run_count": 1,
+    "sample_based_status": "not_run",
+    "standalone_run_count": 3,
+    "support_claimed": false
+  }
+}

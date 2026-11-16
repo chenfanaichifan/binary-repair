@@ -1,0 +1,2949 @@
+{
+  "case_count": 18,
+  "cases": [
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": null,
+          "associated_changes": [],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": false,
+            "present": false
+          },
+          "changed_ranges": [],
+          "control_flow": {},
+          "layout": "resized",
+          "patch_plan": null,
+          "present": false,
+          "replay": {
+            "byte_exact": false,
+            "replayed_sha256": ""
+          },
+          "resolved_scope": {},
+          "sha256": null
+        },
+        "claims": {
+          "analysis_only": true,
+          "scope": "analysis_only",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "analysis_only",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "analysis_only",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "analysis_only",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "analysis_only"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "analysis-only-no-candidate",
+      "expected_decision": "analysis_only",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": false,
+        "candidate_sha256": null,
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "analysis_only",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-analysis-only-no-candidate",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": true,
+          "status": "inconclusive"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "correct-candidate-inconclusive",
+      "expected_decision": "inconclusive",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-correct-candidate-inconclusive",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": null,
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": true
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "cave",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "correct-new-layout-unknown-abi",
+      "expected_decision": "not_run",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "cave",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-correct-new-layout-unknown-abi",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": true,
+          "status": "inconclusive"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "inconclusive-conflicting-evidence",
+      "expected_decision": "inconclusive",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-inconclusive-conflicting-evidence",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [],
+            "derived": false
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "invalid-abi-missing",
+      "expected_decision": "rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-invalid-abi-missing",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": true,
+          "scope": "analysis_only",
+          "verified": true,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "analysis_only",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "analysis_only"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "invalid-analysis-only-verified",
+      "expected_decision": "rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "analysis_only",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-invalid-analysis-only-verified",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": false,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "invalid-associated-unauthorized",
+      "expected_decision": "rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-invalid-associated-unauthorized",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "bad"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "invalid-evidence-tampered",
+      "expected_decision": "rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-invalid-evidence-tampered",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": true,
+          "independent": false,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "invalid-generator-verdict",
+      "expected_decision": "rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-invalid-generator-verdict",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": null,
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "invalid-no-plan",
+      "expected_decision": "rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-invalid-no-plan",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": true,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "not_run"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "invalid-not-run-verified",
+      "expected_decision": "rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-invalid-not-run-verified",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 0,
+          "boundary_passed": false,
+          "cases": 0,
+          "executed": false,
+          "passed": false
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "invalid-regression-missing",
+      "expected_decision": "rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-invalid-regression-missing",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "whole_program",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "whole_program",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "invalid-scope-inflation",
+      "expected_decision": "rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-invalid-scope-inflation",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": true
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "invalid-whole-image-claim",
+      "expected_decision": "rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-invalid-whole-image-claim",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": null,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "not-run-oracle-unknown",
+      "expected_decision": "not_run",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-not-run-oracle-unknown",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "resized",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "positive-new-layout",
+      "expected_decision": "verified",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "resized",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-positive-new-layout",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": true
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "cave",
+          "patch_plan": {
+            "operations": [
+              {
+                "after_hex": "e80000000090",
+                "before_hex": "e80000000000",
+                "kind": "replace",
+                "original_offset": 16,
+                "size": 6
+              },
+              {
+                "after_hex": "90909090909090909090909090909090",
+                "before_hex": "",
+                "kind": "insert",
+                "original_offset": 64,
+                "size": 16
+              }
+            ],
+            "target_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "positive-new-layout-cave",
+      "expected_decision": "verified",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "cave",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-positive-new-layout-cave",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "candidate": {
+          "abi": {
+            "blocks": [
+              {
+                "arch": "x86_64",
+                "size": 48,
+                "va": 4198656
+              }
+            ],
+            "derived": true
+          },
+          "associated_changes": [
+            {
+              "authorization_ref": "contract:capacity-message",
+              "end": 4202528,
+              "kind": "rodata_message",
+              "va": 4202496
+            }
+          ],
+          "associated_changes_authorized": true,
+          "cave": {
+            "executable": true,
+            "present": false
+          },
+          "changed_ranges": [
+            {
+              "end": 4198464,
+              "va": 4198416
+            },
+            {
+              "end": 4198544,
+              "va": 4198528
+            }
+          ],
+          "control_flow": {
+            "branch_targets": "resolved",
+            "call_targets": "allowed"
+          },
+          "layout": "same_length",
+          "patch_plan": null,
+          "present": true,
+          "replay": {
+            "byte_exact": true,
+            "replayed_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "resolved_scope": {
+            "end": 4198912,
+            "kind": "va_range",
+            "va": 4198400
+          },
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "claims": {
+          "analysis_only": false,
+          "scope": "function",
+          "verified": false,
+          "whole_image": false
+        },
+        "environment": {
+          "identity": "reference-host-phase8d",
+          "repeats": 3,
+          "reproducible": true
+        },
+        "evidence": [
+          {
+            "evidence_id": "ev-static",
+            "independent": true,
+            "mode": "static",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-dynamic",
+            "independent": true,
+            "mode": "dynamic",
+            "provenance": "recorded",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "oracle": {
+          "candidate_eliminated": true,
+          "executed": true,
+          "generator_verdict_used": false,
+          "independent": true,
+          "original_vulnerable": true,
+          "runner": "limactl",
+          "tier": "emulated_run"
+        },
+        "regression": {
+          "boundary_cases": 2,
+          "boundary_passed": true,
+          "cases": 3,
+          "executed": true,
+          "passed": true
+        },
+        "scope": "function",
+        "semantic": {
+          "cases": 4,
+          "claim": "bounded",
+          "equivalence_claimed": false,
+          "executed": true,
+          "preserved": true
+        },
+        "state": {
+          "inconclusive": false,
+          "status": "verified"
+        },
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "positive-same-length",
+      "expected_decision": "verified",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "benchmark_version": "phase8d",
+        "candidate_layout": "same_length",
+        "candidate_present": true,
+        "candidate_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "task-positive-same-length",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    }
+  ],
+  "generated_at": "2026-11-17T00:00:00Z",
+  "kind": "phase8d_acceptance_2_cases",
+  "schema_version": 2
+}

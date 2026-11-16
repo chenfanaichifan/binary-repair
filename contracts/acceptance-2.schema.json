@@ -1,0 +1,415 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binaryrepair.local/contracts/acceptance-2.schema.json",
+  "title": "Phase-8D Acceptance 2.0 registry, L0-L7 cases and mutation report",
+  "description": "Additive acceptance layers and mutation audit. Historical AM01-AM28 artifacts are not rewritten. Decisions not_run, inconclusive and analysis_only are never verified; false promotion is a violation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "generated_at",
+    "registry",
+    "layers",
+    "cases",
+    "case_count",
+    "matched",
+    "false_accept_cases",
+    "false_reject_cases",
+    "false_reject_gaps",
+    "mutation_results",
+    "historical_replay",
+    "summary",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "kind": {
+      "const": "phase8d_acceptance_2"
+    },
+    "generated_at": {
+      "const": "2026-11-17T00:00:00Z"
+    },
+    "registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "supported_versions",
+        "digest",
+        "layers",
+        "rules"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supported_versions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "layers": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "items": {
+            "type": "object"
+          }
+        },
+        "rules": {
+          "type": "array",
+          "minItems": 20,
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "layers": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^L[0-7]$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version",
+          "case_id",
+          "registry_version",
+          "decision",
+          "verified",
+          "layers",
+          "rules",
+          "failed_rules",
+          "not_run_rules",
+          "reasons",
+          "registry_ok"
+        ],
+        "properties": {
+          "schema_version": {
+            "const": 2
+          },
+          "case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "registry_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decision": {
+            "enum": [
+              "verified",
+              "rejected",
+              "not_run",
+              "inconclusive",
+              "analysis_only"
+            ]
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "layers": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "failed_rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "not_run_rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "registry_ok": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "case_count": {
+      "type": "integer",
+      "minimum": 10
+    },
+    "matched": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "false_accept_cases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "false_reject_cases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "false_reject_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case_id",
+          "expected",
+          "observed",
+          "reason"
+        ],
+        "properties": {
+          "case_id": {
+            "type": "string"
+          },
+          "expected": {
+            "type": "string"
+          },
+          "observed": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "mutation_results": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "total",
+        "detected",
+        "detection_rate",
+        "false_accepts",
+        "by_family",
+        "mutations"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 2
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "detected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "detection_rate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "false_accepts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "by_family": {
+          "type": "object"
+        },
+        "mutations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mutation_id",
+              "family",
+              "description",
+              "expected_rule",
+              "decision",
+              "detected",
+              "detected_rules",
+              "false_accept",
+              "reasons"
+            ],
+            "properties": {
+              "mutation_id": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "expected_rule": {
+                "type": "string"
+              },
+              "decision": {
+                "enum": [
+                  "verified",
+                  "rejected",
+                  "not_run",
+                  "inconclusive",
+                  "analysis_only"
+                ]
+              },
+              "detected": {
+                "type": "boolean"
+              },
+              "detected_rules": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "false_accept": {
+                "type": "boolean"
+              },
+              "reasons": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "historical_replay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "legacy",
+        "replay",
+        "ok"
+      ],
+      "properties": {
+        "legacy": {
+          "type": "object"
+        },
+        "replay": {
+          "type": "object"
+        },
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "cases_ok",
+        "mutation_detection_rate",
+        "mutation_false_accepts",
+        "historical_replay_ok",
+        "no_false_promotion",
+        "false_accepts",
+        "false_rejects",
+        "not_run_cases",
+        "inconclusive_cases",
+        "analysis_only_cases"
+      ],
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "cases_ok": {
+          "type": "boolean"
+        },
+        "mutation_detection_rate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "mutation_false_accepts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "historical_replay_ok": {
+          "type": "boolean"
+        },
+        "no_false_promotion": {
+          "type": "boolean"
+        },
+        "false_accepts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "false_rejects": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "not_run_cases": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inconclusive_cases": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "analysis_only_cases": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

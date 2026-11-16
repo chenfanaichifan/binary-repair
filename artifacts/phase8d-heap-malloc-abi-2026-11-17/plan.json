@@ -1,0 +1,145 @@
+{
+  "abi_blocks": [
+    {
+      "abi_id": "sysv-amd64",
+      "arch": "x86_64",
+      "evidence_sha256": "c15420fcf575024f6404b97d43bdf1522fa6cdd3a9376e666ba22431db008c9c",
+      "function": "reviewed-function",
+      "size": 59,
+      "va": 4198704
+    }
+  ],
+  "candidate_id": "cand-ea22260535efca37dca19404",
+  "candidate_sha256": "ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73",
+  "cave": {
+    "executable": true,
+    "method": "new-pt-load",
+    "size": 38,
+    "va": 4214784
+  },
+  "generator_id": "binary-pipeline/deterministic",
+  "limitations": [
+    "guard candidate appends 606 cave/PT_LOAD bytes at file offset 15816; the call redirect and header/program-header updates are declared as reviewed_site/header_update operations"
+  ],
+  "operations": [
+    {
+      "after_hex": "e8ae3e000090",
+      "before_hex": "ff15752e0000",
+      "candidate_offset": 4429,
+      "kind": "write",
+      "original_offset": 4429,
+      "reason": "reviewed_site",
+      "site_va": 4198733,
+      "size": 6
+    },
+    {
+      "after_hex": "01",
+      "authorization_ref": "authorization:elf-metadata:v1",
+      "before_hex": "04",
+      "candidate_offset": 512,
+      "kind": "write",
+      "original_offset": 512,
+      "reason": "header_update",
+      "size": 1
+    },
+    {
+      "after_hex": "05",
+      "authorization_ref": "authorization:elf-metadata:v1",
+      "before_hex": "04",
+      "candidate_offset": 516,
+      "kind": "write",
+      "original_offset": 516,
+      "reason": "header_update",
+      "size": 1
+    },
+    {
+      "after_hex": "0040",
+      "authorization_ref": "authorization:elf-metadata:v1",
+      "before_hex": "5803",
+      "candidate_offset": 520,
+      "kind": "write",
+      "original_offset": 520,
+      "reason": "header_update",
+      "size": 2
+    },
+    {
+      "after_hex": "0050",
+      "authorization_ref": "authorization:elf-metadata:v1",
+      "before_hex": "5803",
+      "candidate_offset": 528,
+      "kind": "write",
+      "original_offset": 528,
+      "reason": "header_update",
+      "size": 2
+    },
+    {
+      "after_hex": "0050",
+      "authorization_ref": "authorization:elf-metadata:v1",
+      "before_hex": "5803",
+      "candidate_offset": 536,
+      "kind": "write",
+      "original_offset": 536,
+      "reason": "header_update",
+      "size": 2
+    },
+    {
+      "after_hex": "26",
+      "authorization_ref": "authorization:elf-metadata:v1",
+      "before_hex": "44",
+      "candidate_offset": 544,
+      "kind": "write",
+      "original_offset": 544,
+      "reason": "header_update",
+      "size": 1
+    },
+    {
+      "after_hex": "26",
+      "authorization_ref": "authorization:elf-metadata:v1",
+      "before_hex": "44",
+      "candidate_offset": 552,
+      "kind": "write",
+      "original_offset": 552,
+      "reason": "header_update",
+      "size": 1
+    },
+    {
+      "after_hex": "0010",
+      "authorization_ref": "authorization:elf-metadata:v1",
+      "before_hex": "0400",
+      "candidate_offset": 560,
+      "kind": "write",
+      "original_offset": 560,
+      "reason": "header_update",
+      "size": 2
+    },
+    {
+      "after_hex": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000031c03d100000007312448a140644881407ffc04584d275ea31c0c3c64407ff00b801000000c3",
+      "authorization_ref": "authorization:guard-cave:v1",
+      "before_hex": "",
+      "candidate_offset": 15816,
+      "kind": "insert",
+      "original_offset": 15816,
+      "reason": "guard_cave",
+      "size": 606
+    }
+  ],
+  "oracle": {
+    "manifest_sha256": "3505ff90cab7525797edfa5ba8d11931290253e73d045354b2f6c73fe2932361",
+    "runner": "limactl",
+    "status": "executed",
+    "tier": "emulated_run"
+  },
+  "original_sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f",
+  "plan_id": "plan-15242f2a9355487f321fdd14",
+  "relocations": [],
+  "schema_version": 1,
+  "scope_policy": "target_scoped_associated",
+  "strategy": "guard",
+  "target_scope": {
+    "end": 4198764,
+    "name": "heap_bad",
+    "policy": "target_scoped_associated",
+    "va": 4198704
+  },
+  "target_sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f"
+}

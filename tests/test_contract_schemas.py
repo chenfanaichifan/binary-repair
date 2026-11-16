@@ -67,7 +67,7 @@ def test_all_contracts_exist_and_name_match() -> None:
     found = sorted(path.name for path in CONTRACTS.glob("*.schema.json"))
     expected = sorted(f"{name}.schema.json" for name in contracts.SCHEMA_NAMES)
     assert found == expected
-    assert len(contracts.SCHEMA_NAMES) == 17
+    assert len(contracts.SCHEMA_NAMES) == 20
 
 
 def test_schema_documents_are_structurally_valid() -> None:
@@ -109,9 +109,9 @@ def test_schema_document_checks_catch_broken_schema() -> None:
 def test_repository_contracts_and_fixtures_pass() -> None:
     report = contracts.run_check(ROOT, check_sums=True)
     assert report["ok"] is True, report["violations"]
-    assert report["schema_count"] == 17
-    assert report["fixtures"]["valid_passed"] == 17
-    assert report["fixtures"]["invalid_rejected"] == 17
+    assert report["schema_count"] == 20
+    assert report["fixtures"]["valid_passed"] == 20
+    assert report["fixtures"]["invalid_rejected"] == 20
     assert report["validator"] == "jsonschema"
     assert report["sums"]["ok"] is True
 
@@ -123,7 +123,7 @@ def test_cli_passes_and_reports_json() -> None:
     assert payload["ok"] is True
     assert payload["validator"] == "jsonschema"
     assert payload["fixtures"] == {
-        "valid_passed": 17, "invalid_rejected": 17, "total": 34,
+        "valid_passed": 20, "invalid_rejected": 20, "total": 40,
     }
 
 
@@ -133,8 +133,8 @@ def test_fallback_validator_semantics() -> None:
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
     assert payload["validator"] == "fallback"
-    assert payload["fixtures"]["valid_passed"] == 17
-    assert payload["fixtures"]["invalid_rejected"] == 17
+    assert payload["fixtures"]["valid_passed"] == 20
+    assert payload["fixtures"]["invalid_rejected"] == 20
 
 
 def test_every_schema_has_valid_and_invalid_fixture() -> None:
