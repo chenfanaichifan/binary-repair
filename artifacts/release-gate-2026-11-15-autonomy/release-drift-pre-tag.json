@@ -1,0 +1,14 @@
+{
+  "drift": null,
+  "evidence_gated_sha": null,
+  "evidence_ref": "release/2026-11-15-autonomy-evidence",
+  "evidence_sha": null,
+  "mainline_ref": "origin/workbench-v3",
+  "mainline_sha": "2bfa112591614aa39d4d6b55ad9bb962b9718e7c",
+  "ok": false,
+  "reasons": [
+    "cannot resolve 'release-2026-11-15-autonomy': \u81f4\u547d\u9519\u8bef\uff1a\u9700\u8981\u4e00\u4e2a\u5355\u72ec\u7684\u7248\u672c"
+  ],
+  "tag": "release-2026-11-15-autonomy",
+  "tag_sha": null
+}

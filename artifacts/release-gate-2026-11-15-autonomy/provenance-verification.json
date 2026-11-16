@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "acceptance_cases": 9,
+    "artifact_count": 20,
+    "builder_kind": "local-frozen-tree",
+    "github_run": null,
+    "guest_available": true,
+    "limactl_version": "limactl version 2.3.0",
+    "mode": "nightly"
+  },
+  "ok": true,
+  "violations": []
+}

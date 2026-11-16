@@ -1,0 +1,1564 @@
+{
+  "schema_version": 1,
+  "accepted": true,
+  "gate": {
+    "success": true,
+    "outcome": "success_within_scope",
+    "reason": "",
+    "required_checks": 14,
+    "required_not_run": 0,
+    "evidence_sha256": "b811394f61bce3ed5bb5ebd7fec098999d10ac3d01a48d19b3ee0dcc3ee8ad02"
+  },
+  "scope": {
+    "format": "elf",
+    "arch": "x86_64",
+    "runtime_tier": "emulated_run",
+    "runtime_verdict": "pass",
+    "statement": "Repair is verified within the stated scope: container reparse, reviewed patch action and native/emulated runtime cases. This is not a whole-program proof. For the capacity-check profile every rewritten destination range check is re-derived from the original and candidate bytes, and the runtime evidence is the supplied PoC/regression manifest executed by a native or emulated guest runtime."
+  },
+  "checks": [
+    {
+      "id": "format",
+      "title": "Container and architecture are in the repair matrix",
+      "status": "passed",
+      "required": true,
+      "detail": "elf/x86_64"
+    },
+    {
+      "id": "candidate.present",
+      "title": "A repaired candidate was produced",
+      "status": "passed",
+      "required": true,
+      "detail": "candidate_bytes=713160"
+    },
+    {
+      "id": "candidate.identity.original",
+      "title": "The report hash matches the input bytes",
+      "status": "passed",
+      "required": true,
+      "detail": "hash matches input"
+    },
+    {
+      "id": "candidate.identity.patched",
+      "title": "The candidate hash matches the produced bytes and differs from the input",
+      "status": "passed",
+      "required": true,
+      "detail": "candidate hash matches produced bytes"
+    },
+    {
+      "id": "container.reparse",
+      "title": "The patched candidate re-parses as the same container",
+      "status": "passed",
+      "required": true,
+      "detail": "reparse ok"
+    },
+    {
+      "id": "repair.action",
+      "title": "At least one repair action was applied",
+      "status": "passed",
+      "required": true,
+      "detail": "actions=1"
+    },
+    {
+      "id": "patch.capacity",
+      "title": "The reviewed capacity-check rewrite matches the original and candidate bytes",
+      "status": "passed",
+      "required": true,
+      "detail": "actions=1 sites=0x4020d9 registers=ebx->r12d"
+    },
+    {
+      "id": "runtime.evidence",
+      "title": "Runtime evidence exists for the candidate",
+      "status": "passed",
+      "required": true,
+      "detail": "runner=limactl tier=emulated_run source=poc_manifest"
+    },
+    {
+      "id": "runtime.tier",
+      "title": "Runtime evidence is native or emulated (not static-only)",
+      "status": "passed",
+      "required": true,
+      "detail": "tier=emulated_run runner=limactl source=poc_manifest"
+    },
+    {
+      "id": "runtime.contract",
+      "title": "All runtime cases stay inside the capacity",
+      "status": "passed",
+      "required": true,
+      "detail": "poc differential status=pass tier=emulated_run runner=limactl"
+    },
+    {
+      "id": "poc.native.available",
+      "title": "PoC manifest was executed by a native/qemu runner",
+      "status": "passed",
+      "required": true,
+      "detail": "status=pass runner=limactl"
+    },
+    {
+      "id": "poc.native.original_failure",
+      "title": "The original binary fails the supplied PoC",
+      "status": "passed",
+      "required": true,
+      "detail": "cases=4 status=pass"
+    },
+    {
+      "id": "poc.native.candidate_pass",
+      "title": "The candidate passes the supplied PoC",
+      "status": "passed",
+      "required": true,
+      "detail": "cases=4 status=pass"
+    },
+    {
+      "id": "poc.native.regression",
+      "title": "Original and candidate agree on regression inputs",
+      "status": "passed",
+      "required": true,
+      "detail": "cases=20 status=pass"
+    }
+  ],
+  "patch": null,
+  "candidate": null,
+  "runtime": null,
+  "poc_native": {
+    "schema_version": 1,
+    "status": "pass",
+    "runner": "limactl",
+    "tier": "emulated_run",
+    "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+    "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+    "poc": [
+      {
+        "case_id": "poc-overflow-720",
+        "kind": "poc",
+        "executable": "original",
+        "exit_code": 255,
+        "crashed": true,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-00/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: rendered 64 bytes\n  000000  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|\n  000010  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000020  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000030  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+        "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30302f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303032302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303033302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "poc-span-note-min",
+        "kind": "poc",
+        "executable": "original",
+        "exit_code": 255,
+        "crashed": true,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-01/poc_span_note_min.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\nmarcx: rendered 16 bytes\n  000000  01 00 00 00 00 00 00 00 00 00 00 00 40 00 00 00  |............@...|\n",
+        "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30312f706f635f7370616e5f6e6f74655f6d696e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020303120303020303020303020303020303020303020303020303020303020303020303020343020303020303020303020207c2e2e2e2e2e2e2e2e2e2e2e2e402e2e2e7c0a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "poc-span-note",
+        "kind": "poc",
+        "executable": "original",
+        "exit_code": 255,
+        "crashed": true,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-02/poc_span_note.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\nmarcx: rendered 16 bytes\n  000000  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+        "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30322f706f635f7370616e5f6e6f74652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "poc-overflow-nocrc",
+        "kind": "poc",
+        "executable": "original",
+        "exit_code": 255,
+        "crashed": true,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-03/poc_overflow_nocrc.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=1024, ops=1\nmarcx: rendered 64 bytes\n  000000  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|\n  000010  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000020  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000030  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+        "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30332f706f635f6f766572666c6f775f6e6f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303032302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303033302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "poc-overflow-720",
+        "kind": "poc",
+        "executable": "candidate",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-00/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\n",
+        "stderr": "marcx: op[0]: span destination outside the output\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30302f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "poc-span-note-min",
+        "kind": "poc",
+        "executable": "candidate",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-01/poc_span_note_min.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: span destination outside the output\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30312f706f635f7370616e5f6e6f74655f6d696e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "poc-span-note",
+        "kind": "poc",
+        "executable": "candidate",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-02/poc_span_note.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: span destination outside the output\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30322f706f635f7370616e5f6e6f74652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "poc-overflow-nocrc",
+        "kind": "poc",
+        "executable": "candidate",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-03/poc_overflow_nocrc.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=1024, ops=1\n",
+        "stderr": "marcx: op[0]: span destination outside the output\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30332f706f635f6f766572666c6f775f6e6f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      }
+    ],
+    "regression": [
+      {
+        "case_id": "benign",
+        "kind": "regression",
+        "executable": "original",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-00/benign.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=1\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 72 65 66 65 72 65 6e 63 65  |MARCX1 reference|\n  000010  20 70 61 79 6c 6f 61 64 3a 20 68 65 6c 6c 6f 2c  | payload: hello,|\noperations:\n  op[0] literal dst=0 src=0 len=32 aux=0\n",
+        "stderr": "",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30302f62656e69676e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d310a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373220363520363620363520373220363520366520363320363520207c4d4152435831207265666572656e63657c0a20203030303031302020323020373020363120373920366320366620363120363420336120323020363820363520366320366320366620326320207c207061796c6f61643a2068656c6c6f2c7c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3332206175783d300a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "benign-sparse",
+        "kind": "regression",
+        "executable": "original",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-01/benign_sparse.marc: MARCX1 v1, flags=0x00000003, out_size=16, data_size=256, ops=1\nmarcx: rendered 16 bytes\n  000000  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\noperations:\n  op[0] span    dst=0 src=32 len=16 aux=0\n",
+        "stderr": "",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30312f62656e69676e5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d31362c20646174615f73697a653d3235362c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d3332206c656e3d3136206175783d300a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "benign-crc",
+        "kind": "regression",
+        "executable": "original",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-02/benign_crc.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=2\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 73 61 79 73 20 68 65 6c 6c  |MARCX1 says hell|\n  000010  6f 2c 20 73 70 61 72 73 22 22 22 22 22 22 22 22  |o, spars\"\"\"\"\"\"\"\"|\noperations:\n  op[0] literal dst=0 src=0 len=24 aux=0\n  op[1] fill    dst=24 src=0 len=8 aux=34\n",
+        "stderr": "",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30322f62656e69676e5f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d320a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373320363120373920373320323020363820363520366320366320207c4d415243583120736179732068656c6c7c0a20203030303031302020366620326320323020373320373020363120373220373320323220323220323220323220323220323220323220323220207c6f2c20737061727322222222222222227c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3234206175783d300a20206f705b315d2066696c6c202020206473743d3234207372633d30206c656e3d38206175783d33340a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "ctrl-span-equal-sizes",
+        "kind": "regression",
+        "executable": "original",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-03/ctrl_span_equal_sizes.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=64, ops=1\nmarcx: rendered 64 bytes\n  000000  00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  |................|\n  000010  10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f  |................|\n  000020  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\n  000030  30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f  |0123456789:;<=>?|\noperations:\n  op[0] span    dst=0 src=0 len=64 aux=0\n",
+        "stderr": "",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30332f6374726c5f7370616e5f657175616c5f73697a65732e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303120303220303320303420303520303620303720303820303920306120306220306320306420306520306620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020313020313120313220313320313420313520313620313720313820313920316120316220316320316420316520316620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303032302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a20203030303033302020333020333120333220333320333420333520333620333720333820333920336120336220336320336420336520336620207c303132333435363738393a3b3c3d3e3f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d30206c656e3d3634206175783d300a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "ctrl-span-no-sparse",
+        "kind": "regression",
+        "executable": "original",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-04/ctrl_span_no_sparse.marc: MARCX1 v1, flags=0x00000000, out_size=16, data_size=16, ops=1\n",
+        "stderr": "marcx: op[0]: span ops require FLAG_SPARSE\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30342f6374726c5f7370616e5f6e6f5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030302c206f75745f73697a653d31362c20646174615f73697a653d31362c206f70733d310a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "ctrl-span-src-oob",
+        "kind": "regression",
+        "executable": "original",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-05/ctrl_span_src_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: source range outside the payload pool\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30352f6374726c5f7370616e5f7372635f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "ctrl-literal-dst-oob",
+        "kind": "regression",
+        "executable": "original",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-06/ctrl_literal_dst_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: literal destination outside the output\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30362f6374726c5f6c69746572616c5f6473745f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "bad-crc",
+        "kind": "regression",
+        "executable": "original",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "",
+        "stderr": "marcx: crc mismatch (stored 0xe6fc3f0b, computed 0x385181e4)\n",
+        "stdout_hex": "",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "help",
+        "kind": "regression",
+        "executable": "original",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "usage: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-08/target [--no-crc] [--list] [--dump-index] <archive.marc>\n\nMARCX1 archive renderer.  Validates and reconstructs the document\ndescribed by the archive.\n\n  --no-crc       do not verify the archive CRC-32\n  --list         validate the archive and print metadata only\n  --dump-index   print the raw operation index\n  -h, --help     show this help\n",
+        "stderr": "",
+        "stdout_hex": "75736167653a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30382f746172676574205b2d2d6e6f2d6372635d205b2d2d6c6973745d205b2d2d64756d702d696e6465785d203c617263686976652e6d6172633e0a0a4d415243583120617263686976652072656e64657265722e202056616c69646174657320616e64207265636f6e737472756374732074686520646f63756d656e740a6465736372696265642062792074686520617263686976652e0a0a20202d2d6e6f2d63726320202020202020646f206e6f7420766572696679207468652061726368697665204352432d33320a20202d2d6c69737420202020202020202076616c696461746520746865206172636869766520616e64207072696e74206d65746164617461206f6e6c790a20202d2d64756d702d696e6465782020207072696e742074686520726177206f7065726174696f6e20696e6465780a20202d682c202d2d68656c70202020202073686f7720746869732068656c700a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "list-poc-archive",
+        "kind": "regression",
+        "executable": "original",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-09/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: archive ok (1 operations)\n",
+        "stderr": "",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30392f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2061726368697665206f6b202831206f7065726174696f6e73290a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "benign",
+        "kind": "regression",
+        "executable": "candidate",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-00/benign.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=1\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 72 65 66 65 72 65 6e 63 65  |MARCX1 reference|\n  000010  20 70 61 79 6c 6f 61 64 3a 20 68 65 6c 6c 6f 2c  | payload: hello,|\noperations:\n  op[0] literal dst=0 src=0 len=32 aux=0\n",
+        "stderr": "",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30302f62656e69676e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d310a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373220363520363620363520373220363520366520363320363520207c4d4152435831207265666572656e63657c0a20203030303031302020323020373020363120373920366320366620363120363420336120323020363820363520366320366320366620326320207c207061796c6f61643a2068656c6c6f2c7c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3332206175783d300a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "benign-sparse",
+        "kind": "regression",
+        "executable": "candidate",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-01/benign_sparse.marc: MARCX1 v1, flags=0x00000003, out_size=16, data_size=256, ops=1\nmarcx: rendered 16 bytes\n  000000  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\noperations:\n  op[0] span    dst=0 src=32 len=16 aux=0\n",
+        "stderr": "",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30312f62656e69676e5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d31362c20646174615f73697a653d3235362c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d3332206c656e3d3136206175783d300a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "benign-crc",
+        "kind": "regression",
+        "executable": "candidate",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-02/benign_crc.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=2\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 73 61 79 73 20 68 65 6c 6c  |MARCX1 says hell|\n  000010  6f 2c 20 73 70 61 72 73 22 22 22 22 22 22 22 22  |o, spars\"\"\"\"\"\"\"\"|\noperations:\n  op[0] literal dst=0 src=0 len=24 aux=0\n  op[1] fill    dst=24 src=0 len=8 aux=34\n",
+        "stderr": "",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30322f62656e69676e5f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d320a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373320363120373920373320323020363820363520366320366320207c4d415243583120736179732068656c6c7c0a20203030303031302020366620326320323020373320373020363120373220373320323220323220323220323220323220323220323220323220207c6f2c20737061727322222222222222227c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3234206175783d300a20206f705b315d2066696c6c202020206473743d3234207372633d30206c656e3d38206175783d33340a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "ctrl-span-equal-sizes",
+        "kind": "regression",
+        "executable": "candidate",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-03/ctrl_span_equal_sizes.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=64, ops=1\nmarcx: rendered 64 bytes\n  000000  00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  |................|\n  000010  10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f  |................|\n  000020  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\n  000030  30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f  |0123456789:;<=>?|\noperations:\n  op[0] span    dst=0 src=0 len=64 aux=0\n",
+        "stderr": "",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30332f6374726c5f7370616e5f657175616c5f73697a65732e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303120303220303320303420303520303620303720303820303920306120306220306320306420306520306620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020313020313120313220313320313420313520313620313720313820313920316120316220316320316420316520316620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303032302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a20203030303033302020333020333120333220333320333420333520333620333720333820333920336120336220336320336420336520336620207c303132333435363738393a3b3c3d3e3f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d30206c656e3d3634206175783d300a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "ctrl-span-no-sparse",
+        "kind": "regression",
+        "executable": "candidate",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-04/ctrl_span_no_sparse.marc: MARCX1 v1, flags=0x00000000, out_size=16, data_size=16, ops=1\n",
+        "stderr": "marcx: op[0]: span ops require FLAG_SPARSE\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30342f6374726c5f7370616e5f6e6f5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030302c206f75745f73697a653d31362c20646174615f73697a653d31362c206f70733d310a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "ctrl-span-src-oob",
+        "kind": "regression",
+        "executable": "candidate",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-05/ctrl_span_src_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: source range outside the payload pool\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30352f6374726c5f7370616e5f7372635f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "ctrl-literal-dst-oob",
+        "kind": "regression",
+        "executable": "candidate",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-06/ctrl_literal_dst_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: literal destination outside the output\n",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30362f6374726c5f6c69746572616c5f6473745f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "bad-crc",
+        "kind": "regression",
+        "executable": "candidate",
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "",
+        "stderr": "marcx: crc mismatch (stored 0xe6fc3f0b, computed 0x385181e4)\n",
+        "stdout_hex": "",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "help",
+        "kind": "regression",
+        "executable": "candidate",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "usage: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-08/target [--no-crc] [--list] [--dump-index] <archive.marc>\n\nMARCX1 archive renderer.  Validates and reconstructs the document\ndescribed by the archive.\n\n  --no-crc       do not verify the archive CRC-32\n  --list         validate the archive and print metadata only\n  --dump-index   print the raw operation index\n  -h, --help     show this help\n",
+        "stderr": "",
+        "stdout_hex": "75736167653a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30382f746172676574205b2d2d6e6f2d6372635d205b2d2d6c6973745d205b2d2d64756d702d696e6465785d203c617263686976652e6d6172633e0a0a4d415243583120617263686976652072656e64657265722e202056616c69646174657320616e64207265636f6e737472756374732074686520646f63756d656e740a6465736372696265642062792074686520617263686976652e0a0a20202d2d6e6f2d63726320202020202020646f206e6f7420766572696679207468652061726368697665204352432d33320a20202d2d6c69737420202020202020202076616c696461746520746865206172636869766520616e64207072696e74206d65746164617461206f6e6c790a20202d2d64756d702d696e6465782020207072696e742074686520726177206f7065726174696f6e20696e6465780a20202d682c202d2d68656c70202020202073686f7720746869732068656c700a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      },
+      {
+        "case_id": "list-poc-archive",
+        "kind": "regression",
+        "executable": "candidate",
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-09/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: archive ok (1 operations)\n",
+        "stderr": "",
+        "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30392f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2061726368697665206f6b202831206f7065726174696f6e73290a",
+        "timed_out": false,
+        "error": null,
+        "expected_ok": true
+      }
+    ],
+    "limitations": []
+  },
+  "report": {
+    "schema_version": 4,
+    "format": "elf",
+    "arch": "x86_64",
+    "backend": "elf",
+    "strategy": "capacity",
+    "status": "patched",
+    "supported": true,
+    "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+    "patched_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+    "mode": "capacity-check",
+    "capacity": null,
+    "findings": [
+      {
+        "site_va": 4202713,
+        "file_offset": 8409,
+        "block_size": 16,
+        "dst_disp": 4,
+        "base_reg": "r15",
+        "bad_capacity": "ebx",
+        "good_capacity": "r12d",
+        "sibling_vas": [
+          4202391,
+          4202634
+        ],
+        "source_disp": 8,
+        "detail": "destination check on [r15+4] compares against ebx (input size, used for source checks at [r15+8]) instead of the sibling capacity r12d"
+      }
+    ],
+    "offsets": [
+      8409
+    ],
+    "actions": [
+      {
+        "kind": "capacity_check_rewrite",
+        "offset": 8409,
+        "size": 16,
+        "before_hex": "39f3720c89df29f739d70f83c4feffff",
+        "after_hex": "4489e729f7720939d70f83c5feffff90",
+        "site_va": 4202713,
+        "bad_capacity": "ebx",
+        "good_capacity": "r12d"
+      }
+    ],
+    "limitations": [
+      "scanned 5 inlined range-check block(s) in the code region",
+      "In-place rewrite of one reviewed inlined range-check block; no code cave, no segment or program-header change.",
+      "Semantic equivalence of the rewritten predicate is established by the duplicated check shape and verified end-to-end by the supplied PoC/regression cases; this is not a whole-program proof."
+    ],
+    "verification": {
+      "packet": {
+        "schema_version": 2,
+        "scope": {
+          "format": "elf",
+          "arch": "x86_64",
+          "runtime_tier": "emulated_run",
+          "runtime_verdict": "pass",
+          "statement": "Repair is verified within the stated scope: container reparse, reviewed patch action and native/emulated runtime cases. This is not a whole-program proof. For the capacity-check profile every rewritten destination range check is re-derived from the original and candidate bytes, and the runtime evidence is the supplied PoC/regression manifest executed by a native or emulated guest runtime."
+        },
+        "checks": [
+          {
+            "id": "format",
+            "title": "Container and architecture are in the repair matrix",
+            "status": "passed",
+            "required": true,
+            "detail": "elf/x86_64"
+          },
+          {
+            "id": "candidate.present",
+            "title": "A repaired candidate was produced",
+            "status": "passed",
+            "required": true,
+            "detail": "candidate_bytes=713160"
+          },
+          {
+            "id": "candidate.identity.original",
+            "title": "The report hash matches the input bytes",
+            "status": "passed",
+            "required": true,
+            "detail": "hash matches input"
+          },
+          {
+            "id": "candidate.identity.patched",
+            "title": "The candidate hash matches the produced bytes and differs from the input",
+            "status": "passed",
+            "required": true,
+            "detail": "candidate hash matches produced bytes"
+          },
+          {
+            "id": "container.reparse",
+            "title": "The patched candidate re-parses as the same container",
+            "status": "passed",
+            "required": true,
+            "detail": "reparse ok"
+          },
+          {
+            "id": "repair.action",
+            "title": "At least one repair action was applied",
+            "status": "passed",
+            "required": true,
+            "detail": "actions=1"
+          },
+          {
+            "id": "patch.capacity",
+            "title": "The reviewed capacity-check rewrite matches the original and candidate bytes",
+            "status": "passed",
+            "required": true,
+            "detail": "actions=1 sites=0x4020d9 registers=ebx->r12d"
+          },
+          {
+            "id": "runtime.evidence",
+            "title": "Runtime evidence exists for the candidate",
+            "status": "passed",
+            "required": true,
+            "detail": "runner=limactl tier=emulated_run source=poc_manifest"
+          },
+          {
+            "id": "runtime.tier",
+            "title": "Runtime evidence is native or emulated (not static-only)",
+            "status": "passed",
+            "required": true,
+            "detail": "tier=emulated_run runner=limactl source=poc_manifest"
+          },
+          {
+            "id": "runtime.contract",
+            "title": "All runtime cases stay inside the capacity",
+            "status": "passed",
+            "required": true,
+            "detail": "poc differential status=pass tier=emulated_run runner=limactl"
+          },
+          {
+            "id": "poc.native.available",
+            "title": "PoC manifest was executed by a native/qemu runner",
+            "status": "passed",
+            "required": true,
+            "detail": "status=pass runner=limactl"
+          },
+          {
+            "id": "poc.native.original_failure",
+            "title": "The original binary fails the supplied PoC",
+            "status": "passed",
+            "required": true,
+            "detail": "cases=4 status=pass"
+          },
+          {
+            "id": "poc.native.candidate_pass",
+            "title": "The candidate passes the supplied PoC",
+            "status": "passed",
+            "required": true,
+            "detail": "cases=4 status=pass"
+          },
+          {
+            "id": "poc.native.regression",
+            "title": "Original and candidate agree on regression inputs",
+            "status": "passed",
+            "required": true,
+            "detail": "cases=20 status=pass"
+          }
+        ],
+        "actions": [
+          {
+            "kind": "capacity_check_rewrite",
+            "offset": 8409,
+            "size": 16,
+            "before_hex": "39f3720c89df29f739d70f83c4feffff",
+            "after_hex": "4489e729f7720939d70f83c5feffff90",
+            "site_va": 4202713,
+            "bad_capacity": "ebx",
+            "good_capacity": "r12d"
+          }
+        ],
+        "runtime": null,
+        "poc_native": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+          "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+          "poc": [
+            {
+              "case_id": "poc-overflow-720",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-00/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: rendered 64 bytes\n  000000  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|\n  000010  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000020  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000030  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30302f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303032302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303033302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "poc-span-note-min",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-01/poc_span_note_min.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\nmarcx: rendered 16 bytes\n  000000  01 00 00 00 00 00 00 00 00 00 00 00 40 00 00 00  |............@...|\n",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30312f706f635f7370616e5f6e6f74655f6d696e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020303120303020303020303020303020303020303020303020303020303020303020303020343020303020303020303020207c2e2e2e2e2e2e2e2e2e2e2e2e402e2e2e7c0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "poc-span-note",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-02/poc_span_note.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\nmarcx: rendered 16 bytes\n  000000  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30322f706f635f7370616e5f6e6f74652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "poc-overflow-nocrc",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-03/poc_overflow_nocrc.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=1024, ops=1\nmarcx: rendered 64 bytes\n  000000  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|\n  000010  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000020  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000030  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30332f706f635f6f766572666c6f775f6e6f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303032302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303033302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "poc-overflow-720",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-00/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\n",
+              "stderr": "marcx: op[0]: span destination outside the output\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30302f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "poc-span-note-min",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-01/poc_span_note_min.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+              "stderr": "marcx: op[0]: span destination outside the output\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30312f706f635f7370616e5f6e6f74655f6d696e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "poc-span-note",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-02/poc_span_note.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+              "stderr": "marcx: op[0]: span destination outside the output\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30322f706f635f7370616e5f6e6f74652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "poc-overflow-nocrc",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-03/poc_overflow_nocrc.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=1024, ops=1\n",
+              "stderr": "marcx: op[0]: span destination outside the output\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30332f706f635f6f766572666c6f775f6e6f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "benign",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-00/benign.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=1\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 72 65 66 65 72 65 6e 63 65  |MARCX1 reference|\n  000010  20 70 61 79 6c 6f 61 64 3a 20 68 65 6c 6c 6f 2c  | payload: hello,|\noperations:\n  op[0] literal dst=0 src=0 len=32 aux=0\n",
+              "stderr": "",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30302f62656e69676e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d310a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373220363520363620363520373220363520366520363320363520207c4d4152435831207265666572656e63657c0a20203030303031302020323020373020363120373920366320366620363120363420336120323020363820363520366320366320366620326320207c207061796c6f61643a2068656c6c6f2c7c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3332206175783d300a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "benign-sparse",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-01/benign_sparse.marc: MARCX1 v1, flags=0x00000003, out_size=16, data_size=256, ops=1\nmarcx: rendered 16 bytes\n  000000  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\noperations:\n  op[0] span    dst=0 src=32 len=16 aux=0\n",
+              "stderr": "",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30312f62656e69676e5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d31362c20646174615f73697a653d3235362c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d3332206c656e3d3136206175783d300a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "benign-crc",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-02/benign_crc.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=2\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 73 61 79 73 20 68 65 6c 6c  |MARCX1 says hell|\n  000010  6f 2c 20 73 70 61 72 73 22 22 22 22 22 22 22 22  |o, spars\"\"\"\"\"\"\"\"|\noperations:\n  op[0] literal dst=0 src=0 len=24 aux=0\n  op[1] fill    dst=24 src=0 len=8 aux=34\n",
+              "stderr": "",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30322f62656e69676e5f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d320a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373320363120373920373320323020363820363520366320366320207c4d415243583120736179732068656c6c7c0a20203030303031302020366620326320323020373320373020363120373220373320323220323220323220323220323220323220323220323220207c6f2c20737061727322222222222222227c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3234206175783d300a20206f705b315d2066696c6c202020206473743d3234207372633d30206c656e3d38206175783d33340a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "ctrl-span-equal-sizes",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-03/ctrl_span_equal_sizes.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=64, ops=1\nmarcx: rendered 64 bytes\n  000000  00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  |................|\n  000010  10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f  |................|\n  000020  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\n  000030  30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f  |0123456789:;<=>?|\noperations:\n  op[0] span    dst=0 src=0 len=64 aux=0\n",
+              "stderr": "",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30332f6374726c5f7370616e5f657175616c5f73697a65732e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303120303220303320303420303520303620303720303820303920306120306220306320306420306520306620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020313020313120313220313320313420313520313620313720313820313920316120316220316320316420316520316620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303032302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a20203030303033302020333020333120333220333320333420333520333620333720333820333920336120336220336320336420336520336620207c303132333435363738393a3b3c3d3e3f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d30206c656e3d3634206175783d300a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "ctrl-span-no-sparse",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-04/ctrl_span_no_sparse.marc: MARCX1 v1, flags=0x00000000, out_size=16, data_size=16, ops=1\n",
+              "stderr": "marcx: op[0]: span ops require FLAG_SPARSE\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30342f6374726c5f7370616e5f6e6f5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030302c206f75745f73697a653d31362c20646174615f73697a653d31362c206f70733d310a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "ctrl-span-src-oob",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-05/ctrl_span_src_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+              "stderr": "marcx: op[0]: source range outside the payload pool\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30352f6374726c5f7370616e5f7372635f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "ctrl-literal-dst-oob",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-06/ctrl_literal_dst_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+              "stderr": "marcx: op[0]: literal destination outside the output\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30362f6374726c5f6c69746572616c5f6473745f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "bad-crc",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "marcx: crc mismatch (stored 0xe6fc3f0b, computed 0x385181e4)\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "help",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "usage: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-08/target [--no-crc] [--list] [--dump-index] <archive.marc>\n\nMARCX1 archive renderer.  Validates and reconstructs the document\ndescribed by the archive.\n\n  --no-crc       do not verify the archive CRC-32\n  --list         validate the archive and print metadata only\n  --dump-index   print the raw operation index\n  -h, --help     show this help\n",
+              "stderr": "",
+              "stdout_hex": "75736167653a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30382f746172676574205b2d2d6e6f2d6372635d205b2d2d6c6973745d205b2d2d64756d702d696e6465785d203c617263686976652e6d6172633e0a0a4d415243583120617263686976652072656e64657265722e202056616c69646174657320616e64207265636f6e737472756374732074686520646f63756d656e740a6465736372696265642062792074686520617263686976652e0a0a20202d2d6e6f2d63726320202020202020646f206e6f7420766572696679207468652061726368697665204352432d33320a20202d2d6c69737420202020202020202076616c696461746520746865206172636869766520616e64207072696e74206d65746164617461206f6e6c790a20202d2d64756d702d696e6465782020207072696e742074686520726177206f7065726174696f6e20696e6465780a20202d682c202d2d68656c70202020202073686f7720746869732068656c700a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "list-poc-archive",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-09/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: archive ok (1 operations)\n",
+              "stderr": "",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30392f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2061726368697665206f6b202831206f7065726174696f6e73290a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "benign",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-00/benign.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=1\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 72 65 66 65 72 65 6e 63 65  |MARCX1 reference|\n  000010  20 70 61 79 6c 6f 61 64 3a 20 68 65 6c 6c 6f 2c  | payload: hello,|\noperations:\n  op[0] literal dst=0 src=0 len=32 aux=0\n",
+              "stderr": "",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30302f62656e69676e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d310a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373220363520363620363520373220363520366520363320363520207c4d4152435831207265666572656e63657c0a20203030303031302020323020373020363120373920366320366620363120363420336120323020363820363520366320366320366620326320207c207061796c6f61643a2068656c6c6f2c7c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3332206175783d300a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "benign-sparse",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-01/benign_sparse.marc: MARCX1 v1, flags=0x00000003, out_size=16, data_size=256, ops=1\nmarcx: rendered 16 bytes\n  000000  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\noperations:\n  op[0] span    dst=0 src=32 len=16 aux=0\n",
+              "stderr": "",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30312f62656e69676e5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d31362c20646174615f73697a653d3235362c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d3332206c656e3d3136206175783d300a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "benign-crc",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-02/benign_crc.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=2\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 73 61 79 73 20 68 65 6c 6c  |MARCX1 says hell|\n  000010  6f 2c 20 73 70 61 72 73 22 22 22 22 22 22 22 22  |o, spars\"\"\"\"\"\"\"\"|\noperations:\n  op[0] literal dst=0 src=0 len=24 aux=0\n  op[1] fill    dst=24 src=0 len=8 aux=34\n",
+              "stderr": "",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30322f62656e69676e5f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d320a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373320363120373920373320323020363820363520366320366320207c4d415243583120736179732068656c6c7c0a20203030303031302020366620326320323020373320373020363120373220373320323220323220323220323220323220323220323220323220207c6f2c20737061727322222222222222227c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3234206175783d300a20206f705b315d2066696c6c202020206473743d3234207372633d30206c656e3d38206175783d33340a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "ctrl-span-equal-sizes",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-03/ctrl_span_equal_sizes.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=64, ops=1\nmarcx: rendered 64 bytes\n  000000  00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  |................|\n  000010  10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f  |................|\n  000020  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\n  000030  30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f  |0123456789:;<=>?|\noperations:\n  op[0] span    dst=0 src=0 len=64 aux=0\n",
+              "stderr": "",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30332f6374726c5f7370616e5f657175616c5f73697a65732e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303120303220303320303420303520303620303720303820303920306120306220306320306420306520306620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020313020313120313220313320313420313520313620313720313820313920316120316220316320316420316520316620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303032302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a20203030303033302020333020333120333220333320333420333520333620333720333820333920336120336220336320336420336520336620207c303132333435363738393a3b3c3d3e3f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d30206c656e3d3634206175783d300a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "ctrl-span-no-sparse",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-04/ctrl_span_no_sparse.marc: MARCX1 v1, flags=0x00000000, out_size=16, data_size=16, ops=1\n",
+              "stderr": "marcx: op[0]: span ops require FLAG_SPARSE\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30342f6374726c5f7370616e5f6e6f5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030302c206f75745f73697a653d31362c20646174615f73697a653d31362c206f70733d310a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "ctrl-span-src-oob",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-05/ctrl_span_src_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+              "stderr": "marcx: op[0]: source range outside the payload pool\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30352f6374726c5f7370616e5f7372635f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "ctrl-literal-dst-oob",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-06/ctrl_literal_dst_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+              "stderr": "marcx: op[0]: literal destination outside the output\n",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30362f6374726c5f6c69746572616c5f6473745f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "bad-crc",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "marcx: crc mismatch (stored 0xe6fc3f0b, computed 0x385181e4)\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "help",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "usage: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-08/target [--no-crc] [--list] [--dump-index] <archive.marc>\n\nMARCX1 archive renderer.  Validates and reconstructs the document\ndescribed by the archive.\n\n  --no-crc       do not verify the archive CRC-32\n  --list         validate the archive and print metadata only\n  --dump-index   print the raw operation index\n  -h, --help     show this help\n",
+              "stderr": "",
+              "stdout_hex": "75736167653a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30382f746172676574205b2d2d6e6f2d6372635d205b2d2d6c6973745d205b2d2d64756d702d696e6465785d203c617263686976652e6d6172633e0a0a4d415243583120617263686976652072656e64657265722e202056616c69646174657320616e64207265636f6e737472756374732074686520646f63756d656e740a6465736372696265642062792074686520617263686976652e0a0a20202d2d6e6f2d63726320202020202020646f206e6f7420766572696679207468652061726368697665204352432d33320a20202d2d6c69737420202020202020202076616c696461746520746865206172636869766520616e64207072696e74206d65746164617461206f6e6c790a20202d2d64756d702d696e6465782020207072696e742074686520726177206f7065726174696f6e20696e6465780a20202d682c202d2d68656c70202020202073686f7720746869732068656c700a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "list-poc-archive",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-09/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: archive ok (1 operations)\n",
+              "stderr": "",
+              "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30392f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2061726368697665206f6b202831206f7065726174696f6e73290a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "limitations": []
+        },
+        "capacity": {
+          "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+          "patched_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+          "format": "elf64-little",
+          "arch": "x86_64",
+          "mode": "capacity-check",
+          "strategy": "capacity",
+          "supported": true,
+          "status": "patched",
+          "sites": [
+            {
+              "site_va": 4202713,
+              "file_offset": 8409,
+              "block_size": 16,
+              "dst_disp": 4,
+              "base_reg": "r15",
+              "bad_capacity": "ebx",
+              "good_capacity": "r12d",
+              "sibling_vas": [
+                4202391,
+                4202634
+              ],
+              "source_disp": 8,
+              "detail": "destination check on [r15+4] compares against ebx (input size, used for source checks at [r15+8]) instead of the sibling capacity r12d"
+            }
+          ],
+          "actions": [
+            {
+              "kind": "capacity_check_rewrite",
+              "offset": 8409,
+              "size": 16,
+              "before_hex": "39f3720c89df29f739d70f83c4feffff",
+              "after_hex": "4489e729f7720939d70f83c5feffff90",
+              "site_va": 4202713,
+              "bad_capacity": "ebx",
+              "good_capacity": "r12d"
+            }
+          ],
+          "message_actions": [
+            {
+              "kind": "rodata_message_align",
+              "offset": 538624,
+              "size": 49,
+              "before_hex": "6f705b25755d3a207370616e2064657374696e6174696f6e206f75747369646520746865207061796c6f616420706f6f6c",
+              "after_hex": "6f705b25755d3a207370616e2064657374696e6174696f6e206f75747369646520746865206f7574707574000000000000",
+              "string_va": 4732928,
+              "old_text": "op[%u]: span destination outside the payload pool",
+              "new_text": "op[%u]: span destination outside the output"
+            }
+          ],
+          "limitations": [
+            "scanned 5 inlined range-check block(s) in the code region",
+            "In-place rewrite of one reviewed inlined range-check block; no code cave, no segment or program-header change.",
+            "Semantic equivalence of the rewritten predicate is established by the duplicated check shape and verified end-to-end by the supplied PoC/regression cases; this is not a whole-program proof."
+          ]
+        },
+        "report_sha256": "b811394f61bce3ed5bb5ebd7fec098999d10ac3d01a48d19b3ee0dcc3ee8ad02"
+      },
+      "gate": {
+        "success": true,
+        "outcome": "success_within_scope",
+        "reason": "",
+        "required_checks": 14,
+        "required_not_run": 0,
+        "evidence_sha256": "b811394f61bce3ed5bb5ebd7fec098999d10ac3d01a48d19b3ee0dcc3ee8ad02"
+      },
+      "tier": "emulated_run",
+      "engine": "capacity-check",
+      "static_reparse": true
+    },
+    "runtime": {},
+    "container": {
+      "format": "elf",
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "image_base": 4194304,
+      "slices": 1,
+      "imports": 0,
+      "sections": 24
+    },
+    "universal": {
+      "detected": true,
+      "repairable": true,
+      "reason": ""
+    },
+    "signature_invalidated": false,
+    "codesign_invalidated": false,
+    "candidate_available": true,
+    "error": null,
+    "disposition": "verified_patch",
+    "matrix": {
+      "cell": "elf/x86_64/64/little",
+      "repairable": true,
+      "strategies": [
+        "strict-template",
+        "immediate",
+        "guard",
+        "capacity"
+      ],
+      "runtime_tiers": [
+        "emulated_run"
+      ],
+      "sink_classes": [
+        "capacity_check_mismatch",
+        "checked_copy",
+        "immediate_length",
+        "memcpy_length",
+        "syscall_length",
+        "unbounded_copy"
+      ]
+    },
+    "delivery": {
+      "download_allowed": true,
+      "verified": true,
+      "tier": "emulated_run"
+    },
+    "coverage": {
+      "schema_version": 1,
+      "sink_classes": [
+        "capacity_check_mismatch",
+        "checked_copy",
+        "immediate_length",
+        "memcpy_length",
+        "syscall_length",
+        "unbounded_copy"
+      ],
+      "non_goals": [
+        "heap, global and other non-imported copy sinks outside the reviewed duplicated capacity-check rewrite",
+        "sprintf/format-string expansion, use-after-free and other integer/loop defects",
+        "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+        "32-bit Mach-O and fat Mach-O rewriting",
+        "Windows / macOS native execution beyond the existing Mach-O path"
+      ]
+    },
+    "slices": [],
+    "warnings": [],
+    "ai": {},
+    "poc": {
+      "schema_version": 1,
+      "status": "pass",
+      "runner": "limactl",
+      "tier": "emulated_run",
+      "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+      "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+      "poc": [
+        {
+          "case_id": "poc-overflow-720",
+          "kind": "poc",
+          "executable": "original",
+          "exit_code": 255,
+          "crashed": true,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-00/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: rendered 64 bytes\n  000000  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|\n  000010  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000020  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000030  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+          "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30302f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303032302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303033302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "poc-span-note-min",
+          "kind": "poc",
+          "executable": "original",
+          "exit_code": 255,
+          "crashed": true,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-01/poc_span_note_min.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\nmarcx: rendered 16 bytes\n  000000  01 00 00 00 00 00 00 00 00 00 00 00 40 00 00 00  |............@...|\n",
+          "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30312f706f635f7370616e5f6e6f74655f6d696e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020303120303020303020303020303020303020303020303020303020303020303020303020343020303020303020303020207c2e2e2e2e2e2e2e2e2e2e2e2e402e2e2e7c0a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "poc-span-note",
+          "kind": "poc",
+          "executable": "original",
+          "exit_code": 255,
+          "crashed": true,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-02/poc_span_note.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\nmarcx: rendered 16 bytes\n  000000  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+          "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30322f706f635f7370616e5f6e6f74652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "poc-overflow-nocrc",
+          "kind": "poc",
+          "executable": "original",
+          "exit_code": 255,
+          "crashed": true,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-03/poc_overflow_nocrc.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=1024, ops=1\nmarcx: rendered 64 bytes\n  000000  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|\n  000010  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000020  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000030  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+          "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30332f706f635f6f766572666c6f775f6e6f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020303020207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303032302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a20203030303033302020343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120343120207c414141414141414141414141414141417c0a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "poc-overflow-720",
+          "kind": "poc",
+          "executable": "candidate",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-00/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\n",
+          "stderr": "marcx: op[0]: span destination outside the output\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30302f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "poc-span-note-min",
+          "kind": "poc",
+          "executable": "candidate",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-01/poc_span_note_min.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+          "stderr": "marcx: op[0]: span destination outside the output\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30312f706f635f7370616e5f6e6f74655f6d696e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "poc-span-note",
+          "kind": "poc",
+          "executable": "candidate",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-02/poc_span_note.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+          "stderr": "marcx: op[0]: span destination outside the output\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30322f706f635f7370616e5f6e6f74652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "poc-overflow-nocrc",
+          "kind": "poc",
+          "executable": "candidate",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-poc-03/poc_overflow_nocrc.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=1024, ops=1\n",
+          "stderr": "marcx: op[0]: span destination outside the output\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d706f632d30332f706f635f6f766572666c6f775f6e6f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        }
+      ],
+      "regression": [
+        {
+          "case_id": "benign",
+          "kind": "regression",
+          "executable": "original",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-00/benign.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=1\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 72 65 66 65 72 65 6e 63 65  |MARCX1 reference|\n  000010  20 70 61 79 6c 6f 61 64 3a 20 68 65 6c 6c 6f 2c  | payload: hello,|\noperations:\n  op[0] literal dst=0 src=0 len=32 aux=0\n",
+          "stderr": "",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30302f62656e69676e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d310a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373220363520363620363520373220363520366520363320363520207c4d4152435831207265666572656e63657c0a20203030303031302020323020373020363120373920366320366620363120363420336120323020363820363520366320366320366620326320207c207061796c6f61643a2068656c6c6f2c7c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3332206175783d300a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "benign-sparse",
+          "kind": "regression",
+          "executable": "original",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-01/benign_sparse.marc: MARCX1 v1, flags=0x00000003, out_size=16, data_size=256, ops=1\nmarcx: rendered 16 bytes\n  000000  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\noperations:\n  op[0] span    dst=0 src=32 len=16 aux=0\n",
+          "stderr": "",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30312f62656e69676e5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d31362c20646174615f73697a653d3235362c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d3332206c656e3d3136206175783d300a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "benign-crc",
+          "kind": "regression",
+          "executable": "original",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-02/benign_crc.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=2\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 73 61 79 73 20 68 65 6c 6c  |MARCX1 says hell|\n  000010  6f 2c 20 73 70 61 72 73 22 22 22 22 22 22 22 22  |o, spars\"\"\"\"\"\"\"\"|\noperations:\n  op[0] literal dst=0 src=0 len=24 aux=0\n  op[1] fill    dst=24 src=0 len=8 aux=34\n",
+          "stderr": "",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30322f62656e69676e5f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d320a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373320363120373920373320323020363820363520366320366320207c4d415243583120736179732068656c6c7c0a20203030303031302020366620326320323020373320373020363120373220373320323220323220323220323220323220323220323220323220207c6f2c20737061727322222222222222227c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3234206175783d300a20206f705b315d2066696c6c202020206473743d3234207372633d30206c656e3d38206175783d33340a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "ctrl-span-equal-sizes",
+          "kind": "regression",
+          "executable": "original",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-03/ctrl_span_equal_sizes.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=64, ops=1\nmarcx: rendered 64 bytes\n  000000  00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  |................|\n  000010  10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f  |................|\n  000020  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\n  000030  30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f  |0123456789:;<=>?|\noperations:\n  op[0] span    dst=0 src=0 len=64 aux=0\n",
+          "stderr": "",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30332f6374726c5f7370616e5f657175616c5f73697a65732e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303120303220303320303420303520303620303720303820303920306120306220306320306420306520306620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020313020313120313220313320313420313520313620313720313820313920316120316220316320316420316520316620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303032302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a20203030303033302020333020333120333220333320333420333520333620333720333820333920336120336220336320336420336520336620207c303132333435363738393a3b3c3d3e3f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d30206c656e3d3634206175783d300a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "ctrl-span-no-sparse",
+          "kind": "regression",
+          "executable": "original",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-04/ctrl_span_no_sparse.marc: MARCX1 v1, flags=0x00000000, out_size=16, data_size=16, ops=1\n",
+          "stderr": "marcx: op[0]: span ops require FLAG_SPARSE\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30342f6374726c5f7370616e5f6e6f5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030302c206f75745f73697a653d31362c20646174615f73697a653d31362c206f70733d310a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "ctrl-span-src-oob",
+          "kind": "regression",
+          "executable": "original",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-05/ctrl_span_src_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+          "stderr": "marcx: op[0]: source range outside the payload pool\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30352f6374726c5f7370616e5f7372635f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "ctrl-literal-dst-oob",
+          "kind": "regression",
+          "executable": "original",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-06/ctrl_literal_dst_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+          "stderr": "marcx: op[0]: literal destination outside the output\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30362f6374726c5f6c69746572616c5f6473745f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "bad-crc",
+          "kind": "regression",
+          "executable": "original",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "",
+          "stderr": "marcx: crc mismatch (stored 0xe6fc3f0b, computed 0x385181e4)\n",
+          "stdout_hex": "",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "help",
+          "kind": "regression",
+          "executable": "original",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "usage: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-08/target [--no-crc] [--list] [--dump-index] <archive.marc>\n\nMARCX1 archive renderer.  Validates and reconstructs the document\ndescribed by the archive.\n\n  --no-crc       do not verify the archive CRC-32\n  --list         validate the archive and print metadata only\n  --dump-index   print the raw operation index\n  -h, --help     show this help\n",
+          "stderr": "",
+          "stdout_hex": "75736167653a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30382f746172676574205b2d2d6e6f2d6372635d205b2d2d6c6973745d205b2d2d64756d702d696e6465785d203c617263686976652e6d6172633e0a0a4d415243583120617263686976652072656e64657265722e202056616c69646174657320616e64207265636f6e737472756374732074686520646f63756d656e740a6465736372696265642062792074686520617263686976652e0a0a20202d2d6e6f2d63726320202020202020646f206e6f7420766572696679207468652061726368697665204352432d33320a20202d2d6c69737420202020202020202076616c696461746520746865206172636869766520616e64207072696e74206d65746164617461206f6e6c790a20202d2d64756d702d696e6465782020207072696e742074686520726177206f7065726174696f6e20696e6465780a20202d682c202d2d68656c70202020202073686f7720746869732068656c700a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "list-poc-archive",
+          "kind": "regression",
+          "executable": "original",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-09/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: archive ok (1 operations)\n",
+          "stderr": "",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30392f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2061726368697665206f6b202831206f7065726174696f6e73290a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "benign",
+          "kind": "regression",
+          "executable": "candidate",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-00/benign.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=1\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 72 65 66 65 72 65 6e 63 65  |MARCX1 reference|\n  000010  20 70 61 79 6c 6f 61 64 3a 20 68 65 6c 6c 6f 2c  | payload: hello,|\noperations:\n  op[0] literal dst=0 src=0 len=32 aux=0\n",
+          "stderr": "",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30302f62656e69676e2e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d310a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373220363520363620363520373220363520366520363320363520207c4d4152435831207265666572656e63657c0a20203030303031302020323020373020363120373920366320366620363120363420336120323020363820363520366320366320366620326320207c207061796c6f61643a2068656c6c6f2c7c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3332206175783d300a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "benign-sparse",
+          "kind": "regression",
+          "executable": "candidate",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-01/benign_sparse.marc: MARCX1 v1, flags=0x00000003, out_size=16, data_size=256, ops=1\nmarcx: rendered 16 bytes\n  000000  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\noperations:\n  op[0] span    dst=0 src=32 len=16 aux=0\n",
+          "stderr": "",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30312f62656e69676e5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d31362c20646174615f73697a653d3235362c206f70733d310a6d617263783a2072656e64657265642031362062797465730a20203030303030302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d3332206c656e3d3136206175783d300a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "benign-crc",
+          "kind": "regression",
+          "executable": "candidate",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-02/benign_crc.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=2\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 73 61 79 73 20 68 65 6c 6c  |MARCX1 says hell|\n  000010  6f 2c 20 73 70 61 72 73 22 22 22 22 22 22 22 22  |o, spars\"\"\"\"\"\"\"\"|\noperations:\n  op[0] literal dst=0 src=0 len=24 aux=0\n  op[1] fill    dst=24 src=0 len=8 aux=34\n",
+          "stderr": "",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30322f62656e69676e5f6372632e6d6172633a204d41524358312076312c20666c6167733d307830303030303030322c206f75745f73697a653d33322c20646174615f73697a653d33322c206f70733d320a6d617263783a2072656e64657265642033322062797465730a20203030303030302020346420343120353220343320353820333120323020373320363120373920373320323020363820363520366320366320207c4d415243583120736179732068656c6c7c0a20203030303031302020366620326320323020373320373020363120373220373320323220323220323220323220323220323220323220323220207c6f2c20737061727322222222222222227c0a6f7065726174696f6e733a0a20206f705b305d206c69746572616c206473743d30207372633d30206c656e3d3234206175783d300a20206f705b315d2066696c6c202020206473743d3234207372633d30206c656e3d38206175783d33340a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "ctrl-span-equal-sizes",
+          "kind": "regression",
+          "executable": "candidate",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-03/ctrl_span_equal_sizes.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=64, ops=1\nmarcx: rendered 64 bytes\n  000000  00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  |................|\n  000010  10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f  |................|\n  000020  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\n  000030  30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f  |0123456789:;<=>?|\noperations:\n  op[0] span    dst=0 src=0 len=64 aux=0\n",
+          "stderr": "",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30332f6374726c5f7370616e5f657175616c5f73697a65732e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d36342c20646174615f73697a653d36342c206f70733d310a6d617263783a2072656e64657265642036342062797465730a20203030303030302020303020303120303220303320303420303520303620303720303820303920306120306220306320306420306520306620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303031302020313020313120313220313320313420313520313620313720313820313920316120316220316320316420316520316620207c2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e7c0a20203030303032302020323020323120323220323320323420323520323620323720323820323920326120326220326320326420326520326620207c202122232425262728292a2b2c2d2e2f7c0a20203030303033302020333020333120333220333320333420333520333620333720333820333920336120336220336320336420336520336620207c303132333435363738393a3b3c3d3e3f7c0a6f7065726174696f6e733a0a20206f705b305d207370616e202020206473743d30207372633d30206c656e3d3634206175783d300a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "ctrl-span-no-sparse",
+          "kind": "regression",
+          "executable": "candidate",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-04/ctrl_span_no_sparse.marc: MARCX1 v1, flags=0x00000000, out_size=16, data_size=16, ops=1\n",
+          "stderr": "marcx: op[0]: span ops require FLAG_SPARSE\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30342f6374726c5f7370616e5f6e6f5f7370617273652e6d6172633a204d41524358312076312c20666c6167733d307830303030303030302c206f75745f73697a653d31362c20646174615f73697a653d31362c206f70733d310a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "ctrl-span-src-oob",
+          "kind": "regression",
+          "executable": "candidate",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-05/ctrl_span_src_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+          "stderr": "marcx: op[0]: source range outside the payload pool\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30352f6374726c5f7370616e5f7372635f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "ctrl-literal-dst-oob",
+          "kind": "regression",
+          "executable": "candidate",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-06/ctrl_literal_dst_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+          "stderr": "marcx: op[0]: literal destination outside the output\n",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30362f6374726c5f6c69746572616c5f6473745f6f6f622e6d6172633a204d41524358312076312c20666c6167733d307830303030303030312c206f75745f73697a653d31362c20646174615f73697a653d36342c206f70733d310a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "bad-crc",
+          "kind": "regression",
+          "executable": "candidate",
+          "exit_code": 1,
+          "crashed": false,
+          "stdout": "",
+          "stderr": "marcx: crc mismatch (stored 0xe6fc3f0b, computed 0x385181e4)\n",
+          "stdout_hex": "",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "help",
+          "kind": "regression",
+          "executable": "candidate",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "usage: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-08/target [--no-crc] [--list] [--dump-index] <archive.marc>\n\nMARCX1 archive renderer.  Validates and reconstructs the document\ndescribed by the archive.\n\n  --no-crc       do not verify the archive CRC-32\n  --list         validate the archive and print metadata only\n  --dump-index   print the raw operation index\n  -h, --help     show this help\n",
+          "stderr": "",
+          "stdout_hex": "75736167653a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30382f746172676574205b2d2d6e6f2d6372635d205b2d2d6c6973745d205b2d2d64756d702d696e6465785d203c617263686976652e6d6172633e0a0a4d415243583120617263686976652072656e64657265722e202056616c69646174657320616e64207265636f6e737472756374732074686520646f63756d656e740a6465736372696265642062792074686520617263686976652e0a0a20202d2d6e6f2d63726320202020202020646f206e6f7420766572696679207468652061726368697665204352432d33320a20202d2d6c69737420202020202020202076616c696461746520746865206172636869766520616e64207072696e74206d65746164617461206f6e6c790a20202d2d64756d702d696e6465782020207072696e742074686520726177206f7065726174696f6e20696e6465780a20202d682c202d2d68656c70202020202073686f7720746869732068656c700a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        },
+        {
+          "case_id": "list-poc-archive",
+          "kind": "regression",
+          "executable": "candidate",
+          "exit_code": 0,
+          "crashed": false,
+          "stdout": "marcx: /Users/huageorge/.br-guest-stage/br-poc-byorf1og/case-regression-09/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: archive ok (1 operations)\n",
+          "stderr": "",
+          "stdout_hex": "6d617263783a202f55736572732f68756167656f7267652f2e62722d67756573742d73746167652f62722d706f632d62796f7266316f672f636173652d72656772657373696f6e2d30392f706f635f6f766572666c6f772e6d6172633a204d41524358312076312c20666c6167733d307830303030303030332c206f75745f73697a653d36342c20646174615f73697a653d313032342c206f70733d310a6d617263783a2061726368697665206f6b202831206f7065726174696f6e73290a",
+          "timed_out": false,
+          "error": null,
+          "expected_ok": true
+        }
+      ],
+      "limitations": []
+    }
+  }
+}

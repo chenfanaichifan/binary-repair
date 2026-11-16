@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+  "patched_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+  "format": "elf64-little",
+  "arch": "x86_64",
+  "strategy": "capacity",
+  "mode": "capacity-check",
+  "status": "patched",
+  "sites": [
+    {
+      "site_va": 4202713,
+      "file_offset": 8409,
+      "block_size": 16,
+      "dst_disp": 4,
+      "base_reg": "r15",
+      "bad_capacity": "ebx",
+      "good_capacity": "r12d",
+      "sibling_vas": [
+        4202391,
+        4202634
+      ],
+      "source_disp": 8,
+      "detail": "destination check on [r15+4] compares against ebx (input size, used for source checks at [r15+8]) instead of the sibling capacity r12d"
+    }
+  ],
+  "actions": [
+    {
+      "kind": "capacity_check_rewrite",
+      "offset": 8409,
+      "size": 16,
+      "before_hex": "39f3720c89df29f739d70f83c4feffff",
+      "after_hex": "4489e729f7720939d70f83c5feffff90",
+      "site_va": 4202713,
+      "bad_capacity": "ebx",
+      "good_capacity": "r12d"
+    }
+  ],
+  "message_actions": [
+    {
+      "kind": "rodata_message_align",
+      "offset": 538624,
+      "size": 49,
+      "before_hex": "6f705b25755d3a207370616e2064657374696e6174696f6e206f75747369646520746865207061796c6f616420706f6f6c",
+      "after_hex": "6f705b25755d3a207370616e2064657374696e6174696f6e206f75747369646520746865206f7574707574000000000000",
+      "string_va": 4732928,
+      "old_text": "op[%u]: span destination outside the payload pool",
+      "new_text": "op[%u]: span destination outside the output"
+    }
+  ],
+  "before_disassembly": [
+    "0x4020d9: 39f3               cmp      ebx, esi",
+    "0x4020db: 720c               jb       0x4020e9",
+    "0x4020dd: 89df               mov      edi, ebx",
+    "0x4020df: 29f7               sub      edi, esi",
+    "0x4020e1: 39d7               cmp      edi, edx",
+    "0x4020e3: 0f83c4feffff       jae      0x401fad"
+  ],
+  "after_disassembly": [
+    "0x4020d9: 4489e7             mov      edi, r12d",
+    "0x4020dc: 29f7               sub      edi, esi",
+    "0x4020de: 7209               jb       0x4020e9",
+    "0x4020e0: 39d7               cmp      edi, edx",
+    "0x4020e2: 0f83c5feffff       jae      0x401fad",
+    "0x4020e8: 90                 nop      "
+  ],
+  "limitations": [
+    "scanned 5 inlined range-check block(s) in the code region",
+    "In-place rewrite of one reviewed inlined range-check block; no code cave, no segment or program-header change.",
+    "Semantic equivalence of the rewritten predicate is established by the duplicated check shape and verified end-to-end by the supplied PoC/regression cases; this is not a whole-program proof."
+  ]
+}

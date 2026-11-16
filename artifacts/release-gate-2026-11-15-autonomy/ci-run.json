@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "kind": "hosted_ci_run_record",
+  "generated_at": "2026-11-14T20:45:00Z",
+  "sha": "2bfa112591614aa39d4d6b55ad9bb962b9718e7c",
+  "ci_run": {
+    "id": 43637263062,
+    "url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43637263062",
+    "workflow": "CI",
+    "conclusion": "success",
+    "head_sha": "2bfa112591614aa39d4d6b55ad9bb962b9718e7c",
+    "jobs": [
+      {
+        "name": "test",
+        "conclusion": "success"
+      },
+      {
+        "name": "coverage-gate",
+        "conclusion": "success"
+      },
+      {
+        "name": "release-gate-pr",
+        "conclusion": "success"
+      },
+      {
+        "name": "browser-e2e",
+        "conclusion": "success"
+      },
+      {
+        "name": "release-gate-hosted",
+        "conclusion": "success",
+        "scope": "portable PR gate + full non-browser pytest; artifact release-gate-hosted-evidence"
+      },
+      {
+        "name": "release-nightly-gate",
+        "conclusion": "skipped",
+        "reason": "self-hosted Lima runner not provisioned (inert vars guard)"
+      },
+      {
+        "name": "release-drift",
+        "conclusion": "skipped",
+        "reason": "schedule/dispatch only"
+      }
+    ]
+  },
+  "ubuntu_verification_run": {
+    "id": 43637263068,
+    "url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43637263068",
+    "workflow": "Ubuntu verification",
+    "conclusion": "success",
+    "head_sha": "2bfa112591614aa39d4d6b55ad9bb962b9718e7c",
+    "jobs": [
+      {
+        "name": "test",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "self_hosted_nightly": {
+    "status": "not_run",
+    "reason": "no self-hosted lima runner provisioned",
+    "signoff": "docs/release/CI-SIGNOFF-2026-11-15.md"
+  },
+  "final_local_gate": {
+    "sha": "2bfa112591614aa39d4d6b55ad9bb962b9718e7c",
+    "artifact_dir": "artifacts/release-gate-2026-11-15-autonomy",
+    "tree_sha": "65a9df826cd775135a54e1ff3a68c346f72acfc0"
+  },
+  "not_run": [
+    "self_hosted_lima_nightly",
+    "international_provider_matrix"
+  ]
+}

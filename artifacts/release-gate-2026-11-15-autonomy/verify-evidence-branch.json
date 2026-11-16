@@ -1,0 +1,56 @@
+{
+  "changed_paths": [
+    "artifacts/release-gate-2026-11-15-autonomy/README.md",
+    "artifacts/release-gate-2026-11-15-autonomy/SHA256SUMS",
+    "artifacts/release-gate-2026-11-15-autonomy/ci-run.json",
+    "artifacts/release-gate-2026-11-15-autonomy/freeze.json",
+    "artifacts/release-gate-2026-11-15-autonomy/gate.json",
+    "docs/release-2026-11-15-autonomy.md"
+  ],
+  "checks": [
+    {
+      "detail": "gated sha 2bfa112591614aa39d4d6b55ad9bb962b9718e7c",
+      "id": "gated-sha-resolves",
+      "status": "passed"
+    },
+    {
+      "detail": "2bfa11259161 is an ancestor of 2bfa11259161",
+      "id": "gated-is-ancestor",
+      "status": "passed"
+    },
+    {
+      "detail": "evidence tip 43c5ecbd640d9a7af6884034547791f32f60a159",
+      "id": "evidence-tip",
+      "status": "passed"
+    },
+    {
+      "detail": "evidence directory artifacts/release-gate-2026-11-15-autonomy/ has all required files",
+      "id": "evidence-files",
+      "status": "passed"
+    },
+    {
+      "detail": "gate.json frozen_sha/release_sha=('2bfa112591614aa39d4d6b55ad9bb962b9718e7c', '2bfa112591614aa39d4d6b55ad9bb962b9718e7c') gated=2bfa112591614aa39d4d6b55ad9bb962b9718e7c",
+      "id": "gate-json-sha",
+      "status": "passed"
+    },
+    {
+      "detail": "freeze.json pins match the gated sha",
+      "id": "freeze-json-sha",
+      "status": "passed"
+    },
+    {
+      "detail": "4 hash entry(ies) validated",
+      "id": "sha256sums",
+      "status": "passed"
+    },
+    {
+      "detail": "6 changed path(s), all allowed",
+      "id": "changed-paths",
+      "status": "passed"
+    }
+  ],
+  "evidence_ref": "HEAD",
+  "evidence_sha": "43c5ecbd640d9a7af6884034547791f32f60a159",
+  "gated_sha": "2bfa112591614aa39d4d6b55ad9bb962b9718e7c",
+  "ok": true
+}

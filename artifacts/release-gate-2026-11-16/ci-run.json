@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "kind": "hosted_ci_run_record",
+  "generated_at": "2026-11-14T19:03:00Z",
+  "scope": "GitHub-hosted portable CI layer for the candidate SHA bb1ee2ddf2d9c40cbbd4b44be4931602aca0fcee: release_gate --pr + full non-browser pytest; not host-specific release measurements and not the Lima nightly",
+  "sha": "bb1ee2ddf2d9c40cbbd4b44be4931602aca0fcee",
+  "ci_run": {
+    "id": 43626323294,
+    "url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43626323294",
+    "workflow": "CI",
+    "conclusion": "success",
+    "head_sha": "bb1ee2ddf2d9c40cbbd4b44be4931602aca0fcee"
+  },
+  "ubuntu_verification_run": {
+    "id": 43626323267,
+    "url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43626323267",
+    "workflow": "Ubuntu verification",
+    "conclusion": "success",
+    "head_sha": "bb1ee2ddf2d9c40cbbd4b44be4931602aca0fcee"
+  },
+  "jobs": [
+    {
+      "name": "release-gate-pr",
+      "conclusion": "success"
+    },
+    {
+      "name": "coverage-gate",
+      "conclusion": "success"
+    },
+    {
+      "name": "test",
+      "conclusion": "success"
+    },
+    {
+      "name": "browser-e2e",
+      "conclusion": "success"
+    },
+    {
+      "name": "release-gate-hosted",
+      "conclusion": "success",
+      "scope": "portable PR gate + full non-browser pytest; evidence artifact release-gate-hosted-evidence"
+    },
+    {
+      "name": "release-nightly-gate",
+      "conclusion": "skipped",
+      "reason": "self-hosted Lima runner not provisioned (inert vars guard)"
+    },
+    {
+      "name": "release-drift",
+      "conclusion": "skipped",
+      "reason": "schedule/workflow_dispatch only"
+    }
+  ],
+  "self_hosted_nightly": {
+    "status": "not_run",
+    "reason": "no self-hosted lima runner provisioned",
+    "signoff": "docs/release/CI-SIGNOFF-2026-11-15.md"
+  },
+  "final_local_gate": {
+    "sha": "a8934fefe918b95069b89b42399095dd28bf8710",
+    "artifact_dir": "artifacts/release-gate-2026-11-16",
+    "gate_sha256_kind": "gate.json recorded by release_freeze.py on the frozen host",
+    "tree_sha": "1bd4fcc09b67c47c291f708973f5a36870510973"
+  },
+  "not_run": [
+    "self_hosted_lima_nightly",
+    "international_provider_matrix"
+  ],
+  "final_sha_ci_run": {
+    "id": 43628367481,
+    "url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43628367481",
+    "workflow": "CI",
+    "conclusion": "success",
+    "head_sha": "a8934fefe918b95069b89b42399095dd28bf8710",
+    "note": "GitHub-hosted CI run for the final frozen SHA itself (after the claims commit); recorded post-release in the evidence branch."
+  },
+  "final_sha_ubuntu_run": {
+    "id": 43628367473,
+    "url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43628367473",
+    "workflow": "Ubuntu verification",
+    "conclusion": "success",
+    "head_sha": "a8934fefe918b95069b89b42399095dd28bf8710"
+  }
+}

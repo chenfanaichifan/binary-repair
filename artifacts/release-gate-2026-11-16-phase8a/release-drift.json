@@ -1,0 +1,12 @@
+{
+  "drift": 0,
+  "evidence_gated_sha": "bd9cbf63c395dfa98cb16845bee3f817805adaf5",
+  "evidence_ref": "release/2026-11-16-phase8a-evidence",
+  "evidence_sha": "552e3b9d920211d2f5f754aa54e0f76ca75d0a87",
+  "mainline_ref": "origin/workbench-v3",
+  "mainline_sha": "bd9cbf63c395dfa98cb16845bee3f817805adaf5",
+  "ok": true,
+  "reasons": [],
+  "tag": "release-2026-11-16-phase8a",
+  "tag_sha": "bd9cbf63c395dfa98cb16845bee3f817805adaf5"
+}

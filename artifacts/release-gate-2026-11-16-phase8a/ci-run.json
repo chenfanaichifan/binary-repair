@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "kind": "hosted_ci_run_record",
+  "generated_at": "2026-11-15T15:15:00Z",
+  "sha": "bd9cbf63c395dfa98cb16845bee3f817805adaf5",
+  "ci_run": {
+    "id": 43687651314,
+    "url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43687651314",
+    "workflow": "CI",
+    "conclusion": "success",
+    "head_sha": "bd9cbf63c395dfa98cb16845bee3f817805adaf5",
+    "scope": "test + coverage-gate (including Phase-8 shadow steps) + release-gate-pr + browser-e2e + portable release-gate-hosted; self-hosted nightly skipped/inert"
+  },
+  "ubuntu_verification_run": {
+    "id": 43687651300,
+    "url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43687651300",
+    "workflow": "Ubuntu verification",
+    "conclusion": "success",
+    "head_sha": "bd9cbf63c395dfa98cb16845bee3f817805adaf5"
+  },
+  "self_hosted_nightly": {
+    "status": "not_run",
+    "reason": "no self-hosted Lima runner provisioned (inert workflow vars)",
+    "signoff": "docs/release/CI-SIGNOFF-2026-11-15.md"
+  },
+  "final_local_gate": {
+    "sha": "bd9cbf63c395dfa98cb16845bee3f817805adaf5",
+    "tree_sha": "c3edf88bb465b937bb1f3abba908e571d2a4f8b0",
+    "artifact_dir": "artifacts/release-gate-2026-11-16-phase8a",
+    "checks": {
+      "failed": 0,
+      "passed": 13,
+      "skipped": 0,
+      "unavailable": 0
+    },
+    "violations": []
+  },
+  "not_run": [
+    "self_hosted_lima_nightly",
+    "international_provider_matrix"
+  ]
+}

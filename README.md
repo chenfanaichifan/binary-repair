@@ -1,5 +1,12 @@
 # BinaryRepair
 
+> **2026-11-16 consolidation**: the complete delivery of the two focus sessions
+> (Linux VM verification + all-type binary repair) is consolidated into branch
+> `final/consolidated-2026-11-16`. Start from [CONSOLIDATION.md](CONSOLIDATION.md)
+> and the master report [docs/consolidation/PROJECT-MASTER-REPORT-2026-11-16.md](docs/consolidation/PROJECT-MASTER-REPORT-2026-11-16.md).
+> The gated release SHA remains `4a7b235` (Phase-8C); this branch adds
+> docs/evidence only.
+
 > **Current feature line (2026-11-15)**: structured RepairSpec planner +
 > ABI-strict assembly gives **3/3 AI-verified non-loop hard cases** and a
 > cross-binary benchmark (8 binaries / 7 CWE; 36-run stability 19/36); 4-model

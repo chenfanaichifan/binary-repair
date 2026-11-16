@@ -1,0 +1,305 @@
+{
+  "schema_version": 1,
+  "scope": "outside-the-gate confirmation; not acceptance authority",
+  "expected": {
+    "unchanged": "benign, CRC and differential-control archives render/reject exactly as before",
+    "previously_crashing_now_rejected": "the overflow archive is rejected before the copy",
+    "invalid_input_now_rejected": "an archive with an out-of-bounds span destination (silent 1-byte overflow in the original) is rejected",
+    "changed": "unexpected"
+  },
+  "cases": [
+    {
+      "case": "benign.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/benign.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=1\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 72 65 66 65 72 65 6e 63 65  |MARCX1 reference|\n  000010  20 70 61 79 6c 6f 61 64 3a 20 68 65 6c 6c 6f 2c  | payload: hello,|\noperations:\n  op[0] literal dst=0 src=0 len=32 aux=0\n",
+        "stderr": ""
+      },
+      "fixed": {
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/benign.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=1\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 72 65 66 65 72 65 6e 63 65  |MARCX1 reference|\n  000010  20 70 61 79 6c 6f 61 64 3a 20 68 65 6c 6c 6f 2c  | payload: hello,|\noperations:\n  op[0] literal dst=0 src=0 len=32 aux=0\n",
+        "stderr": ""
+      },
+      "identical": true,
+      "disposition": "unchanged"
+    },
+    {
+      "case": "benign_sparse.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/benign_sparse.marc: MARCX1 v1, flags=0x00000003, out_size=16, data_size=256, ops=1\nmarcx: rendered 16 bytes\n  000000  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\noperations:\n  op[0] span    dst=0 src=32 len=16 aux=0\n",
+        "stderr": ""
+      },
+      "fixed": {
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/benign_sparse.marc: MARCX1 v1, flags=0x00000003, out_size=16, data_size=256, ops=1\nmarcx: rendered 16 bytes\n  000000  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\noperations:\n  op[0] span    dst=0 src=32 len=16 aux=0\n",
+        "stderr": ""
+      },
+      "identical": true,
+      "disposition": "unchanged"
+    },
+    {
+      "case": "benign_crc.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/benign_crc.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=2\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 73 61 79 73 20 68 65 6c 6c  |MARCX1 says hell|\n  000010  6f 2c 20 73 70 61 72 73 22 22 22 22 22 22 22 22  |o, spars\"\"\"\"\"\"\"\"|\noperations:\n  op[0] literal dst=0 src=0 len=24 aux=0\n  op[1] fill    dst=24 src=0 len=8 aux=34\n",
+        "stderr": ""
+      },
+      "fixed": {
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/benign_crc.marc: MARCX1 v1, flags=0x00000002, out_size=32, data_size=32, ops=2\nmarcx: rendered 32 bytes\n  000000  4d 41 52 43 58 31 20 73 61 79 73 20 68 65 6c 6c  |MARCX1 says hell|\n  000010  6f 2c 20 73 70 61 72 73 22 22 22 22 22 22 22 22  |o, spars\"\"\"\"\"\"\"\"|\noperations:\n  op[0] literal dst=0 src=0 len=24 aux=0\n  op[1] fill    dst=24 src=0 len=8 aux=34\n",
+        "stderr": ""
+      },
+      "identical": true,
+      "disposition": "unchanged"
+    },
+    {
+      "case": "ctrl_span_equal_sizes.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/ctrl_span_equal_sizes.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=64, ops=1\nmarcx: rendered 64 bytes\n  000000  00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  |................|\n  000010  10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f  |................|\n  000020  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\n  000030  30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f  |0123456789:;<=>?|\noperations:\n  op[0] span    dst=0 src=0 len=64 aux=0\n",
+        "stderr": ""
+      },
+      "fixed": {
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/ctrl_span_equal_sizes.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=64, ops=1\nmarcx: rendered 64 bytes\n  000000  00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  |................|\n  000010  10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f  |................|\n  000020  20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  | !\"#$%&'()*+,-./|\n  000030  30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f  |0123456789:;<=>?|\noperations:\n  op[0] span    dst=0 src=0 len=64 aux=0\n",
+        "stderr": ""
+      },
+      "identical": true,
+      "disposition": "unchanged"
+    },
+    {
+      "case": "bad_crc.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "",
+        "stderr": "marcx: crc mismatch (stored 0xe6fc3f0b, computed 0x385181e4)\n"
+      },
+      "fixed": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "",
+        "stderr": "marcx: crc mismatch (stored 0xe6fc3f0b, computed 0x385181e4)\n"
+      },
+      "identical": true,
+      "disposition": "unchanged"
+    },
+    {
+      "case": "ctrl_literal_dst_oob.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/ctrl_literal_dst_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: literal destination outside the output\n"
+      },
+      "fixed": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/ctrl_literal_dst_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: literal destination outside the output\n"
+      },
+      "identical": true,
+      "disposition": "unchanged"
+    },
+    {
+      "case": "ctrl_span_no_sparse.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/ctrl_span_no_sparse.marc: MARCX1 v1, flags=0x00000000, out_size=16, data_size=16, ops=1\n",
+        "stderr": "marcx: op[0]: span ops require FLAG_SPARSE\n"
+      },
+      "fixed": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/ctrl_span_no_sparse.marc: MARCX1 v1, flags=0x00000000, out_size=16, data_size=16, ops=1\n",
+        "stderr": "marcx: op[0]: span ops require FLAG_SPARSE\n"
+      },
+      "identical": true,
+      "disposition": "unchanged"
+    },
+    {
+      "case": "ctrl_span_src_oob.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/ctrl_span_src_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: source range outside the payload pool\n"
+      },
+      "fixed": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/ctrl_span_src_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: source range outside the payload pool\n"
+      },
+      "identical": true,
+      "disposition": "unchanged"
+    },
+    {
+      "case": "poc_overflow.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 255,
+        "crashed": true,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: rendered 64 bytes\n  000000  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|\n  000010  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000020  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000030  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+        "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n"
+      },
+      "fixed": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_overflow.marc: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\n",
+        "stderr": "marcx: op[0]: span destination outside the output\n"
+      },
+      "identical": false,
+      "disposition": "previously_crashing_now_rejected"
+    },
+    {
+      "case": "poc_overflow_nocrc.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 255,
+        "crashed": true,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_overflow_nocrc.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=1024, ops=1\nmarcx: rendered 64 bytes\n  000000  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|\n  000010  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000020  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000030  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+        "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n"
+      },
+      "fixed": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_overflow_nocrc.marc: MARCX1 v1, flags=0x00000001, out_size=64, data_size=1024, ops=1\n",
+        "stderr": "marcx: op[0]: span destination outside the output\n"
+      },
+      "identical": false,
+      "disposition": "previously_crashing_now_rejected"
+    },
+    {
+      "case": "poc_span_note.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 255,
+        "crashed": true,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_span_note.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\nmarcx: rendered 16 bytes\n  000000  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+        "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n"
+      },
+      "fixed": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_span_note.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: span destination outside the output\n"
+      },
+      "identical": false,
+      "disposition": "previously_crashing_now_rejected"
+    },
+    {
+      "case": "poc_span_note_min.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 255,
+        "crashed": true,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_span_note_min.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\nmarcx: rendered 16 bytes\n  000000  01 00 00 00 00 00 00 00 00 00 00 00 40 00 00 00  |............@...|\n",
+        "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n"
+      },
+      "fixed": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_span_note_min.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=64, ops=1\n",
+        "stderr": "marcx: op[0]: span destination outside the output\n"
+      },
+      "identical": false,
+      "disposition": "previously_crashing_now_rejected"
+    },
+    {
+      "case": "poc_span_min.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_span_min.marc: MARCX1 v1, flags=0x00000001, out_size=1, data_size=2, ops=1\nmarcx: rendered 1 bytes\n  000000  01                                               |.|\noperations:\n  op[0] span    dst=0 src=0 len=2 aux=0\n",
+        "stderr": ""
+      },
+      "fixed": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_span_min.marc: MARCX1 v1, flags=0x00000001, out_size=1, data_size=2, ops=1\n",
+        "stderr": "marcx: op[0]: span destination outside the output\n"
+      },
+      "identical": false,
+      "disposition": "invalid_input_now_rejected"
+    },
+    {
+      "case": "poc_span_oob.marc",
+      "argv_extra": [],
+      "original": {
+        "exit_code": 255,
+        "crashed": true,
+        "stdout": "",
+        "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n"
+      },
+      "fixed": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_span_oob.marc: MARCX1 v1, flags=0x00000001, out_size=16, data_size=65536, ops=1\n",
+        "stderr": "marcx: op[0]: span destination outside the output\n"
+      },
+      "identical": false,
+      "disposition": "previously_crashing_now_rejected"
+    },
+    {
+      "case": "poc_overflow--list",
+      "argv_extra": [
+        "--list"
+      ],
+      "original": {
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_overflow: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: archive ok (1 operations)\n",
+        "stderr": ""
+      },
+      "fixed": {
+        "exit_code": 0,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_overflow: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nmarcx: archive ok (1 operations)\n",
+        "stderr": ""
+      },
+      "identical": true,
+      "disposition": "unchanged"
+    },
+    {
+      "case": "poc_overflow--dump-index",
+      "argv_extra": [
+        "--dump-index"
+      ],
+      "original": {
+        "exit_code": 255,
+        "crashed": true,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_overflow: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nidx[0] kind=1 dst=16 src=0 len=768 aux=0\nmarcx: rendered 64 bytes\n  000000  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|\n  000010  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000020  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n  000030  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  |AAAAAAAAAAAAAAAA|\n",
+        "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n"
+      },
+      "fixed": {
+        "exit_code": 1,
+        "crashed": false,
+        "stdout": "marcx: /Users/huageorge/.br-guest-stage/marcx-accept/poc_overflow: MARCX1 v1, flags=0x00000003, out_size=64, data_size=1024, ops=1\nidx[0] kind=1 dst=16 src=0 len=768 aux=0\n",
+        "stderr": "marcx: op[0]: span destination outside the output\n"
+      },
+      "identical": false,
+      "disposition": "previously_crashing_now_rejected"
+    }
+  ],
+  "all_expected": true
+}

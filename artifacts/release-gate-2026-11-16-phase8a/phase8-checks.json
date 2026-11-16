@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-15T15:15:00Z",
+  "sha": "bd9cbf63c395dfa98cb16845bee3f817805adaf5",
+  "checks": [
+    {
+      "id": "readiness-audit",
+      "command": "python scripts/audit_repair_readiness.py --check",
+      "status": "passed",
+      "detail": "30 items; 13 implemented / 7 partial / 5 missing / 1 not_run / 4 non_goal; capability_claims=0"
+    },
+    {
+      "id": "ground-truth-benchmark",
+      "command": "python scripts/build_ground_truth_benchmark.py --check",
+      "status": "passed",
+      "detail": "12/12 samples; hidden_available=false; schema validated"
+    },
+    {
+      "id": "independent-verifier-selftest",
+      "command": "python scripts/verify_repair.py --selftest",
+      "status": "passed",
+      "detail": "11/11 fail-closed cases; jsonschema validated"
+    },
+    {
+      "id": "contracts",
+      "command": "python scripts/check_contract_schemas.py --check",
+      "status": "passed",
+      "detail": "12 schemas; 12/12 valid + 12/12 invalid fixtures; committed artifacts validated"
+    },
+    {
+      "id": "acceptance-matrix",
+      "command": "python scripts/audit_acceptance_models.py --check",
+      "status": "passed",
+      "detail": "52 cases; 24/24 classes; recall/precision 1.0"
+    },
+    {
+      "id": "meta-audit",
+      "command": "python scripts/meta_audit.py",
+      "status": "passed",
+      "detail": "28 scenarios; recall/precision 1.0"
+    },
+    {
+      "id": "unified-audit",
+      "command": "python scripts/autonomous_repair_audit.py --mode full --json",
+      "status": "passed",
+      "detail": "7 required + 3 shadow checks passed; not_run=[]"
+    },
+    {
+      "id": "repair-benchmark",
+      "command": "python scripts/run_repair_benchmark.py --verifier auto --claim-policy withdraw",
+      "status": "passed",
+      "detail": "12 executed; detected 4; candidate 2; deterministic claims 2 withdrawn due independent verifier disagreement; independent verified 0; false_verified 0"
+    }
+  ],
+  "not_run": [
+    "hidden benchmark (hidden_available=false)",
+    "real end-to-end independent verification of a repaired binary"
+  ]
+}

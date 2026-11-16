@@ -1,0 +1,57 @@
+{
+  "changed_paths": [
+    "artifacts/release-gate-2026-11-16-phase8a/README.md",
+    "artifacts/release-gate-2026-11-16-phase8a/SHA256SUMS",
+    "artifacts/release-gate-2026-11-16-phase8a/ci-run.json",
+    "artifacts/release-gate-2026-11-16-phase8a/freeze.json",
+    "artifacts/release-gate-2026-11-16-phase8a/gate.json",
+    "artifacts/release-gate-2026-11-16-phase8a/phase8-checks.json",
+    "docs/release-2026-11-16-phase8a.md"
+  ],
+  "checks": [
+    {
+      "detail": "gated sha bd9cbf63c395dfa98cb16845bee3f817805adaf5",
+      "id": "gated-sha-resolves",
+      "status": "passed"
+    },
+    {
+      "detail": "bd9cbf63c395 is an ancestor of bd9cbf63c395",
+      "id": "gated-is-ancestor",
+      "status": "passed"
+    },
+    {
+      "detail": "evidence tip 552e3b9d920211d2f5f754aa54e0f76ca75d0a87",
+      "id": "evidence-tip",
+      "status": "passed"
+    },
+    {
+      "detail": "evidence directory artifacts/release-gate-2026-11-16-phase8a/ has all required files",
+      "id": "evidence-files",
+      "status": "passed"
+    },
+    {
+      "detail": "gate.json frozen_sha/release_sha=('bd9cbf63c395dfa98cb16845bee3f817805adaf5', 'bd9cbf63c395dfa98cb16845bee3f817805adaf5') gated=bd9cbf63c395dfa98cb16845bee3f817805adaf5",
+      "id": "gate-json-sha",
+      "status": "passed"
+    },
+    {
+      "detail": "freeze.json pins match the gated sha",
+      "id": "freeze-json-sha",
+      "status": "passed"
+    },
+    {
+      "detail": "5 hash entry(ies) validated",
+      "id": "sha256sums",
+      "status": "passed"
+    },
+    {
+      "detail": "7 changed path(s), all allowed",
+      "id": "changed-paths",
+      "status": "passed"
+    }
+  ],
+  "evidence_ref": "HEAD",
+  "evidence_sha": "552e3b9d920211d2f5f754aa54e0f76ca75d0a87",
+  "gated_sha": "bd9cbf63c395dfa98cb16845bee3f817805adaf5",
+  "ok": true
+}

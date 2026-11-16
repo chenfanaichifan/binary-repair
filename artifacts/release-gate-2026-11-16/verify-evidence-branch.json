@@ -1,0 +1,56 @@
+{
+  "changed_paths": [
+    "artifacts/release-gate-2026-11-16/README.md",
+    "artifacts/release-gate-2026-11-16/SHA256SUMS",
+    "artifacts/release-gate-2026-11-16/ci-run.json",
+    "artifacts/release-gate-2026-11-16/freeze.json",
+    "artifacts/release-gate-2026-11-16/gate.json",
+    "docs/release-2026-11-16.md"
+  ],
+  "checks": [
+    {
+      "detail": "gated sha a8934fefe918b95069b89b42399095dd28bf8710",
+      "id": "gated-sha-resolves",
+      "status": "passed"
+    },
+    {
+      "detail": "a8934fefe918 is an ancestor of a8934fefe918",
+      "id": "gated-is-ancestor",
+      "status": "passed"
+    },
+    {
+      "detail": "evidence tip d4aeeea7ff7177d0126366206e74794225a49dbc",
+      "id": "evidence-tip",
+      "status": "passed"
+    },
+    {
+      "detail": "evidence directory artifacts/release-gate-2026-11-16/ has all required files",
+      "id": "evidence-files",
+      "status": "passed"
+    },
+    {
+      "detail": "gate.json frozen_sha/release_sha=('a8934fefe918b95069b89b42399095dd28bf8710', 'a8934fefe918b95069b89b42399095dd28bf8710') gated=a8934fefe918b95069b89b42399095dd28bf8710",
+      "id": "gate-json-sha",
+      "status": "passed"
+    },
+    {
+      "detail": "freeze.json pins match the gated sha",
+      "id": "freeze-json-sha",
+      "status": "passed"
+    },
+    {
+      "detail": "4 hash entry(ies) validated",
+      "id": "sha256sums",
+      "status": "passed"
+    },
+    {
+      "detail": "6 changed path(s), all allowed",
+      "id": "changed-paths",
+      "status": "passed"
+    }
+  ],
+  "evidence_ref": "HEAD",
+  "evidence_sha": "d4aeeea7ff7177d0126366206e74794225a49dbc",
+  "gated_sha": "a8934fefe918b95069b89b42399095dd28bf8710",
+  "ok": true
+}
