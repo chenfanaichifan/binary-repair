@@ -1,0 +1,816 @@
+{
+  "schema_version": 1,
+  "tool": "m2-analysis-dataflow",
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "entry": 16782768,
+  "sinks": [
+    {
+      "site_va": 16783016,
+      "callee": "strcpy",
+      "copy_token": "strcpy",
+      "instruction": "call 0x1001770",
+      "function": {
+        "va": 16782992,
+        "name": "copy_payload",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 16782992,
+            "offset": 0
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 16782992,
+            "offset": 1
+          }
+        ]
+      },
+      "limitations": [
+        "rdi is argument 0 of copy_payload: its identity/capacity is defined by each caller",
+        "different resolved call paths give different destination capacities; no single capacity is claimed (call-site-dependent capacity)",
+        "the copy source pointer is caller-defined; its data length is not statically bounded (unbounded libc copy)"
+      ],
+      "destination": {
+        "origin": "parameter",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "conflict",
+        "resolution": "partially_resolved",
+        "paths": [
+          {
+            "caller": {
+              "va": 16782880,
+              "name": "wrapper"
+            },
+            "call_site_va": 16782908,
+            "call_kind": "direct",
+            "origin": "stack_local",
+            "capacity": 32,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "must_alias_at_callsite",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 16782880,
+                  "offset": -32
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "frame_slot_spill",
+                "function": "copy_payload",
+                "va": 16783000,
+                "detail": "store of rdi to [rbp -8]"
+              },
+              {
+                "kind": "frame_slot_reload",
+                "function": "copy_payload",
+                "va": 16783008,
+                "detail": "load rdi from [rbp -8]"
+              },
+              {
+                "kind": "function_entry",
+                "function": "copy_payload",
+                "va": 16782992,
+                "detail": "argument 0 (rdi)"
+              },
+              {
+                "kind": "call_site",
+                "function": "wrapper",
+                "va": 16782908,
+                "detail": "wrapper -> copy_payload"
+              },
+              {
+                "kind": "frame_slot_spill",
+                "function": "wrapper",
+                "va": 16782896,
+                "detail": "store of rax to [rbp -40]"
+              },
+              {
+                "kind": "frame_slot_reload",
+                "function": "wrapper",
+                "va": 16782900,
+                "detail": "load rdi from [rbp -40]"
+              },
+              {
+                "kind": "stack_frame_local",
+                "function": "wrapper",
+                "va": 16782892,
+                "detail": "lea rax, [rbp - 0x20]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          },
+          {
+            "caller": {
+              "va": 16782928,
+              "name": "wrapper2"
+            },
+            "call_site_va": 16782957,
+            "call_kind": "direct",
+            "origin": "global_object",
+            "capacity": 16,
+            "capacity_source": "object_symbol_size",
+            "resolution": "resolved",
+            "confidence": "high",
+            "alias": {
+              "relation": "may_alias_at_callsite",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "frame_slot_spill",
+                "function": "copy_payload",
+                "va": 16783000,
+                "detail": "store of rdi to [rbp -8]"
+              },
+              {
+                "kind": "frame_slot_reload",
+                "function": "copy_payload",
+                "va": 16783008,
+                "detail": "load rdi from [rbp -8]"
+              },
+              {
+                "kind": "function_entry",
+                "function": "copy_payload",
+                "va": 16782992,
+                "detail": "argument 0 (rdi)"
+              },
+              {
+                "kind": "call_site",
+                "function": "wrapper2",
+                "va": 16782957,
+                "detail": "wrapper2 -> copy_payload"
+              },
+              {
+                "kind": "frame_slot_spill",
+                "function": "wrapper2",
+                "va": 16782945,
+                "detail": "store of rax to [rbp -16]"
+              },
+              {
+                "kind": "frame_slot_reload",
+                "function": "wrapper2",
+                "va": 16782949,
+                "detail": "load rdi from [rbp -16]"
+              },
+              {
+                "kind": "return_value",
+                "function": "wrapper2",
+                "va": 16782940,
+                "detail": "rax <- return value of ret_buffer"
+              },
+              {
+                "kind": "global_address",
+                "function": "ret_buffer",
+                "va": 16783044,
+                "detail": "lea rax, [rip + 8773]"
+              }
+            ],
+            "limitations": []
+          }
+        ]
+      },
+      "confidence": "low",
+      "source_argument": {
+        "origin": "parameter",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "frame_slot_spill",
+            "function": "copy_payload",
+            "va": 16783004,
+            "detail": "store of rsi to [rbp -16]"
+          },
+          {
+            "kind": "frame_slot_reload",
+            "function": "copy_payload",
+            "va": 16783012,
+            "detail": "load rsi from [rbp -16]"
+          },
+          {
+            "kind": "function_entry",
+            "function": "copy_payload",
+            "va": 16782992,
+            "detail": "argument 1 (rsi)"
+          }
+        ],
+        "caller_origins": [
+          {
+            "caller": {
+              "va": 16782880,
+              "name": "wrapper"
+            },
+            "origin": "parameter"
+          },
+          {
+            "caller": {
+              "va": 16782928,
+              "name": "wrapper2"
+            },
+            "origin": "parameter"
+          }
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "frame-slot store/reload forwarding does not model a callee writing the caller's analyzed frame slot through an escaped pointer (no escape analysis); calls do not invalidate a tracked slot",
+    "stack capacities are frame geometry (frame_top - destination) UPPER BOUNDS unless stated otherwise; DWARF object sizes are not analyzed in this increment"
+  ],
+  "statistics": {
+    "sinks": 1,
+    "sinks_by_copy_token": {
+      "strcpy": 1
+    },
+    "sinks_by_destination_origin": {
+      "parameter": 1
+    },
+    "sinks_resolved_capacity": 0,
+    "sinks_conflicting_capacity": 1,
+    "sinks_unsupported_arch": 0,
+    "paths_total": 2,
+    "global_object_symbols": 2,
+    "cfg_functions": 10,
+    "cfg_limitations_not_inlined": 8,
+    "callgraph_edges": 10,
+    "callgraph_unresolved_edges": 1
+  },
+  "input": {
+    "path": "fixtures/crossfn/crossfn_param.elf",
+    "sha256": "ac08f993320286e5493a7fd841d4ef536b73ad61799b42c13c24b7683cf68c62",
+    "size": 7800
+  },
+  "cfg_functions": [
+    {
+      "va": 16782816,
+      "name": "main",
+      "source": "symtab",
+      "size": 62,
+      "end_va": 16782878,
+      "instruction_count": 18,
+      "block_count": 3,
+      "blocks": [
+        {
+          "va": 16782816,
+          "end_va": 16782844,
+          "terminator": "jcc",
+          "successors": [
+            16782870,
+            16782844
+          ],
+          "instructions": [
+            {
+              "va": 16782816,
+              "size": 1,
+              "bytes": "55",
+              "mnemonic": "push",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16782817,
+              "size": 3,
+              "bytes": "4889e5",
+              "mnemonic": "mov",
+              "op_str": "rbp, rsp"
+            },
+            {
+              "va": 16782820,
+              "size": 4,
+              "bytes": "4883ec10",
+              "mnemonic": "sub",
+              "op_str": "rsp, 0x10"
+            },
+            {
+              "va": 16782824,
+              "size": 7,
+              "bytes": "c745fc00000000",
+              "mnemonic": "mov",
+              "op_str": "dword ptr [rbp - 4], 0"
+            },
+            {
+              "va": 16782831,
+              "size": 3,
+              "bytes": "897df8",
+              "mnemonic": "mov",
+              "op_str": "dword ptr [rbp - 8], edi"
+            },
+            {
+              "va": 16782834,
+              "size": 4,
+              "bytes": "488975f0",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x10], rsi"
+            },
+            {
+              "va": 16782838,
+              "size": 4,
+              "bytes": "837df801",
+              "mnemonic": "cmp",
+              "op_str": "dword ptr [rbp - 8], 1"
+            },
+            {
+              "va": 16782842,
+              "size": 2,
+              "bytes": "7e1a",
+              "mnemonic": "jle",
+              "op_str": "0x1001616"
+            }
+          ]
+        },
+        {
+          "va": 16782844,
+          "end_va": 16782870,
+          "terminator": "fallthrough",
+          "successors": [
+            16782870
+          ],
+          "instructions": [
+            {
+              "va": 16782844,
+              "size": 4,
+              "bytes": "488b45f0",
+              "mnemonic": "mov",
+              "op_str": "rax, qword ptr [rbp - 0x10]"
+            },
+            {
+              "va": 16782848,
+              "size": 4,
+              "bytes": "488b7808",
+              "mnemonic": "mov",
+              "op_str": "rdi, qword ptr [rax + 8]"
+            },
+            {
+              "va": 16782852,
+              "size": 5,
+              "bytes": "e817000000",
+              "mnemonic": "call",
+              "op_str": "0x1001620"
+            },
+            {
+              "va": 16782857,
+              "size": 4,
+              "bytes": "488b45f0",
+              "mnemonic": "mov",
+              "op_str": "rax, qword ptr [rbp - 0x10]"
+            },
+            {
+              "va": 16782861,
+              "size": 4,
+              "bytes": "488b7808",
+              "mnemonic": "mov",
+              "op_str": "rdi, qword ptr [rax + 8]"
+            },
+            {
+              "va": 16782865,
+              "size": 5,
+              "bytes": "e83a000000",
+              "mnemonic": "call",
+              "op_str": "0x1001650"
+            }
+          ]
+        },
+        {
+          "va": 16782870,
+          "end_va": 16782878,
+          "terminator": "ret",
+          "successors": [],
+          "instructions": [
+            {
+              "va": 16782870,
+              "size": 2,
+              "bytes": "31c0",
+              "mnemonic": "xor",
+              "op_str": "eax, eax"
+            },
+            {
+              "va": 16782872,
+              "size": 4,
+              "bytes": "4883c410",
+              "mnemonic": "add",
+              "op_str": "rsp, 0x10"
+            },
+            {
+              "va": 16782876,
+              "size": 1,
+              "bytes": "5d",
+              "mnemonic": "pop",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16782877,
+              "size": 1,
+              "bytes": "c3",
+              "mnemonic": "ret",
+              "op_str": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "va": 16782880,
+      "name": "wrapper",
+      "source": "symtab",
+      "size": 48,
+      "end_va": 16782928,
+      "instruction_count": 14,
+      "block_count": 1,
+      "blocks": [
+        {
+          "va": 16782880,
+          "end_va": 16782928,
+          "terminator": "ret",
+          "successors": [],
+          "instructions": [
+            {
+              "va": 16782880,
+              "size": 1,
+              "bytes": "55",
+              "mnemonic": "push",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16782881,
+              "size": 3,
+              "bytes": "4889e5",
+              "mnemonic": "mov",
+              "op_str": "rbp, rsp"
+            },
+            {
+              "va": 16782884,
+              "size": 4,
+              "bytes": "4883ec30",
+              "mnemonic": "sub",
+              "op_str": "rsp, 0x30"
+            },
+            {
+              "va": 16782888,
+              "size": 4,
+              "bytes": "48897df8",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 8], rdi"
+            },
+            {
+              "va": 16782892,
+              "size": 4,
+              "bytes": "488d45e0",
+              "mnemonic": "lea",
+              "op_str": "rax, [rbp - 0x20]"
+            },
+            {
+              "va": 16782896,
+              "size": 4,
+              "bytes": "488945d8",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x28], rax"
+            },
+            {
+              "va": 16782900,
+              "size": 4,
+              "bytes": "488b7dd8",
+              "mnemonic": "mov",
+              "op_str": "rdi, qword ptr [rbp - 0x28]"
+            },
+            {
+              "va": 16782904,
+              "size": 4,
+              "bytes": "488b75f8",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 8]"
+            },
+            {
+              "va": 16782908,
+              "size": 5,
+              "bytes": "e84f000000",
+              "mnemonic": "call",
+              "op_str": "0x1001690"
+            },
+            {
+              "va": 16782913,
+              "size": 4,
+              "bytes": "488d7de0",
+              "mnemonic": "lea",
+              "op_str": "rdi, [rbp - 0x20]"
+            },
+            {
+              "va": 16782917,
+              "size": 5,
+              "bytes": "e816010000",
+              "mnemonic": "call",
+              "op_str": "0x1001760"
+            },
+            {
+              "va": 16782922,
+              "size": 4,
+              "bytes": "4883c430",
+              "mnemonic": "add",
+              "op_str": "rsp, 0x30"
+            },
+            {
+              "va": 16782926,
+              "size": 1,
+              "bytes": "5d",
+              "mnemonic": "pop",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16782927,
+              "size": 1,
+              "bytes": "c3",
+              "mnemonic": "ret",
+              "op_str": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "va": 16782928,
+      "name": "wrapper2",
+      "source": "symtab",
+      "size": 49,
+      "end_va": 16782977,
+      "instruction_count": 14,
+      "block_count": 1,
+      "blocks": [
+        {
+          "va": 16782928,
+          "end_va": 16782977,
+          "terminator": "ret",
+          "successors": [],
+          "instructions": [
+            {
+              "va": 16782928,
+              "size": 1,
+              "bytes": "55",
+              "mnemonic": "push",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16782929,
+              "size": 3,
+              "bytes": "4889e5",
+              "mnemonic": "mov",
+              "op_str": "rbp, rsp"
+            },
+            {
+              "va": 16782932,
+              "size": 4,
+              "bytes": "4883ec10",
+              "mnemonic": "sub",
+              "op_str": "rsp, 0x10"
+            },
+            {
+              "va": 16782936,
+              "size": 4,
+              "bytes": "48897df8",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 8], rdi"
+            },
+            {
+              "va": 16782940,
+              "size": 5,
+              "bytes": "e85f000000",
+              "mnemonic": "call",
+              "op_str": "0x10016c0"
+            },
+            {
+              "va": 16782945,
+              "size": 4,
+              "bytes": "488945f0",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x10], rax"
+            },
+            {
+              "va": 16782949,
+              "size": 4,
+              "bytes": "488b7df0",
+              "mnemonic": "mov",
+              "op_str": "rdi, qword ptr [rbp - 0x10]"
+            },
+            {
+              "va": 16782953,
+              "size": 4,
+              "bytes": "488b75f8",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 8]"
+            },
+            {
+              "va": 16782957,
+              "size": 5,
+              "bytes": "e81e000000",
+              "mnemonic": "call",
+              "op_str": "0x1001690"
+            },
+            {
+              "va": 16782962,
+              "size": 4,
+              "bytes": "488b7df0",
+              "mnemonic": "mov",
+              "op_str": "rdi, qword ptr [rbp - 0x10]"
+            },
+            {
+              "va": 16782966,
+              "size": 5,
+              "bytes": "e8e5000000",
+              "mnemonic": "call",
+              "op_str": "0x1001760"
+            },
+            {
+              "va": 16782971,
+              "size": 4,
+              "bytes": "4883c410",
+              "mnemonic": "add",
+              "op_str": "rsp, 0x10"
+            },
+            {
+              "va": 16782975,
+              "size": 1,
+              "bytes": "5d",
+              "mnemonic": "pop",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16782976,
+              "size": 1,
+              "bytes": "c3",
+              "mnemonic": "ret",
+              "op_str": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "va": 16782992,
+      "name": "copy_payload",
+      "source": "symtab",
+      "size": 35,
+      "end_va": 16783027,
+      "instruction_count": 11,
+      "block_count": 1,
+      "blocks": [
+        {
+          "va": 16782992,
+          "end_va": 16783027,
+          "terminator": "ret",
+          "successors": [],
+          "instructions": [
+            {
+              "va": 16782992,
+              "size": 1,
+              "bytes": "55",
+              "mnemonic": "push",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16782993,
+              "size": 3,
+              "bytes": "4889e5",
+              "mnemonic": "mov",
+              "op_str": "rbp, rsp"
+            },
+            {
+              "va": 16782996,
+              "size": 4,
+              "bytes": "4883ec10",
+              "mnemonic": "sub",
+              "op_str": "rsp, 0x10"
+            },
+            {
+              "va": 16783000,
+              "size": 4,
+              "bytes": "48897df8",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 8], rdi"
+            },
+            {
+              "va": 16783004,
+              "size": 4,
+              "bytes": "488975f0",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x10], rsi"
+            },
+            {
+              "va": 16783008,
+              "size": 4,
+              "bytes": "488b7df8",
+              "mnemonic": "mov",
+              "op_str": "rdi, qword ptr [rbp - 8]"
+            },
+            {
+              "va": 16783012,
+              "size": 4,
+              "bytes": "488b75f0",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 0x10]"
+            },
+            {
+              "va": 16783016,
+              "size": 5,
+              "bytes": "e8c3000000",
+              "mnemonic": "call",
+              "op_str": "0x1001770"
+            },
+            {
+              "va": 16783021,
+              "size": 4,
+              "bytes": "4883c410",
+              "mnemonic": "add",
+              "op_str": "rsp, 0x10"
+            },
+            {
+              "va": 16783025,
+              "size": 1,
+              "bytes": "5d",
+              "mnemonic": "pop",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16783026,
+              "size": 1,
+              "bytes": "c3",
+              "mnemonic": "ret",
+              "op_str": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "va": 16783040,
+      "name": "ret_buffer",
+      "source": "symtab",
+      "size": 13,
+      "end_va": 16783053,
+      "instruction_count": 5,
+      "block_count": 1,
+      "blocks": [
+        {
+          "va": 16783040,
+          "end_va": 16783053,
+          "terminator": "ret",
+          "successors": [],
+          "instructions": [
+            {
+              "va": 16783040,
+              "size": 1,
+              "bytes": "55",
+              "mnemonic": "push",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16783041,
+              "size": 3,
+              "bytes": "4889e5",
+              "mnemonic": "mov",
+              "op_str": "rbp, rsp"
+            },
+            {
+              "va": 16783044,
+              "size": 7,
+              "bytes": "488d0545220000",
+              "mnemonic": "lea",
+              "op_str": "rax, [rip + 0x2245]"
+            },
+            {
+              "va": 16783051,
+              "size": 1,
+              "bytes": "5d",
+              "mnemonic": "pop",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16783052,
+              "size": 1,
+              "bytes": "c3",
+              "mnemonic": "ret",
+              "op_str": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "reproduce": "scripts/analyze_crossfn.py --elf fixtures/crossfn/crossfn_param.elf --json --functions main,wrapper,wrapper2,copy_payload,ret_buffer"
+}

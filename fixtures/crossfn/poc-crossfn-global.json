@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "31479ffb6ff823d3ce6b205bd739beef92e4cbb18d4bd563295aceca52950cb8",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "store_out",
+  "producer": "M2 (cross-function analysis prototype; no candidate produced)",
+  "evidence_level": "declared_not_run",
+  "evidence_level_reason": "host is macOS arm64; fixtures are x86-64 Linux ELF; no local runtime oracle. A Linux x86-64 run with a reference fix must observe these values before they are treated as measured.",
+  "source_reference_fix": "not_provided_in_m2_increment",
+  "sink_evidence": {
+    "sink_function": "store_out",
+    "callee": "strcpy",
+    "destination_symbol": "g_out",
+    "capacity": 16,
+    "capacity_source": "object_symbol_size",
+    "source_argument_origin": "caller main -> argv[1] (unbounded program input)"
+  },
+  "poc": [
+    {
+      "id": "crossfn-global-overflow-40",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "declared": "writes 41 bytes into g_out[16]; adjacent globals corrupted; observable behaviour is undefined and not asserted",
+        "not_run": true
+      },
+      "candidate": {
+        "declared": "rejects with exit_code=1 and a fixed error on stderr",
+        "not_run": true
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "crossfn-global-short",
+      "argv": [
+        "hello"
+      ],
+      "original": {
+        "declared": "exit_code=0, stdout=\"hello\\n\"",
+        "not_run": true
+      },
+      "candidate": {
+        "declared": "unchanged: exit_code=0, stdout=\"hello\\n\"",
+        "not_run": true
+      }
+    },
+    {
+      "id": "crossfn-global-empty",
+      "argv": [
+        ""
+      ],
+      "original": {
+        "declared": "exit_code=0, stdout=\"\\n\"",
+        "not_run": true
+      },
+      "candidate": {
+        "declared": "unchanged: exit_code=0, stdout=\"\\n\"",
+        "not_run": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "tool": "m2-current-engine-readonly-probe",
+  "policy": "read-only: repair_any is called in memory with the declared target; candidate bytes, if any, are discarded and never written; the M2 increment produces no candidate artifact",
+  "engine": "same-function/leaf-only deterministic analyzer in binary_pipeline",
+  "rows": [
+    {
+      "fixture": "fixtures/elf/vuln-strcpy-x86_64.elf",
+      "fixture_sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+      "target": "vuln_copy",
+      "require_target": true,
+      "status": "patched",
+      "disposition": "verified_patch",
+      "error": null,
+      "mode": "guard",
+      "backend": "elf",
+      "strategy": "guard",
+      "capacity": 16,
+      "target_scope": {
+        "name": "vuln_copy",
+        "va": 16956084,
+        "end": 16956128,
+        "source": "symbol"
+      },
+      "target_policy": "target_scoped",
+      "universal_reason": "",
+      "candidate_returned": true,
+      "candidate_bytes_persisted": false,
+      "download_allowed": true,
+      "limitations": [
+        "patch plan: 9 declared operation(s), scope_policy=target_scoped_associated, plan_id=plan-61e0d49d29effcaf3ca198e9"
+      ]
+    },
+    {
+      "fixture": "fixtures/crossfn/crossfn_param.elf",
+      "fixture_sha256": "ac08f993320286e5493a7fd841d4ef536b73ad61799b42c13c24b7683cf68c62",
+      "target": "copy_payload",
+      "require_target": true,
+      "status": "unsupported",
+      "disposition": "analysis_only",
+      "error": "target-scoped mode: no patchable sink lies inside target copy_payload [0x1001690,0x10016c0)",
+      "mode": "unsupported",
+      "backend": "elf",
+      "strategy": "none",
+      "capacity": null,
+      "target_scope": {
+        "name": "copy_payload",
+        "va": 16782992,
+        "end": 16783040,
+        "source": "symbol"
+      },
+      "target_policy": "target_scoped",
+      "universal_reason": "target-scoped mode: no patchable sink lies inside target copy_payload [0x1001690,0x10016c0)",
+      "candidate_returned": false,
+      "candidate_bytes_persisted": false,
+      "download_allowed": false,
+      "limitations": [
+        "no patchable copy sink with a recoverable capacity was found",
+        "target-scoped mode: no patchable sink lies inside target copy_payload [0x1001690,0x10016c0)",
+        "scanned 0 inlined range-check block(s) in the code region",
+        "target-scoped mode: no reviewed capacity-check site inside target copy_payload [0x1001690,0x10016c0)"
+      ]
+    },
+    {
+      "fixture": "fixtures/crossfn/crossfn_param.elf",
+      "fixture_sha256": "ac08f993320286e5493a7fd841d4ef536b73ad61799b42c13c24b7683cf68c62",
+      "target": "wrapper",
+      "require_target": true,
+      "status": "unsupported",
+      "disposition": "analysis_only",
+      "error": "target-scoped mode: no patchable sink lies inside target wrapper [0x1001620,0x1001650)",
+      "mode": "unsupported",
+      "backend": "elf",
+      "strategy": "none",
+      "capacity": null,
+      "target_scope": {
+        "name": "wrapper",
+        "va": 16782880,
+        "end": 16782928,
+        "source": "symbol"
+      },
+      "target_policy": "target_scoped",
+      "universal_reason": "target-scoped mode: no patchable sink lies inside target wrapper [0x1001620,0x1001650)",
+      "candidate_returned": false,
+      "candidate_bytes_persisted": false,
+      "download_allowed": false,
+      "limitations": [
+        "no patchable copy sink with a recoverable capacity was found",
+        "target-scoped mode: no patchable sink lies inside target wrapper [0x1001620,0x1001650)",
+        "scanned 0 inlined range-check block(s) in the code region",
+        "target-scoped mode: no reviewed capacity-check site inside target wrapper [0x1001620,0x1001650)"
+      ]
+    },
+    {
+      "fixture": "fixtures/crossfn/crossfn_param.elf",
+      "fixture_sha256": "ac08f993320286e5493a7fd841d4ef536b73ad61799b42c13c24b7683cf68c62",
+      "target": null,
+      "require_target": false,
+      "status": "unsupported",
+      "disposition": "analysis_only",
+      "error": "whole-image repair requires an explicit target or allow_whole_image=True; the default policy produces no candidate and cannot verify one",
+      "mode": "unsupported",
+      "backend": "elf",
+      "strategy": "none",
+      "capacity": null,
+      "target_scope": null,
+      "target_policy": "analysis_only",
+      "universal_reason": "whole-image repair requires an explicit target or allow_whole_image=True; the default policy produces no candidate and cannot verify one",
+      "candidate_returned": false,
+      "candidate_bytes_persisted": false,
+      "download_allowed": false,
+      "limitations": [
+        "no patchable copy sink with a recoverable capacity was found",
+        "whole-image repair requires an explicit target or allow_whole_image=True; the default policy produces no candidate and cannot verify one"
+      ]
+    },
+    {
+      "fixture": "fixtures/crossfn/crossfn_global.elf",
+      "fixture_sha256": "31479ffb6ff823d3ce6b205bd739beef92e4cbb18d4bd563295aceca52950cb8",
+      "target": "store_out",
+      "require_target": true,
+      "status": "unsupported",
+      "disposition": "analysis_only",
+      "error": "target-scoped mode: no patchable sink lies inside target store_out [0x10015b0,0x10015e0)",
+      "mode": "unsupported",
+      "backend": "elf",
+      "strategy": "none",
+      "capacity": null,
+      "target_scope": {
+        "name": "store_out",
+        "va": 16782768,
+        "end": 16782816,
+        "source": "symbol"
+      },
+      "target_policy": "target_scoped",
+      "universal_reason": "target-scoped mode: no patchable sink lies inside target store_out [0x10015b0,0x10015e0)",
+      "candidate_returned": false,
+      "candidate_bytes_persisted": false,
+      "download_allowed": false,
+      "limitations": [
+        "no patchable copy sink with a recoverable capacity was found",
+        "target-scoped mode: no patchable sink lies inside target store_out [0x10015b0,0x10015e0)",
+        "scanned 0 inlined range-check block(s) in the code region",
+        "target-scoped mode: no reviewed capacity-check site inside target store_out [0x10015b0,0x10015e0)"
+      ]
+    },
+    {
+      "fixture": "fixtures/crossfn/crossfn_global.elf",
+      "fixture_sha256": "31479ffb6ff823d3ce6b205bd739beef92e4cbb18d4bd563295aceca52950cb8",
+      "target": null,
+      "require_target": false,
+      "status": "unsupported",
+      "disposition": "analysis_only",
+      "error": "whole-image repair requires an explicit target or allow_whole_image=True; the default policy produces no candidate and cannot verify one",
+      "mode": "unsupported",
+      "backend": "elf",
+      "strategy": "none",
+      "capacity": null,
+      "target_scope": null,
+      "target_policy": "analysis_only",
+      "universal_reason": "whole-image repair requires an explicit target or allow_whole_image=True; the default policy produces no candidate and cannot verify one",
+      "candidate_returned": false,
+      "candidate_bytes_persisted": false,
+      "download_allowed": false,
+      "limitations": [
+        "no patchable copy sink with a recoverable capacity was found",
+        "whole-image repair requires an explicit target or allow_whole_image=True; the default policy produces no candidate and cannot verify one"
+      ]
+    },
+    {
+      "fixture": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+      "fixture_sha256": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+      "target": "heap_bad",
+      "require_target": true,
+      "status": "unsupported",
+      "disposition": "analysis_only",
+      "error": "target-scoped mode: no patchable sink lies inside target heap_bad [0x102ba30,0x102bc30)",
+      "mode": "unsupported",
+      "backend": "elf",
+      "strategy": "none",
+      "capacity": null,
+      "target_scope": {
+        "name": "heap_bad",
+        "va": 16955952,
+        "end": 16956464,
+        "source": "symbol"
+      },
+      "target_policy": "target_scoped",
+      "universal_reason": "target-scoped mode: no patchable sink lies inside target heap_bad [0x102ba30,0x102bc30)",
+      "candidate_returned": false,
+      "candidate_bytes_persisted": false,
+      "download_allowed": false,
+      "limitations": [
+        "target-scoped mode: no patchable sink lies inside target heap_bad [0x102ba30,0x102bc30)",
+        "scanned 0 inlined range-check block(s) in the code region",
+        "target-scoped mode: no reviewed capacity-check site inside target heap_bad [0x102ba30,0x102bc30)"
+      ]
+    }
+  ]
+}

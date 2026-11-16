@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "tool": "m2-engine-vs-prototype-comparison",
+  "engine": "current same-function/leaf-only deterministic engine",
+  "prototype": "app/services/analysis/** (read-only analysis evidence)",
+  "rows": [
+    {
+      "fixture": "fixtures/crossfn/crossfn_param.elf",
+      "failure_class": "cross-function dataflow (capacity lives in callers)",
+      "engine": [
+        {
+          "target": "copy_payload",
+          "disposition": "analysis_only",
+          "status": "unsupported",
+          "error": "target-scoped mode: no patchable sink lies inside target copy_payload [0x1001690,0x10016c0)",
+          "candidate_returned": false
+        },
+        {
+          "target": "wrapper",
+          "disposition": "analysis_only",
+          "status": "unsupported",
+          "error": "target-scoped mode: no patchable sink lies inside target wrapper [0x1001620,0x1001650)",
+          "candidate_returned": false
+        },
+        {
+          "target": null,
+          "disposition": "analysis_only",
+          "status": "unsupported",
+          "error": "whole-image repair requires an explicit target or allow_whole_image=True; the default policy produces no candidate and cannot verify one",
+          "candidate_returned": false
+        }
+      ],
+      "prototype": {
+        "sink": {
+          "site_va": 16783016,
+          "callee": "strcpy",
+          "function": {
+            "va": 16782992,
+            "name": "copy_payload",
+            "source": "symtab"
+          }
+        },
+        "destination_origin": "parameter",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "conflict",
+        "resolution": "partially_resolved",
+        "confidence": "low",
+        "call_paths": [
+          {
+            "caller": "wrapper",
+            "origin": "stack_local",
+            "capacity": 32,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved"
+          },
+          {
+            "caller": "wrapper2",
+            "origin": "global_object",
+            "capacity": 16,
+            "capacity_source": "object_symbol_size",
+            "resolution": "resolved"
+          }
+        ]
+      },
+      "verdict": "engine finds no patchable sink inside copy_payload/wrapper and returns analysis_only; the prototype locates the sink and traces both caller-specific capacity origins (stack frame upper bound 32 for wrapper, exact STT_OBJECT size 16 through the ret_buffer return value for wrapper2)",
+      "honest_limit": "the prototype reports the frame-geometry capacity as an UPPER BOUND, so it does not claim the exact 16 for wrapper's buffer; DWARF object sizes are not analyzed in this increment"
+    },
+    {
+      "fixture": "fixtures/crossfn/crossfn_global.elf",
+      "failure_class": "global destination capacity (symbol size, not frame)",
+      "engine": [
+        {
+          "target": "store_out",
+          "disposition": "analysis_only",
+          "status": "unsupported",
+          "error": "target-scoped mode: no patchable sink lies inside target store_out [0x10015b0,0x10015e0)",
+          "candidate_returned": false
+        },
+        {
+          "target": null,
+          "disposition": "analysis_only",
+          "status": "unsupported",
+          "error": "whole-image repair requires an explicit target or allow_whole_image=True; the default policy produces no candidate and cannot verify one",
+          "candidate_returned": false
+        }
+      ],
+      "prototype": {
+        "sink": {
+          "site_va": 16782791,
+          "callee": "strcpy",
+          "function": {
+            "va": 16782768,
+            "name": "store_out",
+            "source": "symtab"
+          }
+        },
+        "destination_origin": "global_object",
+        "capacity": 16,
+        "capacity_source": "object_symbol_size",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "confidence": "high",
+        "call_paths": [
+          {
+            "caller": null,
+            "origin": "global_object",
+            "capacity": 16,
+            "capacity_source": "object_symbol_size",
+            "resolution": "resolved"
+          }
+        ]
+      },
+      "verdict": "engine returns analysis_only for store_out; the prototype resolves the global destination to the STT_OBJECT symbol g_out and reports the exact capacity 16 (object_symbol_size)",
+      "honest_limit": "the copied data length is still unbounded program input (argv[1]); no repair invariant is claimed"
+    },
+    {
+      "fixture": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+      "failure_class": "same-function immediate-malloc heap capacity (already inside the deterministic engine's class; known over-estimate)",
+      "engine": [
+        {
+          "target": "heap_bad",
+          "disposition": "analysis_only",
+          "status": "unsupported",
+          "error": "target-scoped mode: no patchable sink lies inside target heap_bad [0x102ba30,0x102bc30)",
+          "candidate_returned": false
+        }
+      ],
+      "prototype": {
+        "sink": {
+          "site_va": 16956198,
+          "callee": "c.string.strcpy",
+          "function": {
+            "va": 16955952,
+            "name": "heap_bad",
+            "source": "symtab"
+          }
+        },
+        "destination_origin": "heap_allocation",
+        "capacity": 24,
+        "capacity_source": "allocation_immediate_size",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "confidence": "medium",
+        "call_paths": [
+          {
+            "caller": null,
+            "origin": "heap_allocation",
+            "capacity": 24,
+            "capacity_source": "allocation_immediate_size",
+            "resolution": "resolved"
+          }
+        ]
+      },
+      "verdict": "prototype recovers the same allocation-size capacity (24) the engine's heap model uses and flags the documented over-estimate against the 16-byte struct member; this is a cross-check of the known LIMITATIONS section 21 residual, not a new capability",
+      "honest_limit": "member layout needs DWARF; the recovered 24 is the allocation size, not the char data[16] size"
+    }
+  ]
+}

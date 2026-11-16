@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "tool": "m2-capacity-class-crosscheck",
+  "input": {
+    "path": "fixtures/hard-cases/vuln-capacity-param-x86_64.elf",
+    "sha256": "371b9edd51b72764f0a3e821f47c0ba8286ba7540b749fcb8a658aec3e6346a5",
+    "size": 704976
+  },
+  "why_not_the_same_gap": "the reviewed capacity_confusion defect keeps out_size/data_size as parameters of the same function render(); the deterministic capacity strategy already reasons about those register-allocated capacities. The M2 cross-function gap is different: the capacity is in a caller frame and the sink sits in another function, so no same-function value is available at the sink.",
+  "prototype_statistics": {
+    "sinks": 0,
+    "sinks_by_copy_token": {},
+    "sinks_by_destination_origin": {},
+    "sinks_resolved_capacity": 0,
+    "sinks_conflicting_capacity": 0,
+    "sinks_unsupported_arch": 0,
+    "paths_total": 0,
+    "global_object_symbols": 0,
+    "cfg_functions": 2,
+    "cfg_limitations_not_inlined": 44,
+    "callgraph_edges": 23,
+    "callgraph_unresolved_edges": 3
+  },
+  "prototype_sample_sinks": [],
+  "render_function": null,
+  "stripped_image_observation": {
+    "function_list": [
+      {
+        "va": 4201552,
+        "name": "<entry>",
+        "source": "entry",
+        "block_count": 1
+      },
+      {
+        "va": 4211600,
+        "name": null,
+        "source": "call_target",
+        "block_count": 31
+      }
+    ],
+    "cfg_statistics": {
+      "functions": 2,
+      "blocks": 32,
+      "instructions": 178,
+      "functions_without_blocks": 0,
+      "functions_with_decode_gap": 0,
+      "functions_with_unresolved_terminator": 0,
+      "instruction_budget_remaining": 2991807
+    },
+    "note": "vuln-capacity-param-x86_64.elf is a stripped image (-s): the prototype is anchored on authoritative symbols, so it only reconstructs the entry point and direct-call-target functions and finds no copy sink. The deterministic capacity strategy works from scanned code blocks instead of symbols; stripped-binary function discovery is an explicit M2 limitation, not a capability claim."
+  },
+  "reproduce": "scripts/analyze_crossfn.py --elf fixtures/hard-cases/vuln-capacity-param-x86_64.elf --json"
+}

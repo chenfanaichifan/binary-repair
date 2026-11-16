@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "ac08f993320286e5493a7fd841d4ef536b73ad61799b42c13c24b7683cf68c62",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "copy_payload",
+  "producer": "M2 (cross-function analysis prototype; no candidate produced)",
+  "evidence_level": "declared_not_run",
+  "evidence_level_reason": "host is macOS arm64; fixtures are x86-64 Linux ELF; no local runtime oracle. A Linux x86-64 run with a reference fix must observe these values before they are treated as measured.",
+  "source_reference_fix": "not_provided_in_m2_increment",
+  "sink_evidence": {
+    "sink_function": "copy_payload",
+    "callee": "strcpy",
+    "call_site_relative": "sink site reported by scripts/analyze_crossfn.py",
+    "caller_paths": [
+      {
+        "caller": "wrapper",
+        "destination": "stack_local",
+        "capacity_upper_bound": 32,
+        "capacity_source": "frame_geometry_upper_bound",
+        "declared_object_size": 16
+      },
+      {
+        "caller": "wrapper2",
+        "destination": "ret_buffer() return -> static s_ret[16]",
+        "capacity": 16,
+        "capacity_source": "object_symbol_size"
+      }
+    ]
+  },
+  "poc": [
+    {
+      "id": "crossfn-param-overflow-40",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "declared": "stack buffer overflow in wrapper/wrapper2; crash or corruption expected",
+        "not_run": true
+      },
+      "candidate": {
+        "declared": "rejects with exit_code=1 and a fixed error on stderr",
+        "not_run": true
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "crossfn-param-short",
+      "argv": [
+        "hello"
+      ],
+      "original": {
+        "declared": "exit_code=0, stdout=\"hello\\nhello\\n\"",
+        "not_run": true
+      },
+      "candidate": {
+        "declared": "unchanged: exit_code=0, stdout=\"hello\\nhello\\n\"",
+        "not_run": true
+      }
+    },
+    {
+      "id": "crossfn-param-empty",
+      "argv": [
+        ""
+      ],
+      "original": {
+        "declared": "exit_code=0, stdout=\"\\n\\n\"",
+        "not_run": true
+      },
+      "candidate": {
+        "declared": "unchanged: exit_code=0, stdout=\"\\n\\n\"",
+        "not_run": true
+      }
+    }
+  ]
+}

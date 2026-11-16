@@ -1,0 +1,5914 @@
+{
+  "schema_version": 1,
+  "tool": "m2-analysis-dataflow",
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "entry": 16955888,
+  "sinks": [
+    {
+      "site_va": 16956198,
+      "callee": "c.string.strcpy",
+      "copy_token": "strcpy",
+      "instruction": "call 0x108f320",
+      "function": {
+        "va": 16955952,
+        "name": "heap_bad",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "heap_allocation",
+            "address": 16955969,
+            "size": 24
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 16955952,
+            "offset": 0
+          }
+        ]
+      },
+      "limitations": [
+        "heap capacity is the immediate allocation size, not a struct-member size: malloc(24) for a char data[16] member is a documented OVER-ESTIMATE (member layout needs DWARF)",
+        "the copy source pointer is caller-defined; its data length is not statically bounded (unbounded libc copy)"
+      ],
+      "destination": {
+        "origin": "heap_allocation",
+        "capacity": 24,
+        "capacity_source": "allocation_immediate_size",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "heap_allocation",
+            "capacity": 24,
+            "capacity_source": "allocation_immediate_size",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "heap_allocation",
+                  "address": 16955969,
+                  "size": 24
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "frame_slot_spill",
+                "function": "heap_bad",
+                "va": 16956143,
+                "detail": "store of rcx to [rbp -40]"
+              },
+              {
+                "kind": "frame_slot_reload",
+                "function": "heap_bad",
+                "va": 16956190,
+                "detail": "load rdi from [rbp -40]"
+              },
+              {
+                "kind": "frame_slot_spill",
+                "function": "heap_bad",
+                "va": 16955974,
+                "detail": "store of rax to [rbp -16]"
+              },
+              {
+                "kind": "frame_slot_reload",
+                "function": "heap_bad",
+                "va": 16956139,
+                "detail": "load rcx from [rbp -16]"
+              },
+              {
+                "kind": "allocation",
+                "function": "heap_bad",
+                "va": 16955969,
+                "detail": "rax <- return value of malloc()"
+              },
+              {
+                "kind": "immediate",
+                "function": "heap_bad",
+                "va": 16955964,
+                "detail": "rdi = 0x18"
+              }
+            ],
+            "limitations": [
+              "heap capacity is the immediate allocation size, not a struct-member size: malloc(24) for a char data[16] member is a documented OVER-ESTIMATE (member layout needs DWARF)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "parameter",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "frame_slot_spill",
+            "function": "heap_bad",
+            "va": 16955960,
+            "detail": "store of rdi to [rbp -8]"
+          },
+          {
+            "kind": "frame_slot_reload",
+            "function": "heap_bad",
+            "va": 16956194,
+            "detail": "load rsi from [rbp -8]"
+          },
+          {
+            "kind": "function_entry",
+            "function": "heap_bad",
+            "va": 16955952,
+            "detail": "argument 0 (rdi)"
+          }
+        ],
+        "caller_origins": [
+          {
+            "caller": {
+              "va": 16956464,
+              "name": "main"
+            },
+            "origin": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "site_va": 16960684,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 16960336,
+        "name": "debug.writeCurrentStackTrace",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 16960336,
+            "offset": -3024
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "global_object",
+            "symbol": "__anon_469780238",
+            "address": 16851848,
+            "size": 152
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 3024,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 3024,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 16960336,
+                  "offset": -3024
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.writeCurrentStackTrace",
+                "va": 16960667,
+                "detail": "lea rdi, [rbp - 0xbd0]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16960674,
+            "detail": "rsi = 0x1012388"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16960679,
+            "detail": "rdx = 0x98"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 16961454,
+      "callee": "compiler_rt.memmove.memmoveFast",
+      "copy_token": "memmove",
+      "instruction": "call 0x109afe0",
+      "function": {
+        "va": 16960336,
+        "name": "debug.writeCurrentStackTrace",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 16960336,
+            "offset": -696
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 696,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 696,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 16960336,
+                  "offset": -696
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.writeCurrentStackTrace",
+                "va": 16961444,
+                "detail": "lea rdi, [rbp - 0x2b8]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16961451,
+            "detail": "rsi <- r12"
+          },
+          {
+            "kind": "predecessor_block",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16960991,
+            "detail": "continue in the unique predecessor"
+          },
+          {
+            "kind": "predecessor_block",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16960976,
+            "detail": "continue in the unique predecessor"
+          }
+        ],
+        "limitations": [
+          "frame slot [rbp -696] loaded at 0x102cdd0 has no unique preceding store in the analyzed path (or a call/aliasing store intervenes)"
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16961439,
+            "detail": "rdx = 0x88"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 16961486,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 16960336,
+        "name": "debug.writeCurrentStackTrace",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 16960336,
+            "offset": -552
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "global_object",
+            "symbol": "__anon_469780238",
+            "address": 16851848,
+            "size": 152
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 552,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 552,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 16960336,
+                  "offset": -552
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "register_copy",
+                "function": "debug.writeCurrentStackTrace",
+                "va": 16961483,
+                "detail": "rdi <- r14"
+              },
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.writeCurrentStackTrace",
+                "va": 16961476,
+                "detail": "lea r14, [rbp - 0x228]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16961466,
+            "detail": "rsi = 0x1012388"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16961471,
+            "detail": "rdx = 0x98"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 16962007,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 16960336,
+        "name": "debug.writeCurrentStackTrace",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 16960336,
+            "offset": -2632
+          }
+        ]
+      },
+      "limitations": [
+        "lea at 0x102d1a5 targets an unmodelled base"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "register_copy",
+                "function": "debug.writeCurrentStackTrace",
+                "va": 16962001,
+                "detail": "rdi <- r12"
+              },
+              {
+                "kind": "predecessor_block",
+                "function": "debug.writeCurrentStackTrace",
+                "va": 16961957,
+                "detail": "continue in the unique predecessor"
+              }
+            ],
+            "limitations": [
+              "lea at 0x102d1a5 targets an unmodelled base"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 2632,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16962004,
+            "detail": "rsi <- r14"
+          },
+          {
+            "kind": "stack_frame_local",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16961971,
+            "detail": "lea r14, [rbp - 0xa48]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16961996,
+            "detail": "rdx = 0xf0"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 16963145,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 16960336,
+        "name": "debug.writeCurrentStackTrace",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 16960336,
+            "offset": -1752
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "global_object",
+            "symbol": "__anon_469779644",
+            "address": 16849096,
+            "size": 888
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 1752,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 1752,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 16960336,
+                  "offset": -1752
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.writeCurrentStackTrace",
+                "va": 16963138,
+                "detail": "lea rdi, [rbp - 0x6d8]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16963128,
+            "detail": "rsi = 0x10118c8"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16963133,
+            "detail": "rdx = 0x370"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 16967167,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 16960336,
+        "name": "debug.writeCurrentStackTrace",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 16960336,
+            "offset": -1752
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "global_object",
+            "symbol": "__anon_469779944",
+            "address": 16850872,
+            "size": 888
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 1752,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 1752,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 16960336,
+                  "offset": -1752
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.writeCurrentStackTrace",
+                "va": 16967160,
+                "detail": "lea rdi, [rbp - 0x6d8]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16967150,
+            "detail": "rsi = 0x1011fb8"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16967155,
+            "detail": "rdx = 0x370"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 16967262,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 16960336,
+        "name": "debug.writeCurrentStackTrace",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 16960336,
+            "offset": -1752
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 16960336,
+            "offset": -2632
+          }
+        ]
+      },
+      "limitations": [
+        "no unique definition of rdi before 0x102e65e in debug.writeCurrentStackTrace (predecessors=2)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 16960336,
+                  "offset": -1752
+                }
+              ]
+            },
+            "steps": [],
+            "limitations": [
+              "no unique definition of rdi before 0x102e65e in debug.writeCurrentStackTrace (predecessors=2)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 2632,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "stack_frame_local",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16967252,
+            "detail": "lea rsi, [rbp - 0xa48]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16967247,
+            "detail": "rdx = 0x370"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 16967479,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 16960336,
+        "name": "debug.writeCurrentStackTrace",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 16960336,
+            "offset": -1752
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "global_object",
+            "symbol": "__anon_469779929",
+            "address": 16849984,
+            "size": 888
+          }
+        ]
+      },
+      "limitations": [
+        "no unique definition of rdi before 0x102e737 in debug.writeCurrentStackTrace (predecessors=2)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 16960336,
+                  "offset": -1752
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "predecessor_block",
+                "function": "debug.writeCurrentStackTrace",
+                "va": 16966989,
+                "detail": "continue in the unique predecessor"
+              }
+            ],
+            "limitations": [
+              "no unique definition of rdi before 0x102e737 in debug.writeCurrentStackTrace (predecessors=2)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16967469,
+            "detail": "rsi = 0x1011c40"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.writeCurrentStackTrace",
+            "va": 16967474,
+            "detail": "rdx = 0x370"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 16999808,
+      "callee": "compiler_rt.memmove.memmoveFast",
+      "copy_token": "memmove",
+      "instruction": "call 0x109afe0",
+      "function": {
+        "va": 16999776,
+        "name": "Io.Reader.defaultRebase",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "memory load at 0x103656a through a computed pointer is not statically resolvable"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "memory_load",
+                "function": "Io.Reader.defaultRebase",
+                "va": 16999786,
+                "detail": "load rdi through computed pointer"
+              }
+            ],
+            "limitations": [
+              "memory load at 0x103656a through a computed pointer is not statically resolvable"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [],
+        "limitations": [
+          "lea at 0x1036576 has a non-simple address"
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "Io.Reader.defaultRebase",
+            "va": 16999805,
+            "detail": "rdx <- r14"
+          }
+        ],
+        "limitations": [
+          "unmodelled definition of r14 at 0x103657a (sub r14, rax)"
+        ]
+      }
+    },
+    {
+      "site_va": 16999967,
+      "callee": "compiler_rt.memmove.memmoveFast",
+      "copy_token": "memmove",
+      "instruction": "call 0x109afe0",
+      "function": {
+        "va": 16999840,
+        "name": "Io.Writer.defaultRebase",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "unmodelled definition of rdi at 0x1036613 (add rdi, rax)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [],
+            "limitations": [
+              "unmodelled definition of rdi at 0x1036613 (add rdi, rax)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "Io.Writer.defaultRebase",
+            "va": 16999961,
+            "detail": "rsi <- r12"
+          }
+        ],
+        "limitations": [
+          "unmodelled definition of r12 at 0x1036616 (add r12, rax)"
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "Io.Writer.defaultRebase",
+            "va": 16999964,
+            "detail": "rdx <- r13"
+          },
+          {
+            "kind": "predecessor_block",
+            "function": "Io.Writer.defaultRebase",
+            "va": 16999888,
+            "detail": "continue in the unique predecessor"
+          }
+        ],
+        "limitations": [
+          "unmodelled definition of r13 at 0x10365df (sub r13, r12)"
+        ]
+      }
+    },
+    {
+      "site_va": 17122077,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17121920,
+        "name": "debug.SelfInfo.Elf.Module.getLoadedElf",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17121920,
+            "offset": -880
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "global_object",
+            "symbol": "__anon_469772333",
+            "address": 16840104,
+            "size": 656
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 880,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 880,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 17121920,
+                  "offset": -880
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+                "va": 17122060,
+                "detail": "lea rdi, [rbp - 0x370]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122067,
+            "detail": "rsi = 0x100f5a8"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122072,
+            "detail": "rdx = 0x280"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17122391,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17121920,
+        "name": "debug.SelfInfo.Elf.Module.getLoadedElf",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17121920,
+            "offset": -880
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "global_object",
+            "symbol": "__anon_469772333",
+            "address": 16840104,
+            "size": 656
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 880,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 880,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 17121920,
+                  "offset": -880
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+                "va": 17122374,
+                "detail": "lea rdi, [rbp - 0x370]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122381,
+            "detail": "rsi = 0x100f5a8"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122386,
+            "detail": "rdx = 0x280"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17122579,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17121920,
+        "name": "debug.SelfInfo.Elf.Module.getLoadedElf",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17121920,
+            "offset": -880
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "global_object",
+            "symbol": "__anon_469772359",
+            "address": 16840760,
+            "size": 656
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 880,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 880,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 17121920,
+                  "offset": -880
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+                "va": 17122562,
+                "detail": "lea rdi, [rbp - 0x370]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122569,
+            "detail": "rsi = 0x100f838"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122574,
+            "detail": "rdx = 0x280"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17122836,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17121920,
+        "name": "debug.SelfInfo.Elf.Module.getLoadedElf",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17121920,
+            "offset": -880
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17121920,
+            "offset": -5616
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 880,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 880,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 17121920,
+                  "offset": -880
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+                "va": 17122821,
+                "detail": "lea rdi, [rbp - 0x370]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122833,
+            "detail": "rsi <- r13"
+          },
+          {
+            "kind": "predecessor_block",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122812,
+            "detail": "continue in the unique predecessor"
+          },
+          {
+            "kind": "predecessor_block",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122785,
+            "detail": "continue in the unique predecessor"
+          },
+          {
+            "kind": "predecessor_block",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122765,
+            "detail": "continue in the unique predecessor"
+          }
+        ],
+        "limitations": [
+          "no unique definition of r13 before 0x1054611 in debug.SelfInfo.Elf.Module.getLoadedElf (predecessors=3)"
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122828,
+            "detail": "rdx = 0x280"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17122877,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17121920,
+        "name": "debug.SelfInfo.Elf.Module.getLoadedElf",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17121920,
+            "offset": -880
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "global_object",
+            "symbol": "__anon_469772404",
+            "address": 16842072,
+            "size": 656
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 880,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 880,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 17121920,
+                  "offset": -880
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+                "va": 17122860,
+                "detail": "lea rdi, [rbp - 0x370]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122867,
+            "detail": "rsi = 0x100fd58"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122872,
+            "detail": "rdx = 0x280"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17122935,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17121920,
+        "name": "debug.SelfInfo.Elf.Module.getLoadedElf",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17121920,
+            "offset": -880
+          }
+        ]
+      },
+      "limitations": [
+        "no unique definition of r13 before 0x1054674 in debug.SelfInfo.Elf.Module.getLoadedElf (predecessors=3)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "register_copy",
+                "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+                "va": 17122932,
+                "detail": "rdi <- r13"
+              }
+            ],
+            "limitations": [
+              "no unique definition of r13 before 0x1054674 in debug.SelfInfo.Elf.Module.getLoadedElf (predecessors=3)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 880,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "stack_frame_local",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122920,
+            "detail": "lea rsi, [rbp - 0x370]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17122927,
+            "detail": "rdx = 0x280"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17123090,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17121920,
+        "name": "debug.SelfInfo.Elf.Module.getLoadedElf",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17121920,
+            "offset": -880
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "global_object",
+            "symbol": "__anon_469772360",
+            "address": 16841416,
+            "size": 656
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 880,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 880,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 17121920,
+                  "offset": -880
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+                "va": 17123073,
+                "detail": "lea rdi, [rbp - 0x370]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17123080,
+            "detail": "rsi = 0x100fac8"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.getLoadedElf",
+            "va": 17123085,
+            "detail": "rdx = 0x280"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17146878,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17142416,
+        "name": "debug.ElfFile.loadInner",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17142416,
+            "offset": -2152
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17142416,
+            "offset": -3560
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 2152,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 2152,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 17142416,
+                  "offset": -2152
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.ElfFile.loadInner",
+                "va": 17146864,
+                "detail": "lea rdi, [rbp - 0x868]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 3560,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "stack_frame_local",
+            "function": "debug.ElfFile.loadInner",
+            "va": 17146871,
+            "detail": "lea rsi, [rbp - 0xde8]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.ElfFile.loadInner",
+            "va": 17146859,
+            "detail": "rdx = 0x580"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17148348,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17142416,
+        "name": "debug.ElfFile.loadInner",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17142416,
+            "offset": 0
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17142416,
+            "offset": -3560
+          }
+        ]
+      },
+      "limitations": [
+        "frame slot [rbp -64] loaded at 0x105a988 has no unique preceding store in the analyzed path (or a call/aliasing store intervenes)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "parameter",
+                  "function_va": 17142416,
+                  "offset": 0
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "register_copy",
+                "function": "debug.ElfFile.loadInner",
+                "va": 17148345,
+                "detail": "rdi <- r15"
+              }
+            ],
+            "limitations": [
+              "frame slot [rbp -64] loaded at 0x105a988 has no unique preceding store in the analyzed path (or a call/aliasing store intervenes)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 3560,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "stack_frame_local",
+            "function": "debug.ElfFile.loadInner",
+            "va": 17148330,
+            "detail": "lea rsi, [rbp - 0xde8]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.ElfFile.loadInner",
+            "va": 17148337,
+            "detail": "rdx = 0x580"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17165179,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17164112,
+        "name": "debug.SelfInfo.Elf.Module.loadUnwindSections",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17164112,
+            "offset": 0
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17164112,
+            "offset": -2552
+          }
+        ]
+      },
+      "limitations": [
+        "frame slot [rsp 288] loaded at 0x105eb70 has no unique preceding store in the analyzed path (or a call/aliasing store intervenes)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "parameter",
+                  "function_va": 17164112,
+                  "offset": 0
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "register_copy",
+                "function": "debug.SelfInfo.Elf.Module.loadUnwindSections",
+                "va": 17165176,
+                "detail": "rdi <- rbx"
+              }
+            ],
+            "limitations": [
+              "frame slot [rsp 288] loaded at 0x105eb70 has no unique preceding store in the analyzed path (or a call/aliasing store intervenes)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 2552,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "stack_frame_local",
+            "function": "debug.SelfInfo.Elf.Module.loadUnwindSections",
+            "va": 17165155,
+            "detail": "lea rsi, [rsp + 0x308]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.SelfInfo.Elf.Module.loadUnwindSections",
+            "va": 17165163,
+            "detail": "rdx = 0xe8"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17180343,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17179968,
+        "name": "debug.Dwarf.SelfUnwinder.next",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17179968,
+            "offset": -688
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17179968,
+            "offset": 1
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 688,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 688,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 17179968,
+                  "offset": -688
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "debug.Dwarf.SelfUnwinder.next",
+                "va": 17180327,
+                "detail": "lea rdi, [rbp - 0x2b0]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [],
+        "limitations": [
+          "frame slot [rbp -64] loaded at 0x10626b3 has no unique preceding store in the analyzed path (or a call/aliasing store intervenes)"
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.Dwarf.SelfUnwinder.next",
+            "va": 17180334,
+            "detail": "rdx = 0x88"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17181291,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17179968,
+        "name": "debug.Dwarf.SelfUnwinder.next",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17179968,
+            "offset": 1
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17179968,
+            "offset": -688
+          }
+        ]
+      },
+      "limitations": [
+        "frame slot [rbp -64] loaded at 0x1062a64 has no unique preceding store in the analyzed path (or a call/aliasing store intervenes)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "parameter",
+                  "function_va": 17179968,
+                  "offset": 1
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "register_copy",
+                "function": "debug.Dwarf.SelfUnwinder.next",
+                "va": 17181288,
+                "detail": "rdi <- r14"
+              }
+            ],
+            "limitations": [
+              "frame slot [rbp -64] loaded at 0x1062a64 has no unique preceding store in the analyzed path (or a call/aliasing store intervenes)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 688,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "stack_frame_local",
+            "function": "debug.Dwarf.SelfUnwinder.next",
+            "va": 17181272,
+            "detail": "lea rsi, [rbp - 0x2b0]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "debug.Dwarf.SelfUnwinder.next",
+            "va": 17181279,
+            "detail": "rdx = 0x88"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17197687,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17197488,
+        "name": "Io.Threaded.childWait",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17197488,
+            "offset": 2
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17197488,
+            "offset": -328
+          }
+        ]
+      },
+      "limitations": [
+        "no unique definition of r14 before 0x1066a74 in Io.Threaded.childWait (predecessors=2)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "parameter",
+                  "function_va": 17197488,
+                  "offset": 2
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "register_copy",
+                "function": "Io.Threaded.childWait",
+                "va": 17197684,
+                "detail": "rdi <- r14"
+              },
+              {
+                "kind": "predecessor_block",
+                "function": "Io.Threaded.childWait",
+                "va": 17197666,
+                "detail": "continue in the unique predecessor"
+              }
+            ],
+            "limitations": [
+              "no unique definition of r14 before 0x1066a74 in Io.Threaded.childWait (predecessors=2)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 328,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "stack_frame_local",
+            "function": "Io.Threaded.childWait",
+            "va": 17197672,
+            "detail": "lea rsi, [rbp - 0x148]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "Io.Threaded.childWait",
+            "va": 17197679,
+            "detail": "rdx = 0x110"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17310141,
+      "callee": "compiler_rt.memmove.memmoveFast",
+      "copy_token": "memmove",
+      "instruction": "call 0x109afe0",
+      "function": {
+        "va": 17310064,
+        "name": "compress.flate.Decompress.readVec",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "memory load at 0x108219d through a computed pointer is not statically resolvable"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "memory_load",
+                "function": "compress.flate.Decompress.readVec",
+                "va": 17310109,
+                "detail": "load rdi through computed pointer"
+              }
+            ],
+            "limitations": [
+              "memory load at 0x108219d through a computed pointer is not statically resolvable"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [],
+        "limitations": [
+          "lea at 0x10821b3 has a non-simple address"
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "compress.flate.Decompress.readVec",
+            "va": 17310138,
+            "detail": "rdx <- r15"
+          }
+        ],
+        "limitations": [
+          "unmodelled definition of r15 at 0x10821b7 (sub r15, r12)"
+        ]
+      }
+    },
+    {
+      "site_va": 17325438,
+      "callee": "compiler_rt.memmove.memmoveFast",
+      "copy_token": "memmove",
+      "instruction": "call 0x109afe0",
+      "function": {
+        "va": 17325360,
+        "name": "compress.flate.Decompress.discardDirect",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "memory load at 0x1085d5e through a computed pointer is not statically resolvable"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "memory_load",
+                "function": "compress.flate.Decompress.discardDirect",
+                "va": 17325406,
+                "detail": "load rdi through computed pointer"
+              }
+            ],
+            "limitations": [
+              "memory load at 0x1085d5e through a computed pointer is not statically resolvable"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [],
+        "limitations": [
+          "lea at 0x1085d74 has a non-simple address"
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "compress.flate.Decompress.discardDirect",
+            "va": 17325435,
+            "detail": "rdx <- r15"
+          }
+        ],
+        "limitations": [
+          "unmodelled definition of r15 at 0x1085d78 (sub r15, r13)"
+        ]
+      }
+    },
+    {
+      "site_va": 17325697,
+      "callee": "compiler_rt.memmove.memmoveFast",
+      "copy_token": "memmove",
+      "instruction": "call 0x109afe0",
+      "function": {
+        "va": 17325648,
+        "name": "compress.flate.Decompress.rebaseFallible",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "memory load at 0x1085e61 through a computed pointer is not statically resolvable"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "memory_load",
+                "function": "compress.flate.Decompress.rebaseFallible",
+                "va": 17325665,
+                "detail": "load rdi through computed pointer"
+              }
+            ],
+            "limitations": [
+              "memory load at 0x1085e61 through a computed pointer is not statically resolvable"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [],
+        "limitations": [
+          "lea at 0x1085e77 has a non-simple address"
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "compress.flate.Decompress.rebaseFallible",
+            "va": 17325694,
+            "detail": "rdx <- r14"
+          }
+        ],
+        "limitations": [
+          "unmodelled definition of r14 at 0x1085e7b (sub r14, r15)"
+        ]
+      }
+    },
+    {
+      "site_va": 17330393,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17330308,
+        "name": "__copy_tls",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "unmodelled definition of rdi at 0x10870cd (sub rdi, qword ptr [r15 + 0x28])"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [],
+            "limitations": [
+              "unmodelled definition of rdi at 0x10870cd (sub rdi, qword ptr [r15 + 0x28])"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "memory_load",
+            "function": "__copy_tls",
+            "va": 17330385,
+            "detail": "load rsi through computed pointer"
+          }
+        ],
+        "limitations": [
+          "memory load at 0x10870d1 through a computed pointer is not statically resolvable"
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "memory_load",
+            "function": "__copy_tls",
+            "va": 17330389,
+            "detail": "load rdx through computed pointer"
+          }
+        ],
+        "limitations": [
+          "memory load at 0x10870d5 through a computed pointer is not statically resolvable"
+        ]
+      }
+    },
+    {
+      "site_va": 17333275,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17333152,
+        "name": "realpath",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17333152,
+            "offset": 0
+          }
+        ]
+      },
+      "limitations": [
+        "unmodelled definition of rdi at 0x1087c0b (add rdi, -0x1060)",
+        "the copy source pointer is caller-defined; its data length is not statically bounded (unbounded libc copy)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [],
+            "limitations": [
+              "unmodelled definition of rdi at 0x1087c0b (add rdi, -0x1060)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "parameter",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "realpath",
+            "va": 17333269,
+            "detail": "rsi <- rbx"
+          },
+          {
+            "kind": "predecessor_block",
+            "function": "realpath",
+            "va": 17333202,
+            "detail": "continue in the unique predecessor"
+          },
+          {
+            "kind": "predecessor_block",
+            "function": "realpath",
+            "va": 17333177,
+            "detail": "continue in the unique predecessor"
+          },
+          {
+            "kind": "register_copy",
+            "function": "realpath",
+            "va": 17333180,
+            "detail": "rbx <- rdi"
+          },
+          {
+            "kind": "predecessor_block",
+            "function": "realpath",
+            "va": 17333152,
+            "detail": "continue in the unique predecessor"
+          },
+          {
+            "kind": "function_entry",
+            "function": "realpath",
+            "va": 17333152,
+            "detail": "argument 0 (rdi)"
+          }
+        ],
+        "caller_origins": [
+          {
+            "caller": {
+              "va": 17241456,
+              "name": "Io.Threaded.dirRealPathFilePosix"
+            },
+            "origin": "stack_local"
+          },
+          {
+            "caller": {
+              "va": 17241456,
+              "name": "Io.Threaded.dirRealPathFilePosix"
+            },
+            "origin": "unknown"
+          },
+          {
+            "caller": {
+              "va": 17241456,
+              "name": "Io.Threaded.dirRealPathFilePosix"
+            },
+            "origin": "unknown"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "realpath",
+            "va": 17333272,
+            "detail": "rdx <- rax"
+          }
+        ],
+        "limitations": [
+          "unmodelled definition of rax at 0x1087c12 (inc rax)"
+        ]
+      }
+    },
+    {
+      "site_va": 17333547,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17333152,
+        "name": "realpath",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "unmodelled definition of rdi at 0x1087d12 (add rdi, -0x2060)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [],
+            "limitations": [
+              "unmodelled definition of rdi at 0x1087d12 (add rdi, -0x2060)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [],
+        "limitations": [
+          "unmodelled definition of rsi at 0x1087d1d (add rsi, -0x1060)"
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "realpath",
+            "va": 17333544,
+            "detail": "rdx <- r15"
+          },
+          {
+            "kind": "frame_slot_spill",
+            "function": "realpath",
+            "va": 17333493,
+            "detail": "store of rax to [rbp -80]"
+          },
+          {
+            "kind": "frame_slot_reload",
+            "function": "realpath",
+            "va": 17333540,
+            "detail": "load r15 from [rbp -80]"
+          }
+        ],
+        "limitations": [
+          "no unique definition of rax before 0x1087cf5 in realpath (predecessors=2)"
+        ]
+      }
+    },
+    {
+      "site_va": 17333913,
+      "callee": "compiler_rt.memmove.memmoveFast",
+      "copy_token": "memmove",
+      "instruction": "call 0x109afe0",
+      "function": {
+        "va": 17333152,
+        "name": "realpath",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17333152,
+            "offset": -4192
+          }
+        ]
+      },
+      "limitations": [
+        "unmodelled definition of rdi at 0x1087e88 (add rdi, -0x1060)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [],
+            "limitations": [
+              "unmodelled definition of rdi at 0x1087e88 (add rdi, -0x1060)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 4192,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "stack_frame_local",
+            "function": "realpath",
+            "va": 17333903,
+            "detail": "lea rsi, [rbp - 0x1060]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "realpath",
+            "va": 17333910,
+            "detail": "rdx <- rax"
+          }
+        ],
+        "limitations": [
+          "no unique definition of rax before 0x1087e96 in realpath (predecessors=2)"
+        ]
+      }
+    },
+    {
+      "site_va": 17334171,
+      "callee": "compiler_rt.memmove.memmoveFast",
+      "copy_token": "memmove",
+      "instruction": "call 0x109afe0",
+      "function": {
+        "va": 17333152,
+        "name": "realpath",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "unmodelled definition of rdi at 0x1087f85 (add rdi, -0x2060)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [],
+            "limitations": [
+              "unmodelled definition of rdi at 0x1087f85 (add rdi, -0x2060)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [],
+        "limitations": [
+          "unmodelled definition of rsi at 0x1087f90 (add rsi, -0x2060)"
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [],
+        "limitations": [
+          "lea at 0x1087f97 targets an unmodelled base"
+        ]
+      }
+    },
+    {
+      "site_va": 17334193,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17333152,
+        "name": "realpath",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17333152,
+            "offset": -8288
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17333152,
+            "offset": -4192
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 8288,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 8288,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 17333152,
+                  "offset": -8288
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "realpath",
+                "va": 17334176,
+                "detail": "lea rdi, [rbp - 0x2060]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 4192,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "stack_frame_local",
+            "function": "realpath",
+            "va": 17334183,
+            "detail": "lea rsi, [rbp - 0x1060]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "realpath",
+            "va": 17334190,
+            "detail": "rdx <- r15"
+          },
+          {
+            "kind": "predecessor_block",
+            "function": "realpath",
+            "va": 17334121,
+            "detail": "continue in the unique predecessor"
+          }
+        ],
+        "limitations": [
+          "no unique definition of r15 before 0x1087fae in realpath (predecessors=3)"
+        ]
+      }
+    },
+    {
+      "site_va": 17334223,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17333152,
+        "name": "realpath",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17333152,
+            "offset": 1
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17333152,
+            "offset": -8288
+          }
+        ]
+      },
+      "limitations": [
+        "frame slot [rbp -72] loaded at 0x1087fb9 has no unique preceding store in the analyzed path (or a call/aliasing store intervenes)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "parameter",
+                  "function_va": 17333152,
+                  "offset": 1
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "predecessor_block",
+                "function": "realpath",
+                "va": 17334201,
+                "detail": "continue in the unique predecessor"
+              }
+            ],
+            "limitations": [
+              "frame slot [rbp -72] loaded at 0x1087fb9 has no unique preceding store in the analyzed path (or a call/aliasing store intervenes)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 8288,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "stack_frame_local",
+            "function": "realpath",
+            "va": 17334213,
+            "detail": "lea rsi, [rbp - 0x2060]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "realpath",
+            "va": 17334220,
+            "detail": "rdx <- r14"
+          }
+        ],
+        "limitations": [
+          "unmodelled definition of r14 at 0x1087fc2 (inc r14)"
+        ]
+      }
+    },
+    {
+      "site_va": 17337778,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17337640,
+        "name": "__fwritex",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17337640,
+            "offset": 0
+          },
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "no unique definition of rdi before 0x1088db2 in __fwritex (predecessors=2)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [],
+            "limitations": [
+              "no unique definition of rdi before 0x1088db2 in __fwritex (predecessors=2)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "__fwritex",
+            "va": 17337772,
+            "detail": "rsi <- r15"
+          }
+        ],
+        "limitations": [
+          "no unique definition of r15 before 0x1088dac in __fwritex (predecessors=2)"
+        ]
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "__fwritex",
+            "va": 17337775,
+            "detail": "rdx <- r12"
+          }
+        ],
+        "limitations": [
+          "no unique definition of r12 before 0x1088daf in __fwritex (predecessors=2)"
+        ]
+      }
+    },
+    {
+      "site_va": 17341520,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17340543,
+        "name": "__pthread_create",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17340543,
+            "offset": -296
+          }
+        ]
+      },
+      "limitations": [
+        "lea at 0x1089c44 targets an unmodelled base"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [],
+            "limitations": [
+              "lea at 0x1089c44 targets an unmodelled base"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 296,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "__pthread_create",
+            "va": 17341517,
+            "detail": "rsi <- r13"
+          },
+          {
+            "kind": "stack_frame_local",
+            "function": "__pthread_create",
+            "va": 17341493,
+            "detail": "lea r13, [rbp - 0x128]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "__pthread_create",
+            "va": 17341512,
+            "detail": "rdx = 8"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17347133,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17347090,
+        "name": "__synccall",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17347090,
+            "offset": -200
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 200,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 200,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 17347090,
+                  "offset": -200
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "__synccall",
+                "va": 17347116,
+                "detail": "lea rdi, [rbp - 0xc8]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "__synccall",
+            "va": 17347123,
+            "detail": "rsi = 0x1015820"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "__synccall",
+            "va": 17347128,
+            "detail": "rdx = 0x98"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17347815,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "jmp 0x109b280",
+      "function": {
+        "va": 17347800,
+        "name": "__get_handler_set",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17347800,
+            "offset": 0
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "global_object",
+            "symbol": "handler_set",
+            "address": 17570752,
+            "size": 8
+          }
+        ]
+      },
+      "limitations": [
+        "destination is a function parameter but no resolved caller call site was found; capacity is unknown",
+        "rdi is argument 0 of __get_handler_set: its identity/capacity is defined by each caller"
+      ],
+      "destination": {
+        "origin": "parameter",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_paths",
+        "resolution": "unknown",
+        "paths": []
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "immediate",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "__get_handler_set",
+            "va": 17347804,
+            "detail": "rsi = 0x10c1bc0"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "__get_handler_set",
+            "va": 17347809,
+            "detail": "rdx = 8"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17348036,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17347820,
+        "name": "__libc_sigaction",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17347820,
+            "offset": -64
+          }
+        ],
+        "destination_may_alias_anything": false,
+        "source_locations": [
+          {
+            "kind": "unknown"
+          }
+        ]
+      },
+      "limitations": [
+        "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+      ],
+      "destination": {
+        "origin": "stack_local",
+        "capacity": 64,
+        "capacity_source": "frame_geometry_upper_bound",
+        "agreement": "all_paths",
+        "resolution": "resolved",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "stack_local",
+            "capacity": 64,
+            "capacity_source": "frame_geometry_upper_bound",
+            "resolution": "resolved",
+            "confidence": "medium",
+            "alias": {
+              "relation": "same_function",
+              "argument_locations": [
+                {
+                  "kind": "stack_local",
+                  "function_va": 17347820,
+                  "offset": -64
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "stack_frame_local",
+                "function": "__libc_sigaction",
+                "va": 17347997,
+                "detail": "lea rdi, [rbp - 0x40]"
+              }
+            ],
+            "limitations": [
+              "capacity is frame geometry (frame_top - destination), an UPPER BOUND; the DWARF object size is not analyzed in this increment (a buffer that does not sit at the frame top is over-estimated)"
+            ]
+          }
+        ]
+      },
+      "confidence": "medium",
+      "source_argument": {
+        "origin": "unknown",
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "__libc_sigaction",
+            "va": 17348033,
+            "detail": "rsi <- r8"
+          }
+        ],
+        "limitations": [
+          "unmodelled definition of r8 at 0x108b5b8 (add r8, 8)"
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "__libc_sigaction",
+            "va": 17348028,
+            "detail": "rdx = 8"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17348120,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "call 0x109b280",
+      "function": {
+        "va": 17347820,
+        "name": "__libc_sigaction",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "unknown"
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "stack_local",
+            "function_va": 17347820,
+            "offset": -32
+          }
+        ]
+      },
+      "limitations": [
+        "unmodelled definition of rbx at 0x108b60c (add rbx, 8)"
+      ],
+      "destination": {
+        "origin": "unknown",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_capacity",
+        "resolution": "unknown",
+        "paths": [
+          {
+            "caller": null,
+            "call_site_va": null,
+            "call_kind": null,
+            "origin": "unknown",
+            "capacity": null,
+            "capacity_source": null,
+            "resolution": "unknown",
+            "confidence": "unknown",
+            "alias": {
+              "relation": "unknown",
+              "argument_locations": [
+                {
+                  "kind": "unknown"
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "register_copy",
+                "function": "__libc_sigaction",
+                "va": 17348117,
+                "detail": "rdi <- rbx"
+              }
+            ],
+            "limitations": [
+              "unmodelled definition of rbx at 0x108b60c (add rbx, 8)"
+            ]
+          }
+        ]
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "stack_local",
+        "capacity": 32,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "stack_frame_local",
+            "function": "__libc_sigaction",
+            "va": 17348088,
+            "detail": "lea rsi, [rbp - 0x20]"
+          }
+        ]
+      },
+      "length_argument": {
+        "origin": "immediate",
+        "value": null,
+        "capacity": null,
+        "resolution": "resolved",
+        "steps": [
+          {
+            "kind": "immediate",
+            "function": "__libc_sigaction",
+            "va": 17348112,
+            "detail": "rdx = 8"
+          }
+        ],
+        "limitations": []
+      }
+    },
+    {
+      "site_va": 17354041,
+      "callee": "compiler_rt.memmove.memmoveFast",
+      "copy_token": "memmove",
+      "instruction": "jmp 0x109afe0",
+      "function": {
+        "va": 17354032,
+        "name": "c.wchar.wmemmove",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17354032,
+            "offset": 0
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17354032,
+            "offset": 1
+          }
+        ]
+      },
+      "limitations": [
+        "destination is a function parameter but no resolved caller call site was found; capacity is unknown",
+        "rdi is argument 0 of c.wchar.wmemmove: its identity/capacity is defined by each caller",
+        "the copy source pointer is caller-defined; its data length is not statically bounded (unbounded libc copy)"
+      ],
+      "destination": {
+        "origin": "parameter",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_paths",
+        "resolution": "unknown",
+        "paths": []
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "parameter",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "function_entry",
+            "function": "c.wchar.wmemmove",
+            "va": 17354032,
+            "detail": "argument 1 (rsi)"
+          }
+        ],
+        "caller_origins": []
+      },
+      "length_argument": {
+        "origin": "unknown",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [],
+        "limitations": [
+          "unmodelled definition of rdx at 0x108cd34 (shl rdx, 2)"
+        ]
+      }
+    },
+    {
+      "site_va": 17354894,
+      "callee": "compiler_rt.memmove.memmoveFast",
+      "copy_token": "memmove",
+      "instruction": "jmp 0x109afe0",
+      "function": {
+        "va": 17354880,
+        "name": "c.strings.bcopy",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17354880,
+            "offset": 1
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17354880,
+            "offset": 0
+          }
+        ]
+      },
+      "limitations": [
+        "destination is a function parameter but no resolved caller call site was found; capacity is unknown",
+        "rsi is argument 1 of c.strings.bcopy: its identity/capacity is defined by each caller",
+        "the copy source pointer is caller-defined; its data length is not statically bounded (unbounded libc copy)"
+      ],
+      "destination": {
+        "origin": "parameter",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_paths",
+        "resolution": "unknown",
+        "paths": []
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "parameter",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "register_copy",
+            "function": "c.strings.bcopy",
+            "va": 17354890,
+            "detail": "rsi <- rax"
+          },
+          {
+            "kind": "register_copy",
+            "function": "c.strings.bcopy",
+            "va": 17354884,
+            "detail": "rax <- rdi"
+          },
+          {
+            "kind": "function_entry",
+            "function": "c.strings.bcopy",
+            "va": 17354880,
+            "detail": "argument 0 (rdi)"
+          }
+        ],
+        "caller_origins": []
+      },
+      "length_argument": {
+        "origin": "parameter",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "function_entry",
+            "function": "c.strings.bcopy",
+            "va": 17354880,
+            "detail": "argument 2 (rdx)"
+          }
+        ],
+        "limitations": [
+          "rdx is argument 2 of c.strings.bcopy: its identity/capacity is defined by each caller"
+        ]
+      }
+    },
+    {
+      "site_va": 17411514,
+      "callee": "compiler_rt.memmove.memmoveFast",
+      "copy_token": "memmove",
+      "instruction": "jmp 0x109afe0",
+      "function": {
+        "va": 17411504,
+        "name": "compiler_rt.ssp.__memmove_chk",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17411504,
+            "offset": 0
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17411504,
+            "offset": 1
+          }
+        ]
+      },
+      "limitations": [
+        "destination is a function parameter but no resolved caller call site was found; capacity is unknown",
+        "rdi is argument 0 of compiler_rt.ssp.__memmove_chk: its identity/capacity is defined by each caller",
+        "the copy source pointer is caller-defined; its data length is not statically bounded (unbounded libc copy)"
+      ],
+      "destination": {
+        "origin": "parameter",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_paths",
+        "resolution": "unknown",
+        "paths": []
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "parameter",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "predecessor_block",
+            "function": "compiler_rt.ssp.__memmove_chk",
+            "va": 17411504,
+            "detail": "continue in the unique predecessor"
+          },
+          {
+            "kind": "function_entry",
+            "function": "compiler_rt.ssp.__memmove_chk",
+            "va": 17411504,
+            "detail": "argument 1 (rsi)"
+          }
+        ],
+        "caller_origins": []
+      },
+      "length_argument": {
+        "origin": "parameter",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "predecessor_block",
+            "function": "compiler_rt.ssp.__memmove_chk",
+            "va": 17411504,
+            "detail": "continue in the unique predecessor"
+          },
+          {
+            "kind": "function_entry",
+            "function": "compiler_rt.ssp.__memmove_chk",
+            "va": 17411504,
+            "detail": "argument 2 (rdx)"
+          }
+        ],
+        "limitations": [
+          "rdx is argument 2 of compiler_rt.ssp.__memmove_chk: its identity/capacity is defined by each caller"
+        ]
+      }
+    },
+    {
+      "site_va": 17411546,
+      "callee": "compiler_rt.memcpy.memcpyFast",
+      "copy_token": "memcpy",
+      "instruction": "jmp 0x109b280",
+      "function": {
+        "va": 17411536,
+        "name": "compiler_rt.ssp.__memcpy_chk",
+        "source": "symtab"
+      },
+      "alias": {
+        "destination_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17411536,
+            "offset": 0
+          }
+        ],
+        "destination_may_alias_anything": true,
+        "source_locations": [
+          {
+            "kind": "parameter",
+            "function_va": 17411536,
+            "offset": 1
+          }
+        ]
+      },
+      "limitations": [
+        "destination is a function parameter but no resolved caller call site was found; capacity is unknown",
+        "rdi is argument 0 of compiler_rt.ssp.__memcpy_chk: its identity/capacity is defined by each caller",
+        "the copy source pointer is caller-defined; its data length is not statically bounded (unbounded libc copy)"
+      ],
+      "destination": {
+        "origin": "parameter",
+        "capacity": null,
+        "capacity_source": null,
+        "agreement": "no_paths",
+        "resolution": "unknown",
+        "paths": []
+      },
+      "confidence": "unknown",
+      "source_argument": {
+        "origin": "parameter",
+        "capacity": null,
+        "resolution": "partially_resolved",
+        "steps": [
+          {
+            "kind": "predecessor_block",
+            "function": "compiler_rt.ssp.__memcpy_chk",
+            "va": 17411536,
+            "detail": "continue in the unique predecessor"
+          },
+          {
+            "kind": "function_entry",
+            "function": "compiler_rt.ssp.__memcpy_chk",
+            "va": 17411536,
+            "detail": "argument 1 (rsi)"
+          }
+        ],
+        "caller_origins": []
+      },
+      "length_argument": {
+        "origin": "parameter",
+        "value": null,
+        "capacity": null,
+        "resolution": "unknown",
+        "steps": [
+          {
+            "kind": "predecessor_block",
+            "function": "compiler_rt.ssp.__memcpy_chk",
+            "va": 17411536,
+            "detail": "continue in the unique predecessor"
+          },
+          {
+            "kind": "function_entry",
+            "function": "compiler_rt.ssp.__memcpy_chk",
+            "va": 17411536,
+            "detail": "argument 2 (rdx)"
+          }
+        ],
+        "limitations": [
+          "rdx is argument 2 of compiler_rt.ssp.__memcpy_chk: its identity/capacity is defined by each caller"
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "frame-slot store/reload forwarding does not model a callee writing the caller's analyzed frame slot through an escaped pointer (no escape analysis); calls do not invalidate a tracked slot",
+    "stack capacities are frame geometry (frame_top - destination) UPPER BOUNDS unless stated otherwise; DWARF object sizes are not analyzed in this increment"
+  ],
+  "statistics": {
+    "sinks": 44,
+    "sinks_by_copy_token": {
+      "memcpy": 32,
+      "memmove": 11,
+      "strcpy": 1
+    },
+    "sinks_by_destination_origin": {
+      "heap_allocation": 1,
+      "parameter": 5,
+      "stack_local": 16,
+      "unknown": 22
+    },
+    "sinks_resolved_capacity": 17,
+    "sinks_conflicting_capacity": 0,
+    "sinks_unsupported_arch": 0,
+    "paths_total": 39,
+    "global_object_symbols": 434,
+    "cfg_functions": 1256,
+    "cfg_limitations_not_inlined": 401,
+    "callgraph_edges": 3618,
+    "callgraph_unresolved_edges": 834
+  },
+  "input": {
+    "path": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+    "sha256": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+    "size": 4913688
+  },
+  "cfg_functions": [
+    {
+      "va": 16955952,
+      "name": "heap_bad",
+      "source": "symtab",
+      "size": 505,
+      "end_va": 16956457,
+      "instruction_count": 123,
+      "block_count": 19,
+      "blocks": [
+        {
+          "va": 16955952,
+          "end_va": 16955985,
+          "terminator": "jcc",
+          "successors": [
+            16956016,
+            16955985
+          ],
+          "instructions": [
+            {
+              "va": 16955952,
+              "size": 1,
+              "bytes": "55",
+              "mnemonic": "push",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16955953,
+              "size": 3,
+              "bytes": "4889e5",
+              "mnemonic": "mov",
+              "op_str": "rbp, rsp"
+            },
+            {
+              "va": 16955956,
+              "size": 4,
+              "bytes": "4883ec40",
+              "mnemonic": "sub",
+              "op_str": "rsp, 0x40"
+            },
+            {
+              "va": 16955960,
+              "size": 4,
+              "bytes": "48897df8",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 8], rdi"
+            },
+            {
+              "va": 16955964,
+              "size": 5,
+              "bytes": "bf18000000",
+              "mnemonic": "mov",
+              "op_str": "edi, 0x18"
+            },
+            {
+              "va": 16955969,
+              "size": 5,
+              "bytes": "e88ac80600",
+              "mnemonic": "call",
+              "op_str": "0x10982d0"
+            },
+            {
+              "va": 16955974,
+              "size": 4,
+              "bytes": "488945f0",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x10], rax"
+            },
+            {
+              "va": 16955978,
+              "size": 5,
+              "bytes": "48837df000",
+              "mnemonic": "cmp",
+              "op_str": "qword ptr [rbp - 0x10], 0"
+            },
+            {
+              "va": 16955983,
+              "size": 2,
+              "bytes": "751f",
+              "mnemonic": "jne",
+              "op_str": "0x102ba70"
+            }
+          ]
+        },
+        {
+          "va": 16955985,
+          "end_va": 16956001,
+          "terminator": "jcc",
+          "successors": [
+            16956016,
+            16956001
+          ],
+          "instructions": [
+            {
+              "va": 16955985,
+              "size": 5,
+              "bytes": "bf02000000",
+              "mnemonic": "mov",
+              "op_str": "edi, 2"
+            },
+            {
+              "va": 16955990,
+              "size": 5,
+              "bytes": "e801b90500",
+              "mnemonic": "call",
+              "op_str": "0x108735c"
+            },
+            {
+              "va": 16955995,
+              "size": 2,
+              "bytes": "31c0",
+              "mnemonic": "xor",
+              "op_str": "eax, eax"
+            },
+            {
+              "va": 16955997,
+              "size": 2,
+              "bytes": "a801",
+              "mnemonic": "test",
+              "op_str": "al, 1"
+            },
+            {
+              "va": 16955999,
+              "size": 2,
+              "bytes": "750f",
+              "mnemonic": "jne",
+              "op_str": "0x102ba70"
+            }
+          ]
+        },
+        {
+          "va": 16956001,
+          "end_va": 16956016,
+          "terminator": "fallthrough",
+          "successors": [
+            16956016
+          ],
+          "instructions": [
+            {
+              "va": 16956001,
+              "size": 10,
+              "bytes": "48bf60c50b0100000000",
+              "mnemonic": "movabs",
+              "op_str": "rdi, 0x10bc560"
+            },
+            {
+              "va": 16956011,
+              "size": 5,
+              "bytes": "e890f80400",
+              "mnemonic": "call",
+              "op_str": "0x107b300"
+            }
+          ]
+        },
+        {
+          "va": 16956016,
+          "end_va": 16956048,
+          "terminator": "jcc",
+          "successors": [
+            16956067,
+            16956048
+          ],
+          "instructions": [
+            {
+              "va": 16956016,
+              "size": 4,
+              "bytes": "488b4df0",
+              "mnemonic": "mov",
+              "op_str": "rcx, qword ptr [rbp - 0x10]"
+            },
+            {
+              "va": 16956020,
+              "size": 4,
+              "bytes": "48894de8",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x18], rcx"
+            },
+            {
+              "va": 16956024,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956028,
+              "size": 3,
+              "bytes": "0f95c0",
+              "mnemonic": "setne",
+              "op_str": "al"
+            },
+            {
+              "va": 16956031,
+              "size": 4,
+              "bytes": "4883e107",
+              "mnemonic": "and",
+              "op_str": "rcx, 7"
+            },
+            {
+              "va": 16956035,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956039,
+              "size": 3,
+              "bytes": "0f94c1",
+              "mnemonic": "sete",
+              "op_str": "cl"
+            },
+            {
+              "va": 16956042,
+              "size": 2,
+              "bytes": "20c8",
+              "mnemonic": "and",
+              "op_str": "al, cl"
+            },
+            {
+              "va": 16956044,
+              "size": 2,
+              "bytes": "a801",
+              "mnemonic": "test",
+              "op_str": "al, 1"
+            },
+            {
+              "va": 16956046,
+              "size": 2,
+              "bytes": "7513",
+              "mnemonic": "jne",
+              "op_str": "0x102baa3"
+            }
+          ]
+        },
+        {
+          "va": 16956048,
+          "end_va": 16956067,
+          "terminator": "fallthrough",
+          "successors": [
+            16956067
+          ],
+          "instructions": [
+            {
+              "va": 16956048,
+              "size": 4,
+              "bytes": "488b75e8",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 0x18]"
+            },
+            {
+              "va": 16956052,
+              "size": 10,
+              "bytes": "48bf70c50b0100000000",
+              "mnemonic": "movabs",
+              "op_str": "rdi, 0x10bc570"
+            },
+            {
+              "va": 16956062,
+              "size": 5,
+              "bytes": "e83dfb0400",
+              "mnemonic": "call",
+              "op_str": "0x107b5e0"
+            }
+          ]
+        },
+        {
+          "va": 16956067,
+          "end_va": 16956103,
+          "terminator": "jcc",
+          "successors": [
+            16956122,
+            16956103
+          ],
+          "instructions": [
+            {
+              "va": 16956067,
+              "size": 4,
+              "bytes": "488b4de8",
+              "mnemonic": "mov",
+              "op_str": "rcx, qword ptr [rbp - 0x18]"
+            },
+            {
+              "va": 16956071,
+              "size": 4,
+              "bytes": "4883c110",
+              "mnemonic": "add",
+              "op_str": "rcx, 0x10"
+            },
+            {
+              "va": 16956075,
+              "size": 4,
+              "bytes": "48894de0",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x20], rcx"
+            },
+            {
+              "va": 16956079,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956083,
+              "size": 3,
+              "bytes": "0f95c0",
+              "mnemonic": "setne",
+              "op_str": "al"
+            },
+            {
+              "va": 16956086,
+              "size": 4,
+              "bytes": "4883e107",
+              "mnemonic": "and",
+              "op_str": "rcx, 7"
+            },
+            {
+              "va": 16956090,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956094,
+              "size": 3,
+              "bytes": "0f94c1",
+              "mnemonic": "sete",
+              "op_str": "cl"
+            },
+            {
+              "va": 16956097,
+              "size": 2,
+              "bytes": "20c8",
+              "mnemonic": "and",
+              "op_str": "al, cl"
+            },
+            {
+              "va": 16956099,
+              "size": 2,
+              "bytes": "a801",
+              "mnemonic": "test",
+              "op_str": "al, 1"
+            },
+            {
+              "va": 16956101,
+              "size": 2,
+              "bytes": "7513",
+              "mnemonic": "jne",
+              "op_str": "0x102bada"
+            }
+          ]
+        },
+        {
+          "va": 16956103,
+          "end_va": 16956122,
+          "terminator": "fallthrough",
+          "successors": [
+            16956122
+          ],
+          "instructions": [
+            {
+              "va": 16956103,
+              "size": 4,
+              "bytes": "488b75e0",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 0x20]"
+            },
+            {
+              "va": 16956107,
+              "size": 10,
+              "bytes": "48bf90c50b0100000000",
+              "mnemonic": "movabs",
+              "op_str": "rdi, 0x10bc590"
+            },
+            {
+              "va": 16956117,
+              "size": 5,
+              "bytes": "e806fb0400",
+              "mnemonic": "call",
+              "op_str": "0x107b5e0"
+            }
+          ]
+        },
+        {
+          "va": 16956122,
+          "end_va": 16956171,
+          "terminator": "jcc",
+          "successors": [
+            16956190,
+            16956171
+          ],
+          "instructions": [
+            {
+              "va": 16956122,
+              "size": 4,
+              "bytes": "488b45e0",
+              "mnemonic": "mov",
+              "op_str": "rax, qword ptr [rbp - 0x20]"
+            },
+            {
+              "va": 16956126,
+              "size": 10,
+              "bytes": "48b9bebafecaefbeadde",
+              "mnemonic": "movabs",
+              "op_str": "rcx, 0xdeadbeefcafebabe"
+            },
+            {
+              "va": 16956136,
+              "size": 3,
+              "bytes": "488908",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rax], rcx"
+            },
+            {
+              "va": 16956139,
+              "size": 4,
+              "bytes": "488b4df0",
+              "mnemonic": "mov",
+              "op_str": "rcx, qword ptr [rbp - 0x10]"
+            },
+            {
+              "va": 16956143,
+              "size": 4,
+              "bytes": "48894dd8",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x28], rcx"
+            },
+            {
+              "va": 16956147,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956151,
+              "size": 3,
+              "bytes": "0f95c0",
+              "mnemonic": "setne",
+              "op_str": "al"
+            },
+            {
+              "va": 16956154,
+              "size": 4,
+              "bytes": "4883e107",
+              "mnemonic": "and",
+              "op_str": "rcx, 7"
+            },
+            {
+              "va": 16956158,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956162,
+              "size": 3,
+              "bytes": "0f94c1",
+              "mnemonic": "sete",
+              "op_str": "cl"
+            },
+            {
+              "va": 16956165,
+              "size": 2,
+              "bytes": "20c8",
+              "mnemonic": "and",
+              "op_str": "al, cl"
+            },
+            {
+              "va": 16956167,
+              "size": 2,
+              "bytes": "a801",
+              "mnemonic": "test",
+              "op_str": "al, 1"
+            },
+            {
+              "va": 16956169,
+              "size": 2,
+              "bytes": "7513",
+              "mnemonic": "jne",
+              "op_str": "0x102bb1e"
+            }
+          ]
+        },
+        {
+          "va": 16956171,
+          "end_va": 16956190,
+          "terminator": "fallthrough",
+          "successors": [
+            16956190
+          ],
+          "instructions": [
+            {
+              "va": 16956171,
+              "size": 4,
+              "bytes": "488b75d8",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 0x28]"
+            },
+            {
+              "va": 16956175,
+              "size": 10,
+              "bytes": "48bfb0c50b0100000000",
+              "mnemonic": "movabs",
+              "op_str": "rdi, 0x10bc5b0"
+            },
+            {
+              "va": 16956185,
+              "size": 5,
+              "bytes": "e8c2fa0400",
+              "mnemonic": "call",
+              "op_str": "0x107b5e0"
+            }
+          ]
+        },
+        {
+          "va": 16956190,
+          "end_va": 16956235,
+          "terminator": "jcc",
+          "successors": [
+            16956254,
+            16956235
+          ],
+          "instructions": [
+            {
+              "va": 16956190,
+              "size": 4,
+              "bytes": "488b7dd8",
+              "mnemonic": "mov",
+              "op_str": "rdi, qword ptr [rbp - 0x28]"
+            },
+            {
+              "va": 16956194,
+              "size": 4,
+              "bytes": "488b75f8",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 8]"
+            },
+            {
+              "va": 16956198,
+              "size": 5,
+              "bytes": "e8f5370600",
+              "mnemonic": "call",
+              "op_str": "0x108f320"
+            },
+            {
+              "va": 16956203,
+              "size": 4,
+              "bytes": "488b4df0",
+              "mnemonic": "mov",
+              "op_str": "rcx, qword ptr [rbp - 0x10]"
+            },
+            {
+              "va": 16956207,
+              "size": 4,
+              "bytes": "48894dd0",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x30], rcx"
+            },
+            {
+              "va": 16956211,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956215,
+              "size": 3,
+              "bytes": "0f95c0",
+              "mnemonic": "setne",
+              "op_str": "al"
+            },
+            {
+              "va": 16956218,
+              "size": 4,
+              "bytes": "4883e107",
+              "mnemonic": "and",
+              "op_str": "rcx, 7"
+            },
+            {
+              "va": 16956222,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956226,
+              "size": 3,
+              "bytes": "0f94c1",
+              "mnemonic": "sete",
+              "op_str": "cl"
+            },
+            {
+              "va": 16956229,
+              "size": 2,
+              "bytes": "20c8",
+              "mnemonic": "and",
+              "op_str": "al, cl"
+            },
+            {
+              "va": 16956231,
+              "size": 2,
+              "bytes": "a801",
+              "mnemonic": "test",
+              "op_str": "al, 1"
+            },
+            {
+              "va": 16956233,
+              "size": 2,
+              "bytes": "7513",
+              "mnemonic": "jne",
+              "op_str": "0x102bb5e"
+            }
+          ]
+        },
+        {
+          "va": 16956235,
+          "end_va": 16956254,
+          "terminator": "fallthrough",
+          "successors": [
+            16956254
+          ],
+          "instructions": [
+            {
+              "va": 16956235,
+              "size": 4,
+              "bytes": "488b75d0",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 0x30]"
+            },
+            {
+              "va": 16956239,
+              "size": 10,
+              "bytes": "48bfd0c50b0100000000",
+              "mnemonic": "movabs",
+              "op_str": "rdi, 0x10bc5d0"
+            },
+            {
+              "va": 16956249,
+              "size": 5,
+              "bytes": "e882fa0400",
+              "mnemonic": "call",
+              "op_str": "0x107b5e0"
+            }
+          ]
+        },
+        {
+          "va": 16956254,
+          "end_va": 16956290,
+          "terminator": "jcc",
+          "successors": [
+            16956309,
+            16956290
+          ],
+          "instructions": [
+            {
+              "va": 16956254,
+              "size": 4,
+              "bytes": "488b4dd0",
+              "mnemonic": "mov",
+              "op_str": "rcx, qword ptr [rbp - 0x30]"
+            },
+            {
+              "va": 16956258,
+              "size": 4,
+              "bytes": "4883c110",
+              "mnemonic": "add",
+              "op_str": "rcx, 0x10"
+            },
+            {
+              "va": 16956262,
+              "size": 4,
+              "bytes": "48894dc8",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x38], rcx"
+            },
+            {
+              "va": 16956266,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956270,
+              "size": 3,
+              "bytes": "0f95c0",
+              "mnemonic": "setne",
+              "op_str": "al"
+            },
+            {
+              "va": 16956273,
+              "size": 4,
+              "bytes": "4883e107",
+              "mnemonic": "and",
+              "op_str": "rcx, 7"
+            },
+            {
+              "va": 16956277,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956281,
+              "size": 3,
+              "bytes": "0f94c1",
+              "mnemonic": "sete",
+              "op_str": "cl"
+            },
+            {
+              "va": 16956284,
+              "size": 2,
+              "bytes": "20c8",
+              "mnemonic": "and",
+              "op_str": "al, cl"
+            },
+            {
+              "va": 16956286,
+              "size": 2,
+              "bytes": "a801",
+              "mnemonic": "test",
+              "op_str": "al, 1"
+            },
+            {
+              "va": 16956288,
+              "size": 2,
+              "bytes": "7513",
+              "mnemonic": "jne",
+              "op_str": "0x102bb95"
+            }
+          ]
+        },
+        {
+          "va": 16956290,
+          "end_va": 16956309,
+          "terminator": "fallthrough",
+          "successors": [
+            16956309
+          ],
+          "instructions": [
+            {
+              "va": 16956290,
+              "size": 4,
+              "bytes": "488b75c8",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 0x38]"
+            },
+            {
+              "va": 16956294,
+              "size": 10,
+              "bytes": "48bff0c50b0100000000",
+              "mnemonic": "movabs",
+              "op_str": "rdi, 0x10bc5f0"
+            },
+            {
+              "va": 16956304,
+              "size": 5,
+              "bytes": "e84bfa0400",
+              "mnemonic": "call",
+              "op_str": "0x107b5e0"
+            }
+          ]
+        },
+        {
+          "va": 16956309,
+          "end_va": 16956328,
+          "terminator": "jcc",
+          "successors": [
+            16956382,
+            16956328
+          ],
+          "instructions": [
+            {
+              "va": 16956309,
+              "size": 4,
+              "bytes": "488b45c8",
+              "mnemonic": "mov",
+              "op_str": "rax, qword ptr [rbp - 0x38]"
+            },
+            {
+              "va": 16956313,
+              "size": 10,
+              "bytes": "48b9bebafecaefbeadde",
+              "mnemonic": "movabs",
+              "op_str": "rcx, 0xdeadbeefcafebabe"
+            },
+            {
+              "va": 16956323,
+              "size": 3,
+              "bytes": "483908",
+              "mnemonic": "cmp",
+              "op_str": "qword ptr [rax], rcx"
+            },
+            {
+              "va": 16956326,
+              "size": 2,
+              "bytes": "7436",
+              "mnemonic": "je",
+              "op_str": "0x102bbde"
+            }
+          ]
+        },
+        {
+          "va": 16956328,
+          "end_va": 16956367,
+          "terminator": "jcc",
+          "successors": [
+            16956382,
+            16956367
+          ],
+          "instructions": [
+            {
+              "va": 16956328,
+              "size": 8,
+              "bytes": "488b342500580101",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [0x1015800]"
+            },
+            {
+              "va": 16956336,
+              "size": 10,
+              "bytes": "48bf2305000100000000",
+              "mnemonic": "movabs",
+              "op_str": "rdi, 0x1000523"
+            },
+            {
+              "va": 16956346,
+              "size": 5,
+              "bytes": "e825d10500",
+              "mnemonic": "call",
+              "op_str": "0x1088ce4"
+            },
+            {
+              "va": 16956351,
+              "size": 5,
+              "bytes": "bf01000000",
+              "mnemonic": "mov",
+              "op_str": "edi, 1"
+            },
+            {
+              "va": 16956356,
+              "size": 5,
+              "bytes": "e893b70500",
+              "mnemonic": "call",
+              "op_str": "0x108735c"
+            },
+            {
+              "va": 16956361,
+              "size": 2,
+              "bytes": "31c0",
+              "mnemonic": "xor",
+              "op_str": "eax, eax"
+            },
+            {
+              "va": 16956363,
+              "size": 2,
+              "bytes": "a801",
+              "mnemonic": "test",
+              "op_str": "al, 1"
+            },
+            {
+              "va": 16956365,
+              "size": 2,
+              "bytes": "750f",
+              "mnemonic": "jne",
+              "op_str": "0x102bbde"
+            }
+          ]
+        },
+        {
+          "va": 16956367,
+          "end_va": 16956382,
+          "terminator": "fallthrough",
+          "successors": [
+            16956382
+          ],
+          "instructions": [
+            {
+              "va": 16956367,
+              "size": 10,
+              "bytes": "48bf10c60b0100000000",
+              "mnemonic": "movabs",
+              "op_str": "rdi, 0x10bc610"
+            },
+            {
+              "va": 16956377,
+              "size": 5,
+              "bytes": "e822f70400",
+              "mnemonic": "call",
+              "op_str": "0x107b300"
+            }
+          ]
+        },
+        {
+          "va": 16956382,
+          "end_va": 16956414,
+          "terminator": "jcc",
+          "successors": [
+            16956433,
+            16956414
+          ],
+          "instructions": [
+            {
+              "va": 16956382,
+              "size": 4,
+              "bytes": "488b4df0",
+              "mnemonic": "mov",
+              "op_str": "rcx, qword ptr [rbp - 0x10]"
+            },
+            {
+              "va": 16956386,
+              "size": 4,
+              "bytes": "48894dc0",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x40], rcx"
+            },
+            {
+              "va": 16956390,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956394,
+              "size": 3,
+              "bytes": "0f95c0",
+              "mnemonic": "setne",
+              "op_str": "al"
+            },
+            {
+              "va": 16956397,
+              "size": 4,
+              "bytes": "4883e107",
+              "mnemonic": "and",
+              "op_str": "rcx, 7"
+            },
+            {
+              "va": 16956401,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956405,
+              "size": 3,
+              "bytes": "0f94c1",
+              "mnemonic": "sete",
+              "op_str": "cl"
+            },
+            {
+              "va": 16956408,
+              "size": 2,
+              "bytes": "20c8",
+              "mnemonic": "and",
+              "op_str": "al, cl"
+            },
+            {
+              "va": 16956410,
+              "size": 2,
+              "bytes": "a801",
+              "mnemonic": "test",
+              "op_str": "al, 1"
+            },
+            {
+              "va": 16956412,
+              "size": 2,
+              "bytes": "7513",
+              "mnemonic": "jne",
+              "op_str": "0x102bc11"
+            }
+          ]
+        },
+        {
+          "va": 16956414,
+          "end_va": 16956433,
+          "terminator": "fallthrough",
+          "successors": [
+            16956433
+          ],
+          "instructions": [
+            {
+              "va": 16956414,
+              "size": 4,
+              "bytes": "488b75c0",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 0x40]"
+            },
+            {
+              "va": 16956418,
+              "size": 10,
+              "bytes": "48bf20c60b0100000000",
+              "mnemonic": "movabs",
+              "op_str": "rdi, 0x10bc620"
+            },
+            {
+              "va": 16956428,
+              "size": 5,
+              "bytes": "e8cff90400",
+              "mnemonic": "call",
+              "op_str": "0x107b5e0"
+            }
+          ]
+        },
+        {
+          "va": 16956433,
+          "end_va": 16956457,
+          "terminator": "ret",
+          "successors": [],
+          "instructions": [
+            {
+              "va": 16956433,
+              "size": 4,
+              "bytes": "488b7dc0",
+              "mnemonic": "mov",
+              "op_str": "rdi, qword ptr [rbp - 0x40]"
+            },
+            {
+              "va": 16956437,
+              "size": 5,
+              "bytes": "e862d30500",
+              "mnemonic": "call",
+              "op_str": "0x1088f7c"
+            },
+            {
+              "va": 16956442,
+              "size": 4,
+              "bytes": "488b7df0",
+              "mnemonic": "mov",
+              "op_str": "rdi, qword ptr [rbp - 0x10]"
+            },
+            {
+              "va": 16956446,
+              "size": 5,
+              "bytes": "e8adcb0600",
+              "mnemonic": "call",
+              "op_str": "0x10987d0"
+            },
+            {
+              "va": 16956451,
+              "size": 4,
+              "bytes": "4883c440",
+              "mnemonic": "add",
+              "op_str": "rsp, 0x40"
+            },
+            {
+              "va": 16956455,
+              "size": 1,
+              "bytes": "5d",
+              "mnemonic": "pop",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16956456,
+              "size": 1,
+              "bytes": "c3",
+              "mnemonic": "ret",
+              "op_str": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "va": 16956464,
+      "name": "main",
+      "source": "symtab",
+      "size": 194,
+      "end_va": 16956658,
+      "instruction_count": 52,
+      "block_count": 8,
+      "blocks": [
+        {
+          "va": 16956464,
+          "end_va": 16956492,
+          "terminator": "jcc",
+          "successors": [
+            16956504,
+            16956492
+          ],
+          "instructions": [
+            {
+              "va": 16956464,
+              "size": 1,
+              "bytes": "55",
+              "mnemonic": "push",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16956465,
+              "size": 3,
+              "bytes": "4889e5",
+              "mnemonic": "mov",
+              "op_str": "rbp, rsp"
+            },
+            {
+              "va": 16956468,
+              "size": 4,
+              "bytes": "4883ec30",
+              "mnemonic": "sub",
+              "op_str": "rsp, 0x30"
+            },
+            {
+              "va": 16956472,
+              "size": 7,
+              "bytes": "c745fc00000000",
+              "mnemonic": "mov",
+              "op_str": "dword ptr [rbp - 4], 0"
+            },
+            {
+              "va": 16956479,
+              "size": 3,
+              "bytes": "897df8",
+              "mnemonic": "mov",
+              "op_str": "dword ptr [rbp - 8], edi"
+            },
+            {
+              "va": 16956482,
+              "size": 4,
+              "bytes": "488975f0",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x10], rsi"
+            },
+            {
+              "va": 16956486,
+              "size": 4,
+              "bytes": "837df802",
+              "mnemonic": "cmp",
+              "op_str": "dword ptr [rbp - 8], 2"
+            },
+            {
+              "va": 16956490,
+              "size": 2,
+              "bytes": "740c",
+              "mnemonic": "je",
+              "op_str": "0x102bc58"
+            }
+          ]
+        },
+        {
+          "va": 16956492,
+          "end_va": 16956504,
+          "terminator": "jmp",
+          "successors": [
+            16956649
+          ],
+          "instructions": [
+            {
+              "va": 16956492,
+              "size": 7,
+              "bytes": "c745fc02000000",
+              "mnemonic": "mov",
+              "op_str": "dword ptr [rbp - 4], 2"
+            },
+            {
+              "va": 16956499,
+              "size": 5,
+              "bytes": "e991000000",
+              "mnemonic": "jmp",
+              "op_str": "0x102bce9"
+            }
+          ]
+        },
+        {
+          "va": 16956504,
+          "end_va": 16956560,
+          "terminator": "jcc",
+          "successors": [
+            16956583,
+            16956560
+          ],
+          "instructions": [
+            {
+              "va": 16956504,
+              "size": 4,
+              "bytes": "488b55f0",
+              "mnemonic": "mov",
+              "op_str": "rdx, qword ptr [rbp - 0x10]"
+            },
+            {
+              "va": 16956508,
+              "size": 4,
+              "bytes": "488955d8",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x28], rdx"
+            },
+            {
+              "va": 16956512,
+              "size": 3,
+              "bytes": "4885d2",
+              "mnemonic": "test",
+              "op_str": "rdx, rdx"
+            },
+            {
+              "va": 16956515,
+              "size": 3,
+              "bytes": "0f95c0",
+              "mnemonic": "setne",
+              "op_str": "al"
+            },
+            {
+              "va": 16956518,
+              "size": 3,
+              "bytes": "4889d1",
+              "mnemonic": "mov",
+              "op_str": "rcx, rdx"
+            },
+            {
+              "va": 16956521,
+              "size": 4,
+              "bytes": "4883c108",
+              "mnemonic": "add",
+              "op_str": "rcx, 8"
+            },
+            {
+              "va": 16956525,
+              "size": 4,
+              "bytes": "48894de0",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x20], rcx"
+            },
+            {
+              "va": 16956529,
+              "size": 3,
+              "bytes": "4889ce",
+              "mnemonic": "mov",
+              "op_str": "rsi, rcx"
+            },
+            {
+              "va": 16956532,
+              "size": 4,
+              "bytes": "488975e8",
+              "mnemonic": "mov",
+              "op_str": "qword ptr [rbp - 0x18], rsi"
+            },
+            {
+              "va": 16956536,
+              "size": 4,
+              "bytes": "400f95c6",
+              "mnemonic": "setne",
+              "op_str": "sil"
+            },
+            {
+              "va": 16956540,
+              "size": 3,
+              "bytes": "4030f0",
+              "mnemonic": "xor",
+              "op_str": "al, sil"
+            },
+            {
+              "va": 16956543,
+              "size": 2,
+              "bytes": "3401",
+              "mnemonic": "xor",
+              "op_str": "al, 1"
+            },
+            {
+              "va": 16956545,
+              "size": 3,
+              "bytes": "4829d1",
+              "mnemonic": "sub",
+              "op_str": "rcx, rdx"
+            },
+            {
+              "va": 16956548,
+              "size": 3,
+              "bytes": "0f93c1",
+              "mnemonic": "setae",
+              "op_str": "cl"
+            },
+            {
+              "va": 16956551,
+              "size": 3,
+              "bytes": "80e1ff",
+              "mnemonic": "and",
+              "op_str": "cl, 0xff"
+            },
+            {
+              "va": 16956554,
+              "size": 2,
+              "bytes": "20c8",
+              "mnemonic": "and",
+              "op_str": "al, cl"
+            },
+            {
+              "va": 16956556,
+              "size": 2,
+              "bytes": "a801",
+              "mnemonic": "test",
+              "op_str": "al, 1"
+            },
+            {
+              "va": 16956558,
+              "size": 2,
+              "bytes": "7517",
+              "mnemonic": "jne",
+              "op_str": "0x102bca7"
+            }
+          ]
+        },
+        {
+          "va": 16956560,
+          "end_va": 16956583,
+          "terminator": "fallthrough",
+          "successors": [
+            16956583
+          ],
+          "instructions": [
+            {
+              "va": 16956560,
+              "size": 4,
+              "bytes": "488b55e8",
+              "mnemonic": "mov",
+              "op_str": "rdx, qword ptr [rbp - 0x18]"
+            },
+            {
+              "va": 16956564,
+              "size": 4,
+              "bytes": "488b75d8",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 0x28]"
+            },
+            {
+              "va": 16956568,
+              "size": 10,
+              "bytes": "48bf40c60b0100000000",
+              "mnemonic": "movabs",
+              "op_str": "rdi, 0x10bc640"
+            },
+            {
+              "va": 16956578,
+              "size": 5,
+              "bytes": "e859180500",
+              "mnemonic": "call",
+              "op_str": "0x107d500"
+            }
+          ]
+        },
+        {
+          "va": 16956583,
+          "end_va": 16956611,
+          "terminator": "jcc",
+          "successors": [
+            16956630,
+            16956611
+          ],
+          "instructions": [
+            {
+              "va": 16956583,
+              "size": 4,
+              "bytes": "488b4de0",
+              "mnemonic": "mov",
+              "op_str": "rcx, qword ptr [rbp - 0x20]"
+            },
+            {
+              "va": 16956587,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956591,
+              "size": 3,
+              "bytes": "0f95c0",
+              "mnemonic": "setne",
+              "op_str": "al"
+            },
+            {
+              "va": 16956594,
+              "size": 4,
+              "bytes": "4883e107",
+              "mnemonic": "and",
+              "op_str": "rcx, 7"
+            },
+            {
+              "va": 16956598,
+              "size": 4,
+              "bytes": "4883f900",
+              "mnemonic": "cmp",
+              "op_str": "rcx, 0"
+            },
+            {
+              "va": 16956602,
+              "size": 3,
+              "bytes": "0f94c1",
+              "mnemonic": "sete",
+              "op_str": "cl"
+            },
+            {
+              "va": 16956605,
+              "size": 2,
+              "bytes": "20c8",
+              "mnemonic": "and",
+              "op_str": "al, cl"
+            },
+            {
+              "va": 16956607,
+              "size": 2,
+              "bytes": "a801",
+              "mnemonic": "test",
+              "op_str": "al, 1"
+            },
+            {
+              "va": 16956609,
+              "size": 2,
+              "bytes": "7513",
+              "mnemonic": "jne",
+              "op_str": "0x102bcd6"
+            }
+          ]
+        },
+        {
+          "va": 16956611,
+          "end_va": 16956630,
+          "terminator": "fallthrough",
+          "successors": [
+            16956630
+          ],
+          "instructions": [
+            {
+              "va": 16956611,
+              "size": 4,
+              "bytes": "488b75e0",
+              "mnemonic": "mov",
+              "op_str": "rsi, qword ptr [rbp - 0x20]"
+            },
+            {
+              "va": 16956615,
+              "size": 10,
+              "bytes": "48bf50c60b0100000000",
+              "mnemonic": "movabs",
+              "op_str": "rdi, 0x10bc650"
+            },
+            {
+              "va": 16956625,
+              "size": 5,
+              "bytes": "e80af90400",
+              "mnemonic": "call",
+              "op_str": "0x107b5e0"
+            }
+          ]
+        },
+        {
+          "va": 16956630,
+          "end_va": 16956649,
+          "terminator": "fallthrough",
+          "successors": [
+            16956649
+          ],
+          "instructions": [
+            {
+              "va": 16956630,
+              "size": 4,
+              "bytes": "488b45e0",
+              "mnemonic": "mov",
+              "op_str": "rax, qword ptr [rbp - 0x20]"
+            },
+            {
+              "va": 16956634,
+              "size": 3,
+              "bytes": "488b38",
+              "mnemonic": "mov",
+              "op_str": "rdi, qword ptr [rax]"
+            },
+            {
+              "va": 16956637,
+              "size": 5,
+              "bytes": "e84efdffff",
+              "mnemonic": "call",
+              "op_str": "0x102ba30"
+            },
+            {
+              "va": 16956642,
+              "size": 7,
+              "bytes": "c745fc00000000",
+              "mnemonic": "mov",
+              "op_str": "dword ptr [rbp - 4], 0"
+            }
+          ]
+        },
+        {
+          "va": 16956649,
+          "end_va": 16956658,
+          "terminator": "ret",
+          "successors": [],
+          "instructions": [
+            {
+              "va": 16956649,
+              "size": 3,
+              "bytes": "8b45fc",
+              "mnemonic": "mov",
+              "op_str": "eax, dword ptr [rbp - 4]"
+            },
+            {
+              "va": 16956652,
+              "size": 4,
+              "bytes": "4883c430",
+              "mnemonic": "add",
+              "op_str": "rsp, 0x30"
+            },
+            {
+              "va": 16956656,
+              "size": 1,
+              "bytes": "5d",
+              "mnemonic": "pop",
+              "op_str": "rbp"
+            },
+            {
+              "va": 16956657,
+              "size": 1,
+              "bytes": "c3",
+              "mnemonic": "ret",
+              "op_str": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "reproduce": "scripts/analyze_crossfn.py --elf fixtures/hard-cases/vuln-heap-canary-x86_64.elf --json --functions heap_bad,main"
+}

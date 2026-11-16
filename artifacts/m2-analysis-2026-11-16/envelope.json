@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "tool": "m2-analysis-evidence-envelope",
+  "generated_by": "artifacts/m2-analysis-2026-11-16/generate_evidence.py",
+  "deterministic": "no timestamps or random values are written; rerunning produces identical JSON and SHA256SUMS",
+  "host": {
+    "platform": "macOS-13.5-arm64-arm-64bit",
+    "machine": "arm64",
+    "note": "x86-64 Linux ELF fixtures cannot be executed on this host; runtime expectations are declared, not measured"
+  },
+  "toolchain": {
+    "fixtures_c": "zig 0.17.1 bundled at binary-repair-gui/.tmp/zigpkg/site/ziglang/zig (not committed); build flags recorded in fixtures/crossfn/build.sh",
+    "compile_flags": "-target x86_64-linux-gnu -O0 -g0 -fno-pie -no-pie -fno-stack-protector -fno-sanitize=all",
+    "packages": {
+      "python": "3.11.8",
+      "capstone": "5.0.7",
+      "lief": "1.0.0-d05b3499b",
+      "pyelftools": "0.33"
+    }
+  },
+  "fixture_sha256": {
+    "crossfn_param.elf": "ac08f993320286e5493a7fd841d4ef536b73ad61799b42c13c24b7683cf68c62",
+    "crossfn_global.elf": "31479ffb6ff823d3ce6b205bd739beef92e4cbb18d4bd563295aceca52950cb8"
+  },
+  "not_run": [
+    {
+      "item": "runtime PoC / regression execution on the new fixtures",
+      "status": "not_run",
+      "reason": "x86-64 Linux ELF on a macOS arm64 host; no local runtime oracle; manifests are declared_not_run"
+    },
+    {
+      "item": "DWARF object-size capacity recovery",
+      "status": "not_run",
+      "reason": "not implemented in this increment; stack capacities stay frame-geometry upper bounds"
+    },
+    {
+      "item": "indirect call target resolution",
+      "status": "not_run",
+      "reason": "indirect calls are explicit unresolved edges; no target is guessed"
+    },
+    {
+      "item": "path-sensitive / concurrency / struct-layout analysis",
+      "status": "not_run",
+      "reason": "out of the minimal Phase-9 P0-2 scope"
+    },
+    {
+      "item": "repair candidate production or gate integration",
+      "status": "not_run",
+      "reason": "M2 red line: analysis evidence only; repair_any behavior is unchanged and no candidate is produced"
+    },
+    {
+      "item": "multi-model / provider validation",
+      "status": "not_run",
+      "reason": "no live model or provider call is made by M2"
+    }
+  ],
+  "design_boundaries": [
+    "module scope: app/services/analysis/**, scripts/analyze_crossfn.py, tests/test_analysis_*.py, fixtures/crossfn/**, this artifact directory",
+    "the prototype is not imported by repair_any, unified_verification or any planner/gate",
+    "no git operation is performed; integration is the Lead's job"
+  ]
+}
