@@ -32,6 +32,7 @@ class Settings:
     api_key: str
     base_url: str = "https://api.deepseek.com"
     model: str = "deepseek-flash"
+    provider: str = "deepseek"
     thinking: bool = True
     timeout_s: float = 120.0
     max_retries: int = 1
@@ -44,12 +45,45 @@ class Settings:
         if env_file:
             load_env_file(env_file)
 
-        key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
-        if not key:
+        provider = (
+            os.environ.get("BINARYREPAIR_AI_PROVIDER")
+            or os.environ.get("BINARYREPAIR_LLM_PROVIDER")
+            or os.environ.get("BINARYREPAIR_PROVIDER")
+            or "deepseek"
+        ).strip().lower()
+        provider = {"open-router": "openrouter", "local": "ollama"}.get(provider, provider)
+        if provider == "openrouter":
+            key = (os.environ.get("BINARYREPAIR_OPENROUTER_API_KEY")
+                   or os.environ.get("OPENROUTER_API_KEY") or "").strip()
+            default_base = "https://openrouter.ai/api/v1"
+            base = (os.environ.get("BINARYREPAIR_OPENROUTER_BASE_URL")
+                    or os.environ.get("OPENROUTER_BASE_URL") or default_base).rstrip("/")
+            model = (os.environ.get("BINARYREPAIR_OPENROUTER_MODEL")
+                     or os.environ.get("OPENROUTER_MODEL") or "").strip()
+        elif provider == "ollama":
+            key = (os.environ.get("BINARYREPAIR_OLLAMA_API_KEY")
+                   or os.environ.get("OLLAMA_API_KEY") or "").strip()
+            default_base = "http://127.0.0.1:11434/v1"
+            base = (os.environ.get("BINARYREPAIR_OLLAMA_BASE_URL")
+                    or os.environ.get("OLLAMA_HOST") or default_base).rstrip("/")
+            if not base.endswith("/v1"):
+                base = base + "/v1"
+            model = (os.environ.get("BINARYREPAIR_OLLAMA_MODEL")
+                     or os.environ.get("OLLAMA_MODEL") or "").strip()
+        else:
+            key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+            default_base = "https://api.deepseek.com"
+            base = os.environ.get("DEEPSEEK_BASE_URL", default_base).rstrip("/")
+            model = os.environ.get("DEEPSEEK_MODEL", "deepseek-flash").strip()
+        if provider in {"deepseek", "openrouter"} and not key:
             raise RuntimeError(
-                "DEEPSEEK_API_KEY is not set. Copy .env.example to .env and fill it in, "
+                f"{provider.upper()}_API_KEY is not set. Copy .env.example to .env and fill it in, "
                 "or export the variable in this shell only."
             )
+        if not model:
+            model = {"openrouter": "", "ollama": "llama3.1"}.get(provider, "deepseek-flash")
+        if not model:
+            raise RuntimeError("the selected provider requires an explicit model name")
 
         thinking = os.environ.get("DEEPSEEK_THINKING", "enabled").lower() in {
             "1",
@@ -60,8 +94,9 @@ class Settings:
         }
         return cls(
             api_key=key,
-            base_url=os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/"),
-            model=os.environ.get("DEEPSEEK_MODEL", "deepseek-flash").strip(),
+            base_url=base,
+            model=model,
+            provider=provider,
             thinking=thinking,
             timeout_s=float(os.environ.get("DEEPSEEK_TIMEOUT_S", "120")),
             max_retries=int(os.environ.get("DEEPSEEK_MAX_RETRIES", "1")),
@@ -73,6 +108,7 @@ class Settings:
     def redacted(self) -> dict:
         return {
             "base_url": self.base_url,
+            "provider": self.provider,
             "model": self.model,
             "thinking": self.thinking,
             "timeout_s": self.timeout_s,

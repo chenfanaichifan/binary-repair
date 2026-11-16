@@ -158,7 +158,7 @@ Raw records: `negative-*.json`, plus `tests/test_repair_any.py`,
   --junitxml=artifacts/binary-universal-v5-2026-11-13/macos-junit.xml
 ```
 
-**2048 tests, 0 failures, 0 errors, 9 skipped** (889.2 s; post-v6 suite including the two AI binary-repair paths, native PoC/regression gate, hard-case AI benchmark, static syntax and robustness gates; the v5-only tree had 1039). Skips are the
+**2078 tests, 0 failures, 0 errors, 9 skipped** (902.7 s; post-v6 suite including the two AI binary-repair paths, native PoC/regression gate, hard-case AI benchmark, static syntax and robustness gates; the v5-only tree had 1039). Skips are the
 platform-gated Linux-execution cases:
 
 - `tests/test_fixture_v3_manifest.py::test_original_is_v0_on_invalid_inputs_if_binary_present` (ELF execution requires Linux)

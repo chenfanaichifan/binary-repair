@@ -198,6 +198,11 @@ def _client_meta(client: Any, ai: dict[str, Any]) -> None:
         or getattr(client, "ai_model", None)
         or ai["provider"]
     )
+    ai["gateway"] = bool(
+        getattr(client, "gateway_name", None)
+        or getattr(client, "_gateway", None)
+        or str(getattr(client, "provider_name", "")) in {"openrouter", "ollama"}
+    )
 
 
 def _call_model(

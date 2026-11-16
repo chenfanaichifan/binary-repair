@@ -48,6 +48,7 @@ DEFAULT_BUNDLES = (
     "artifacts/independent-verification-2026-11-16",
     "artifacts/independent-verification-p16r3-2026-11-16",
     "artifacts/p22-artifact-audit-2026-11-16",
+    "artifacts/p31-p34-2026-11-16",
     "artifacts/p23-smoke-2026-11-16",
     "artifacts/p21-p16r3-profile-2026-11-16",
     "experiments/p21-p16r3-658ff8c",

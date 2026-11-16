@@ -71,12 +71,22 @@ class DeepSeekClient:
         *,
         transport: Transport | None = None,
         sleep=time.sleep,
+        gateway: Any | None = None,
     ) -> None:
         self.settings = settings
         self._transport = transport or HttpxTransport()
         self._sleep = sleep
+        self._gateway = gateway
 
     # -- URLs -----------------------------------------------------------------
+    @property
+    def provider(self) -> str:
+        return str(getattr(self.settings, "provider", "deepseek") or "deepseek")
+
+    @property
+    def gateway_name(self) -> str | None:
+        return self.provider if self._gateway is not None else None
+
     @property
     def chat_url(self) -> str:
         return f"{self.settings.base_url}/chat/completions"
@@ -86,11 +96,15 @@ class DeepSeekClient:
         return f"{self.settings.base_url}/models"
 
     def _headers(self) -> dict[str, str]:
-        return {
-            "Authorization": f"Bearer {self.settings.api_key}",
+        headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
+        # Ollama/local adapters may not require a credential; an empty bearer
+        # header is not sent.  The key is never logged.
+        if self.settings.api_key:
+            headers["Authorization"] = f"Bearer {self.settings.api_key}"
+        return headers
 
     # -- models ---------------------------------------------------------------
     def list_models(self) -> list[str]:
@@ -120,6 +134,27 @@ class DeepSeekClient:
         """One JSON-mode chat completion, with at most one transient retry."""
         max_tokens = max_tokens or self.settings.max_output_tokens
         thinking = self.settings.thinking if thinking is None else thinking
+
+        if self._gateway is not None:
+            # Reuse the shared gateway normalization without creating a second
+            # transport implementation.  The gateway owns credential/auth and
+            # identity checks; this adapter only maps its result to ChatResponse.
+            from app.services.assistant_llm import _gateway_chat
+
+            result = _gateway_chat(
+                self._gateway, messages, max_tokens=int(max_tokens),
+                thinking=bool(thinking), timeout=self.settings.timeout_s,
+            )
+            usage = dict(getattr(result, "usage", None) or {})
+            latency = usage.pop("latency_ms", 0)
+            return ChatResponse(
+                content=str(getattr(result, "content", "") or ""),
+                model=str(getattr(result, "model", None) or self.settings.model),
+                usage=usage or None,
+                latency_ms=int(latency) if isinstance(latency, int) and latency >= 0 else 0,
+                http_status=200,
+                attempts=1,
+            )
 
         payload: dict[str, Any] = {
             "model": self.settings.model,

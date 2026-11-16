@@ -23,6 +23,7 @@ Not in scope: persistence, the deterministic planner, the HTTP surface, and the
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 import os
 import time
@@ -50,6 +51,7 @@ __all__ = [
     "assistant_status",
     "build_messages",
     "client_from_env",
+    "_gateway_client_from_env",
     "generate_plan",
     "resolve_mode",
     "resolve_model",
@@ -95,7 +97,28 @@ PROVIDER_PROFILES: dict[str, dict[str, Any]] = {
         "model_envs": ("DASHSCOPE_MODEL", "BAILIAN_MODEL", "BINARYREPAIR_DASHSCOPE_MODEL"),
         "default_model": "",
     },
+    "openrouter": {
+        "title": "OpenRouter (cloud multi-model gateway)",
+        "base": "https://openrouter.ai/api/v1",
+        "base_envs": ("BINARYREPAIR_OPENROUTER_BASE_URL", "OPENROUTER_BASE_URL"),
+        "key_envs": ("BINARYREPAIR_OPENROUTER_API_KEY", "OPENROUTER_API_KEY"),
+        "model_envs": ("BINARYREPAIR_OPENROUTER_MODEL", "OPENROUTER_MODEL", ASSISTANT_MODEL_ENV),
+        "default_model": "openrouter/auto",
+        "requires_key": True,
+        "gateway": True,
+    },
+    "ollama": {
+        "title": "Ollama (local OpenAI-compatible adapter)",
+        "base": "http://127.0.0.1:11434/v1",
+        "base_envs": ("BINARYREPAIR_OLLAMA_BASE_URL", "OLLAMA_HOST"),
+        "key_envs": (),
+        "model_envs": ("BINARYREPAIR_OLLAMA_MODEL", "OLLAMA_MODEL", ASSISTANT_MODEL_ENV),
+        "default_model": "llama3.1",
+        "requires_key": False,
+        "gateway": True,
+    },
 }
+GATEWAY_ENV = "BINARYREPAIR_LLM_GATEWAY"
 MAX_OUTPUT_TOKENS = 262144
 
 MODES = ("llm", "deterministic", "fixture")
@@ -117,6 +140,7 @@ class FallbackReason:
     MALFORMED = "llm_invalid_json"
     SCHEMA = "llm_plan_schema_invalid"
     HTTP = "llm_http_error"
+    IDENTITY = "llm_model_identity_mismatch"
     UNKNOWN = "llm_unknown_error"
 
 
@@ -174,6 +198,60 @@ def _json_safe(value: Any) -> bool:
     return True
 
 
+_DEFAULT_HINTS: tuple[tuple[tuple[str, ...], str], ...] = (
+    (("environment", "platform", "kernel", "libc", "cpu", "target"),
+     "Linux x86-64 guest, glibc, no special CPU features"),
+    (("reproduc", "repro", "poc", "trigger"),
+     "Run the target with the reported input and record the observed failure."),
+    (("valid", "benign", "test", "input"),
+     "valid: hello"),
+    (("defect", "issue", "vulnerab", "bug", "overflow"),
+     "memory-safety defect at the reported input"),
+    (("fix", "patch", "repair", "approach"),
+     "add a bounds check before the unsafe operation"),
+    (("expect", "behavior", "outcome", "error"),
+     "reject the invalid input and exit with a non-zero status"),
+    (("file", "source", "path"),
+     "the source file that contains the vulnerable function"),
+)
+_QUESTION_DEFAULT_FALLBACK = "TODO: replace with a concrete ASCII answer"
+
+
+def _default_for_question(key: str, label: str) -> str:
+    """Deterministic ASCII default when a model omits or blanks the field."""
+    text = f"{key} {label}".lower()
+    for tokens, value in _DEFAULT_HINTS:
+        if any(token in text for token in tokens):
+            return value
+    return _QUESTION_DEFAULT_FALLBACK
+
+
+def _ensure_question_defaults(plan: AssistantPlan) -> AssistantPlan:
+    """Guarantee non-empty defaults so the GUI's "use default answer" works.
+
+    The plan contract allows ``default=None``; models occasionally omit it or
+    send an empty string.  The button is a convenience only: it fills the form
+    with these values, and the user still reviews and submits explicitly.
+    """
+    changed = False
+    steps = []
+    for step in plan.steps:
+        questions = []
+        for question in step.questions:
+            if question.default is None or not question.default.strip():
+                question = question.model_copy(
+                    update={"default": _default_for_question(question.key, question.label)}
+                )
+                changed = True
+            questions.append(question)
+        if questions != step.questions:
+            step = step.model_copy(update={"questions": questions})
+        steps.append(step)
+    if not changed:
+        return plan
+    return plan.model_copy(update={"steps": steps})
+
+
 def build_messages(description: str, *, context: Mapping[str, Any] | None = None) -> list[dict[str, str]]:
     """Build the planning messages.
 
@@ -197,7 +275,7 @@ def build_messages(description: str, *, context: Mapping[str, Any] | None = None
         "- Do not add fields outside this shape.\n"
         "- You guide the user; you never create jobs, start runs or judge repairs.\n"
         "- Never invent hashes, verdicts, evidence or token counts; model and tokens are filled by the caller.\n"
-        "- Use ASCII English for any value that will be submitted to the backend.\n"
+        "- Every question must include a non-empty ASCII default value; never use an empty string.\n"
         "- No markdown fences, no commentary."
     )
     payload: dict[str, Any] = {"description": description}
@@ -410,8 +488,9 @@ class HttpJsonClient:
         timeout: float = DEFAULT_TIMEOUT,
         transport: Any | None = None,
         provider_name: str = "deepseek",
+        gateway: Any | None = None,
     ) -> None:
-        if not api_key:
+        if not api_key and gateway is None:
             raise ValueError("api_key is required")
         self._api_key = api_key
         self._base_url = base_url.rstrip("/")
@@ -419,6 +498,7 @@ class HttpJsonClient:
         self._timeout = timeout
         self._transport = transport
         self._provider_name = provider_name
+        self._gateway = gateway
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"HttpJsonClient(base_url={self._base_url!r}, model={self._model!r})"
@@ -435,6 +515,10 @@ class HttpJsonClient:
     def provider_name(self) -> str:
         return self._provider_name
 
+    @property
+    def gateway_name(self) -> str | None:
+        return self._provider_name if self._gateway is not None else None
+
     def chat_json(
         self,
         messages: Sequence[Mapping[str, str]],
@@ -443,6 +527,9 @@ class HttpJsonClient:
         thinking: bool = False,
         timeout: float | None = None,
     ) -> _ProviderResult:
+        if self._gateway is not None:
+            return _gateway_chat(self._gateway, messages, max_tokens=int(max_tokens),
+                                 thinking=bool(thinking), timeout=timeout)
         payload: dict[str, Any] = {
             "model": self._model,
             "messages": [dict(message) for message in messages],
@@ -580,7 +667,12 @@ def resolve_provider_name(environ: Mapping[str, str] | None = None) -> str:
     behaviour for backward compatibility.
     """
     env = os.environ if environ is None else environ
-    explicit = (env.get(PROVIDER_ENV) or "").strip().lower()
+    explicit = (
+        env.get("BINARYREPAIR_LLM_PROVIDER")
+        or env.get(PROVIDER_ENV)
+        or ""
+    ).strip().lower()
+    explicit = {"open-router": "openrouter", "local": "ollama"}.get(explicit, explicit)
     if explicit in PROVIDER_PROFILES:
         return explicit
     if (env.get("SILICONFLOW_API_KEY") or env.get("BINARYREPAIR_SILICONFLOW_API_KEY") or "").strip():
@@ -590,6 +682,10 @@ def resolve_provider_name(environ: Mapping[str, str] | None = None) -> str:
         or env.get("BINARYREPAIR_DASHSCOPE_API_KEY") or ""
     ).strip():
         return "dashscope"
+    if (env.get("BINARYREPAIR_OPENROUTER_API_KEY") or env.get("OPENROUTER_API_KEY") or "").strip():
+        return "openrouter"
+    if (env.get("BINARYREPAIR_OLLAMA_BASE_URL") or env.get("OLLAMA_HOST") or "").strip():
+        return "ollama"
     return "deepseek"
 
 
@@ -599,6 +695,10 @@ def provider_config(environ: Mapping[str, str] | None = None) -> dict[str, Any]:
     name = resolve_provider_name(env)
     profile = PROVIDER_PROFILES[name]
     key = _first_env(env, tuple(profile["key_envs"]))
+    if not key and not bool(profile.get("requires_key", True)):
+        # Local adapters need the gateway; without it the legacy HTTP client
+        # has no credential and must not be constructed with a fake one.
+        return None
     if not key and name == "deepseek":
         try:
             from app.services.assistant_key_store import load_key
@@ -613,7 +713,8 @@ def provider_config(environ: Mapping[str, str] | None = None) -> dict[str, Any]:
         or str(profile["default_model"])
     )
     errors = []
-    if not key:
+    requires_key = bool(profile.get("requires_key", True))
+    if not key and requires_key:
         errors.append(f"missing API key for provider {name!r}")
     if not model:
         errors.append(f"missing model name for provider {name!r}")
@@ -637,6 +738,191 @@ def model_identity_ok(requested: str | None, returned: str | None) -> bool:
     return requested.strip() == returned.strip()
 
 
+
+
+def _gateway_enabled(env: Mapping[str, str]) -> bool:
+    explicit = (env.get(GATEWAY_ENV) or "").strip().lower()
+    if explicit in {"1", "true", "yes", "on", "auto"}:
+        return True
+    provider = (env.get("BINARYREPAIR_LLM_PROVIDER") or "").strip().lower()
+    if provider in {"openrouter", "ollama", "open-router", "local"}:
+        return True
+    try:
+        return str(provider_config(env).get("provider") or "") in {"openrouter", "ollama"}
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _load_gateway(env: Mapping[str, str]) -> Any | None:
+    """Load the optional unified gateway without making a network request.
+
+    The gateway package is owned by a separate module.  This resolver accepts
+    the common factory spellings so an absent/partial package degrades to the
+    legacy HTTP client instead of breaking startup.
+    """
+    try:
+        import app.services.llm_gateway as package  # type: ignore
+    except Exception:  # noqa: BLE001 - optional dependency
+        return None
+    for name in ("create_gateway", "build_gateway", "gateway_from_env"):
+        factory = getattr(package, name, None)
+        if callable(factory):
+            try:
+                return factory(env=dict(env))
+            except TypeError:
+                try:
+                    return factory(dict(env))
+                except Exception:  # noqa: BLE001
+                    continue
+            except Exception:  # noqa: BLE001
+                continue
+    for owner_name in ("LLMGateway",):
+        klass = getattr(package, owner_name, None)
+        if klass is None:
+            continue
+        for factory_name in ("from_env", "create"):
+            factory = getattr(klass, factory_name, None)
+            if callable(factory):
+                try:
+                    return factory(env=dict(env))
+                except TypeError:
+                    try:
+                        return factory(dict(env))
+                    except Exception:  # noqa: BLE001
+                        continue
+                except Exception:  # noqa: BLE001
+                    continue
+        try:
+            return klass(env=dict(env))
+        except TypeError:
+            try:
+                return klass(dict(env))
+            except Exception:  # noqa: BLE001
+                pass
+        except Exception:  # noqa: BLE001
+            pass
+    for module_name in ("client", "gateway", "core"):
+        try:
+            module = importlib.import_module(f"app.services.llm_gateway.{module_name}")
+        except Exception:  # noqa: BLE001
+            continue
+        for name in ("create_gateway", "build_gateway", "gateway_from_env", "LLMGateway"):
+            candidate = getattr(module, name, None)
+            if candidate is None:
+                continue
+            if callable(candidate) and name != "LLMGateway":
+                try:
+                    return candidate(env=dict(env))
+                except TypeError:
+                    try:
+                        return candidate(dict(env))
+                    except Exception:  # noqa: BLE001
+                        continue
+                except Exception:  # noqa: BLE001
+                    continue
+    return None
+
+
+def _gateway_chat(gateway: Any, messages: Sequence[Mapping[str, str]], *,
+                  max_tokens: int, thinking: bool, timeout: float | None) -> _ProviderResult:
+    """Call the gateway's ``generate`` and normalize its response.
+
+    Only a response model/usage actually reported by the gateway is recorded;
+    missing values remain ``None``/empty, never a fabricated zero.
+    """
+    import inspect
+    from app.services.llm_gateway.errors import (  # type: ignore
+        LLMGatewayError,
+        LLMTimeoutError,
+        AuthenticationError,
+        IdentityMismatchError,
+    )
+
+    message_list = [dict(m) for m in messages]
+    candidate_kwargs = {
+        "model": None, "max_tokens": int(max_tokens), "thinking": bool(thinking),
+        "temperature": 0 if not thinking else None, "timeout": timeout,
+        "response_format": {"type": "json_object"}, "messages": message_list,
+    }
+    try:
+        signature = inspect.signature(gateway.generate)
+        accepted = set(signature.parameters)
+        if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in signature.parameters.values()):
+            accepted = set(candidate_kwargs)
+    except (TypeError, ValueError):
+        accepted = set(candidate_kwargs)
+    kwargs = {key: value for key, value in candidate_kwargs.items()
+              if key in accepted and value is not None}
+    try:
+        if "messages" in accepted:
+            result = gateway.generate(**kwargs)
+        else:
+            result = gateway.generate(message_list, **{k: v for k, v in kwargs.items() if k != "messages"})
+    except TimeoutError:
+        raise
+    except ConnectionError:
+        raise
+    except LLMTimeoutError as exc:
+        raise TimeoutError("provider timed out") from exc
+    except AuthenticationError as exc:
+        raise _ProviderHTTPError(401) from exc
+    except IdentityMismatchError as exc:
+        raise _ProviderHTTPError(409) from exc
+    except LLMGatewayError as exc:
+        raise _ProviderHTTPError(int(exc.status or 502)) from exc
+    if isinstance(result, Mapping):
+        content = result.get("content", result.get("text"))
+        model = result.get("model")
+        usage = result.get("usage") or {}
+        request_id = result.get("request_id")
+        provider = result.get("provider")
+    else:
+        content = getattr(result, "content", getattr(result, "text", None))
+        model = getattr(result, "model", None)
+        usage_obj = getattr(result, "usage", None)
+        usage = usage_obj.to_dict() if hasattr(usage_obj, "to_dict") else usage_obj
+        request_id = getattr(result, "request_id", None)
+        provider = getattr(result, "provider", None)
+    if usage is not None and not isinstance(usage, Mapping):
+        usage = {}
+    usage = dict(usage or {})
+    if provider and "provider" not in usage:
+        usage["provider"] = str(provider)
+    return _ProviderResult(content=content,
+                           model=model if isinstance(model, str) and model else None,
+                           usage=usage,
+                           request_id=request_id if isinstance(request_id, str) else None)
+
+
+def _gateway_client_from_env(environ: Mapping[str, str] | None = None) -> HttpJsonClient | None:
+    env = os.environ if environ is None else environ
+    if not _gateway_enabled(env):
+        return None
+    gateway = _load_gateway(env)
+    if gateway is None:
+        return None
+    name = (env.get("BINARYREPAIR_LLM_PROVIDER") or resolve_provider_name(env)).strip().lower()
+    try:
+        from app.services.llm_gateway.credentials import resolve_credential  # type: ignore
+        credential = resolve_credential(name or None, env=env)
+        base_url = credential.base_url
+        model = credential.model or _first_env(env, tuple(PROVIDER_PROFILES.get(
+            name, PROVIDER_PROFILES["deepseek"])["model_envs"]))
+        if not model:
+            cfg = provider_config(env)
+            model = str(cfg.get("model") or DEFAULT_MODEL)
+        provider_name = credential.provider
+    except Exception:  # noqa: BLE001 - fall back to legacy HTTP configuration
+        cfg = provider_config(env)
+        if not cfg.get("configured"):
+            return None
+        base_url = str(cfg["base_url"])
+        model = str(cfg["model"])
+        provider_name = str(cfg["provider"])
+    return HttpJsonClient(api_key="", base_url=base_url, model=model,
+                          timeout=DEFAULT_TIMEOUT, gateway=gateway,
+                          provider_name=provider_name)
+
 def client_from_env(environ: Mapping[str, str] | None = None) -> HttpJsonClient | None:
     """Build a provider client from the environment, or ``None``.
 
@@ -646,6 +932,9 @@ def client_from_env(environ: Mapping[str, str] | None = None) -> HttpJsonClient 
     if environ is None:
         ensure_env_loaded()
     env = os.environ if environ is None else environ
+    gateway_client = _gateway_client_from_env(env)
+    if gateway_client is not None:
+        return gateway_client
     cfg = provider_config(env)
     if cfg["errors"]:
         return None
@@ -775,6 +1064,17 @@ def generate_plan(
         return plan
 
     response = _response_of(raw)
+    strict_identity = (os.environ.get(STRICT_IDENTITY_ENV) or "").strip().lower() in {
+        "1", "true", "yes", "on",
+    }
+    if strict_identity and not model_identity_ok(requested, response.model):
+        plan = _fallback(description, context, reason=FallbackReason.IDENTITY,
+                         requested=requested, returned=response.model,
+                         usage=response.usage)
+        _record(plan, context=context, requested=requested, returned=response.model,
+                usage=response.usage, request_id=response.request_id,
+                status=STATUS_FALLBACK)
+        return plan
     payload, parse_reason = _parse_content(response.content)
     if payload is None:
         plan = _fallback(description, context, reason=parse_reason or FallbackReason.EMPTY,
@@ -807,7 +1107,7 @@ def generate_plan(
                 status=STATUS_FALLBACK)
         return plan
 
-    plan = AssistantPlan.model_validate(payload)
+    plan = _ensure_question_defaults(AssistantPlan.model_validate(payload))
     _record(plan, context=context, requested=requested, returned=response.model,
             usage=response.usage, request_id=response.request_id, status=STATUS_OK)
     return plan
