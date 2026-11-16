@@ -1,11 +1,11 @@
 # Phase-8D additive gap registry
 
 - generated_at: `2026-11-17T00:00:00Z` (fixed; no wall clock)
-- historical registry: `artifacts/gap-registry-2026-11-16/gaps.json` (sha `9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c`, 64 records, **not rewritten**)
+- historical registry: `artifacts/gap-registry-2026-11-16/gaps.json` (sha `cfffed71a86330f93523ced5b0af8b1b428d5858d47e0dc4d4f054af19fb7cab`, 64 records, **not rewritten**)
 - records: 8 (AUDIT-8D-01..08)
 - phase-8D dimensions covered: D02, D09, D10
 - capability promotion: **false**; no auto-promotion
-- gaps.json sha256: `7767b785666ff92994c4bf84746bcb0592653c39abc4eb27fa563b77b71a0c15`
+- gaps.json sha256: `37aebcda41c37f629be437c5acbeff044750800bf7df869ee89bc50f9e551056`
 
 | audit | category | severity | reproduction | status | gap | experiment |
 |---|---|---|---|---|---|---|

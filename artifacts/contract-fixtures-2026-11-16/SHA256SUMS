@@ -25,9 +25,9 @@ b8b28c9c20f18c3a2d392e1aa27af53a71cf6f1cfe43a6d6f0fa1577ae59435e  artifacts/cont
 32aded6876190fb978814b940c43b0a6bf2e530b582222cd3b7b2899c96519c6  artifacts/contract-fixtures-2026-11-16/patch-plan.invalid.json
 fe5cba81bada133fda6f6edaaf73d6970ec11b6904bfd0354edac85d18bfbc8a  artifacts/contract-fixtures-2026-11-16/patch-plan.valid.json
 c1b2d29defd80e8a6d52be66d59bc7978a16715ec9b31d96dad8ac904544f54d  artifacts/contract-fixtures-2026-11-16/phase8d-capability-universe.invalid.json
-3cce600ef7e7ca588bb8a0af9e03b67fe49cd2e1b659f563558e669c64784551  artifacts/contract-fixtures-2026-11-16/phase8d-capability-universe.valid.json
+1613f05383471fdee93f4ef63ecc2e315602643a96affbe8bd828e2df8e2b215  artifacts/contract-fixtures-2026-11-16/phase8d-capability-universe.valid.json
 dd3cf6d66018ee457b58e62cf8ad70dccf3d249d7d6c48e6d09ed2fd305ad035  artifacts/contract-fixtures-2026-11-16/phase8d-experiment-bundle.invalid.json
-456dc1b43f694e273ae64ef13d56ac80c9bf427bd8c3507bcec23aff21101389  artifacts/contract-fixtures-2026-11-16/phase8d-experiment-bundle.valid.json
+b14cd22c4a138da400f77c87e76fcf59eed22428fc2f1bcbb445cf28fdc007a4  artifacts/contract-fixtures-2026-11-16/phase8d-experiment-bundle.valid.json
 449d40cb9b25728bfd1a14d26e55bb7fb3d31afeca422f6dfe05fdc2da822f86  artifacts/contract-fixtures-2026-11-16/reflection.invalid.json
 fa0d01453dfaec56608dcf76cc771840002fd4718ac28fe9cf42736633c9d331  artifacts/contract-fixtures-2026-11-16/reflection.valid.json
 4a5063ad4ae820a861b4c1896749743331fcf9c603ca7806504abc77dab60ecc  artifacts/contract-fixtures-2026-11-16/repair.invalid.json

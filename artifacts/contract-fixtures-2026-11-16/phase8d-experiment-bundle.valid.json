@@ -6,7 +6,7 @@
         {
           "path": "artifacts/phase8d-baseline-2026-11-17/baseline.json",
           "role": "D00 baseline facts",
-          "sha256": "b42966b2df5551326de841852b7612f4857b3551c20710fa9a4dec8d237b0206"
+          "sha256": "35777df3f22e996b2607e6f31baf87988c881c2c0aaf54a7ef4e8ee1c599dbbd"
         }
       ],
       "experiment_id": "EXP-8D-D00",
@@ -25,7 +25,7 @@
         {
           "path": "artifacts/phase8d-capability-universe-2026-11-17/registry.json",
           "role": "capability universe registry",
-          "sha256": "3cce600ef7e7ca588bb8a0af9e03b67fe49cd2e1b659f563558e669c64784551"
+          "sha256": "1613f05383471fdee93f4ef63ecc2e315602643a96affbe8bd828e2df8e2b215"
         }
       ],
       "experiment_id": "EXP-8D-D01",
@@ -44,7 +44,7 @@
         {
           "path": "artifacts/phase8d-gap-registry-2026-11-17/gaps.json",
           "role": "Phase-8D gap registry",
-          "sha256": "7767b785666ff92994c4bf84746bcb0592653c39abc4eb27fa563b77b71a0c15"
+          "sha256": "37aebcda41c37f629be437c5acbeff044750800bf7df869ee89bc50f9e551056"
         }
       ],
       "experiment_id": "EXP-8D-D02",
@@ -144,7 +144,7 @@
         {
           "path": "artifacts/phase8d-discovery-registry-2026-11-17/registry.json",
           "role": "additive discovery-mechanism registry",
-          "sha256": "39e7206f61acd8e3d1b601f038634ea95e122ec9e1af4ef530a2c415cfd26312"
+          "sha256": "fbc8880c6da8f6a0ffe8d8c38ab84a0d67acfcd135b5daeeb1dae964eda25f0b"
         }
       ],
       "experiment_id": "EXP-8D-D07",

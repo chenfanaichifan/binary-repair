@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-11-17T00:00:00Z",
   "historical_registry": "artifacts/gap-registry-2026-11-16/gaps.json",
-  "historical_registry_sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c",
+  "historical_registry_sha256": "cfffed71a86330f93523ced5b0af8b1b428d5858d47e0dc4d4f054af19fb7cab",
   "kind": "phase8d_discovery_mechanism_registry",
   "limitations": [
     "This is an additive registry; the historical seven-mechanism artifact is not rewritten.",
@@ -14,7 +14,7 @@
     {
       "detail": "Historical knowledge adapter remains the only integrated catalog mapper; no new support claim.",
       "evidence": "artifacts/gap-registry-2026-11-16/gaps.json",
-      "evidence_sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c",
+      "evidence_sha256": "cfffed71a86330f93523ced5b0af8b1b428d5858d47e0dc4d4f054af19fb7cab",
       "mechanism": "knowledge",
       "phase7_status": "run",
       "phase8d_status": "run",
@@ -23,7 +23,7 @@
     {
       "detail": "Historical failure-driven adapter remains integrated; Phase-8D gap records reference it.",
       "evidence": "artifacts/gap-registry-2026-11-16/gaps.json",
-      "evidence_sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c",
+      "evidence_sha256": "cfffed71a86330f93523ced5b0af8b1b428d5858d47e0dc4d4f054af19fb7cab",
       "mechanism": "failure_driven",
       "phase7_status": "run",
       "phase8d_status": "run",
@@ -32,7 +32,7 @@
     {
       "detail": "Historical declared-vs-measured differential adapter remains integrated.",
       "evidence": "artifacts/gap-registry-2026-11-16/gaps.json",
-      "evidence_sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c",
+      "evidence_sha256": "cfffed71a86330f93523ced5b0af8b1b428d5858d47e0dc4d4f054af19fb7cab",
       "mechanism": "differential",
       "phase7_status": "run",
       "phase8d_status": "run",

@@ -26,7 +26,7 @@
     "path": "artifacts/gap-registry-2026-11-16/gaps.json",
     "record_count": 64,
     "rewritten": false,
-    "sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c"
+    "sha256": "cfffed71a86330f93523ced5b0af8b1b428d5858d47e0dc4d4f054af19fb7cab"
   },
   "kind": "phase8d_gap_registry",
   "limitations": [
@@ -548,7 +548,7 @@
     "historical_ids": 64,
     "historical_ids_checked": 64,
     "historical_registry_rewritten": false,
-    "historical_sha256": "9283c140bb4a60619b37e4259362c8d0a85f81c80994e3e7f21edc6c4bf7ef9c",
+    "historical_sha256": "cfffed71a86330f93523ced5b0af8b1b428d5858d47e0dc4d4f054af19fb7cab",
     "lineage_parent_ids": [
       "GAP-CLAIM-RG-EXTERNAL-POC-DOC-MACHO-X86-64",
       "GAP-FAIL-META-GATE-MISMATCH-GATE-POC-UNAVAILABLE",

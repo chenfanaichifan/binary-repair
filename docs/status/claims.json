@@ -10,8 +10,8 @@
   ],
   "declared_matrix": "exact cells in app/services/repair_matrix.py: ELF i386/x86_64/arm64, PE i386/x86_64/arm64, Mach-O x86_64/arm64 (little-endian thin only)",
   "latest_verified_ci": {
-    "run_id": 43744573286,
-    "head_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
+    "run_id": 43900916188,
+    "head_sha": "78edb972d1047912f6178d7637bebc1606ac8ac7",
     "branch": "workbench-v3",
     "conclusion": "success"
   },
@@ -417,47 +417,48 @@
   },
   "release_evidence": {
     "procedure": "scripts/release_freeze.py --mode nightly --sha <frozen-sha> runs release_gate.py --nightly --release-sha and writes a provenance bundle",
-    "artifact_dir": "artifacts/release-gate-2026-11-16-phase8c",
-    "evidence_branch": "release/2026-11-16-phase8c-evidence",
-    "evidence_tag": "release-2026-11-16-phase8c-evidence",
-    "evidence_scope": "local frozen-tree nightly gate on the final gated code SHA plus real GitHub-hosted portable CI and Ubuntu verification; self-hosted Lima nightly is not_run and is not claimed",
+    "artifact_dir": "artifacts/release-gate-2026-11-17-phase8d",
+    "evidence_branch": "release/2026-11-17-phase8d-evidence",
+    "evidence_tag": "release-2026-11-17-phase8d-evidence",
+    "evidence_scope": "local frozen-tree nightly gate on the final gated docs SHA plus real GitHub-hosted portable CI/Ubuntu verification on the gated code SHA; self-hosted Lima nightly is not_run and is not claimed",
     "ci_status": "portable_hosted_success_self_hosted_not_run",
-    "hosted_ci_run_id": 43744573286,
-    "hosted_ci_run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43744573286",
-    "hosted_ci_head_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
+    "hosted_ci_run_id": 43900916188,
+    "hosted_ci_run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43900916188",
+    "hosted_ci_head_sha": "78edb972d1047912f6178d7637bebc1606ac8ac7",
     "hosted_ci_conclusion": "success",
-    "ubuntu_verification_run_id": 43744573230,
-    "ubuntu_verification_run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43744573230",
+    "ubuntu_verification_run_id": 43900916201,
+    "ubuntu_verification_run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43900916201",
     "not_run": [
       "self_hosted_lima_nightly",
       "international_provider_matrix",
+      "hidden_raw_ci_execution",
       "github_actions_inside_local_gate"
     ],
-    "gate_scope": "final gate artifact is recorded on the final docs commit in the evidence branch; the hosted CI SHA is the gated code SHA"
+    "gate_scope": "final local nightly gate is recorded on the final docs commit in the evidence branch; hosted CI SHA is the gated code SHA (78edb...), while the final docs-only gate is recorded in the evidence addendum"
   },
   "ci_evidence": {
     "schema_version": 2,
-    "gated_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
-    "evidence_branch": "release/2026-11-16-phase8c-evidence",
-    "evidence_tag": "release-2026-11-16-phase8c-evidence",
+    "gated_sha": "78edb972d1047912f6178d7637bebc1606ac8ac7",
+    "evidence_branch": "release/2026-11-17-phase8d-evidence",
+    "evidence_tag": "release-2026-11-17-phase8d-evidence",
     "hosted_ci": {
       "workflow": "CI",
-      "run_id": 43744573286,
-      "run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43744573286",
-      "head_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
+      "run_id": 43900916188,
+      "run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43900916188",
+      "head_sha": "78edb972d1047912f6178d7637bebc1606ac8ac7",
       "conclusion": "success",
-      "scope": "GitHub-hosted portable CI: static gates, contracts, release_gate --pr, full non-browser pytest (serial), and Phase-8C shadow checks; it does not reproduce host-specific capability measurements or the Lima nightly (self-hosted nightly is not_run)",
-      "gated_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff"
+      "scope": "GitHub-hosted portable CI: static gates, 20 contract/fixtures, full non-browser pytest (serial), Phase-8C/8D shadow checks. It does not reproduce the host-specific Lima nightly or hidden raw execution.",
+      "gated_sha": "78edb972d1047912f6178d7637bebc1606ac8ac7"
     },
     "ubuntu_verification": {
-      "run_id": 43744573230,
-      "run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43744573230",
-      "head_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
+      "run_id": 43900916201,
+      "run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43900916201",
+      "head_sha": "78edb972d1047912f6178d7637bebc1606ac8ac7",
       "conclusion": "success"
     },
     "self_hosted_nightly": {
       "status": "not_run",
-      "reason": "no self-hosted lima runner provisioned; the local frozen-tree nightly gate is separate evidence",
+      "reason": "no self-hosted lima runner provisioned; local frozen-tree nightly gate is separate evidence",
       "signoff": "docs/operations/phase8c-ci-signoff.md"
     }
   },
@@ -891,7 +892,7 @@
     "base_sha": "f1bb1f41eba1e0be61be09cea56091e8a03a9896",
     "phase8c_release_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
     "phase8c_evidence_tip_sha": "ec503e4b1df53ad39fa836bd34d93a18564d78f9",
-    "status": "delivered_evidence_only_no_capability_promotion",
+    "status": "released_evidence_no_capability_promotion",
     "capability_promotion_this_phase": false,
     "new_vulnerability_repair_capability_this_phase": false,
     "capability_universe": {
@@ -1035,6 +1036,19 @@
       "verified_true": 0,
       "promotion_effect": "none",
       "bundle": "artifacts/phase8d-experiments-2026-11-17/experiments.json"
+    },
+    "ci_evidence": {
+      "hosted_ci_run_id": 43900916188,
+      "hosted_ci_run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43900916188",
+      "hosted_ci_head_sha": "78edb972d1047912f6178d7637bebc1606ac8ac7",
+      "conclusion": "success",
+      "ubuntu_verification_run_id": 43900916201,
+      "final_gate": "recorded in release/2026-11-17-phase8d-evidence"
+    },
+    "release_evidence": {
+      "artifact_dir": "artifacts/release-gate-2026-11-17-phase8d",
+      "evidence_branch": "release/2026-11-17-phase8d-evidence",
+      "evidence_tag": "release-2026-11-17-phase8d-evidence"
     }
   }
 }

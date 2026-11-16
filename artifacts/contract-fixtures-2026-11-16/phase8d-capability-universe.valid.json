@@ -3,7 +3,7 @@
     "artifact": "artifacts/phase8d-baseline-2026-11-17/baseline.json",
     "phase8c_release_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
     "phase8c_tree_sha": "4bf501314b6469328d0256031990bfc402ce6677",
-    "sha256": "b42966b2df5551326de841852b7612f4857b3551c20710fa9a4dec8d237b0206"
+    "sha256": "35777df3f22e996b2607e6f31baf87988c881c2c0aaf54a7ef4e8ee1c599dbbd"
   },
   "counts": {
     "declared_cell_count": 240,
@@ -743,11 +743,11 @@
       },
       {
         "path": "artifacts/capability-universe-2026-11-16/dimension-registry.json",
-        "sha256": "6d7ed278343b00b6b2aaabda0a3247218af8fb1eeb95b84795a2817fc76e0355"
+        "sha256": "e09f9b66218746be2666f88ae9078641697262dd8ee97456357a32576d65bce0"
       },
       {
         "path": "docs/status/claims.json",
-        "sha256": "f4a2c22615bebf9dab9acf3157beb42c1efee6f47106a22b8464a12ee5476e3c"
+        "sha256": "58af2e84706c985312a79c85ee725d005affb4e2402216569121e37eb7f2be46"
       },
       {
         "path": "benchmark/phase8c/manifest.json",
@@ -783,7 +783,7 @@
       },
       {
         "path": "artifacts/phase8d-baseline-2026-11-17/baseline.json",
-        "sha256": "b42966b2df5551326de841852b7612f4857b3551c20710fa9a4dec8d237b0206"
+        "sha256": "35777df3f22e996b2607e6f31baf87988c881c2c0aaf54a7ef4e8ee1c599dbbd"
       }
     ]
   },
