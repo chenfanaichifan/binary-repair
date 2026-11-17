@@ -306,7 +306,7 @@
 
 | 项 | 属于会话一？ | 属于会话二？ | 证据 |
 |---|---|---|---|
-| P31–P34 | ✅ 是（turn 36） | ❌ 否 | `a9db731`/`c0f9feb`/`e01fc9e`/`d37bfad`；author `operator` |
+| P31–P34 | ✅ 是（turn 36） | ❌ 否 | `a9db731`/`c0f9feb`/`e01fc9e`/`d37bfad`；author `huajinyao` |
 | Phase-8D | ❌ 否（只在 turn 36 的指令里出现） | ✅ 是（T15） | `d1b73bf`/`78edb97`/`996060d`/`bdd3f84`/`a1d7150`；author `BinaryRepair` |
 | 36 次稳定性 19/36 | ❌ 否 | ❌ 否 | p10–p15 的 `d4263f9`；会话二只把它写进 LIMITATIONS |
 | M1–M4 四成员 | ❌ 否 | ❌ 否 | 791a 会话（上轮回顾）在 11-16 12:17 集成 `38dd93d` |
@@ -437,7 +437,7 @@ f1bb1f4 (11-16 12:19, 四成员集成 + 166KB 总报告)
 ### P0-5 备份不覆盖当前交付链（本轮已重建）
 
 - **现状（修复前）**：mirror 的 final=f1bb1f4，`d37bfad` 对象不存在；bundle 实际 SHA 与文档不符；异地副本缺。
-- **本轮处理**：`backup/2026-11-17/binary-repair-mirror-2026-11-17.git`（129MB，179 refs，`a1d7150`/`c0f9feb` 可检出）；`local-refs-2026-11-17.bundle`（128MB，complete history）；refs/SHA256SUMS/patch 全部落盘。
+- **本轮处理**：`backup/2026-11-17/binary-repair-mirror-2026-11-17.git`（129MB，167 refs（清理后刷新），`a1d7150`/`c0f9feb` 可检出）；`local-refs-2026-11-17.bundle`（128MB，complete history）；refs/SHA256SUMS/patch 全部落盘。
 - **验收**：`git -C mirror cat-file -t <新分支SHA>` 成功；`git bundle verify` complete；恢复演练到空目录可检出 `9194b02`/`d37bfad`/`4a7b235`。
 - **剩余**：异地副本仍缺（需 owner 提供路径）。
 
@@ -613,7 +613,7 @@ f1bb1f4 (11-16 12:19, 四成员集成 + 166KB 总报告)
 
 | 项 | 路径 | 校验 |
 |---|---|---|
-| 远端 mirror | `backup/2026-11-17/binary-repair-mirror-2026-11-17.git`（129 MB） | 179 refs；`a1d7150`/`c0f9feb` 可检出 |
+| 远端 mirror | `backup/2026-11-17/binary-repair-mirror-2026-11-17.git`（129 MB） | 167 refs（清理后刷新）；`a1d7150`/`c0f9feb` 可检出 |
 | 本地全 refs bundle | `backup/2026-11-17/local-refs-2026-11-17.bundle`（128 MB） | `git bundle verify` → complete history |
 | 删除前 refs | `backup/2026-11-17/remote-refs-2026-11-17.txt` | 198 行 |
 | GUI 工作树现场 | `backup/2026-11-17/gui-worktree-*.patch` / `-status.txt` / `-untracked.tgz` | 622KB dirty patch；6 个 untracked |

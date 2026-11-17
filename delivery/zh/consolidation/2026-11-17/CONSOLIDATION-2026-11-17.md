@@ -63,7 +63,7 @@
 
 | 项 | 路径 | 说明 |
 |---|---|---|
-| 远端 mirror | `backup/2026-11-17/binary-repair-mirror-2026-11-17.git`（129 MB） | 含全部 heads/tags/pull refs；`a1d7150`/`c0f9feb` 可检出 |
+| 远端 mirror | `backup/2026-11-17/binary-repair-mirror-2026-11-17.git`（129 MB） | 含全部 heads/tags/pull refs（清理后刷新）；`a1d7150`/`c0f9feb` 可检出 |
 | 本地全 refs bundle | `backup/2026-11-17/local-refs-2026-11-17.bundle`（128 MB） | `git bundle verify` → "complete history" |
 | 删除前 refs | `backup/2026-11-17/remote-refs-2026-11-17.txt` | 97 heads / 101 tag 行 |
 | GUI 工作树现场 | `backup/2026-11-17/gui-worktree-*.patch`、`-status.txt`、`-untracked.tgz` | 41 项脏改动的完整补丁与 6 个 untracked 文件 |
@@ -110,7 +110,7 @@ git -C backup/2026-11-17/binary-repair-mirror-2026-11-17.git \
 | 默认分支 | 仍 `main` = `8869b07`（未动） |
 | 删除 heads | **7/7 成功**（workbench-v3、feature/ai-binary-repair、phase8d-open-world、release/2026-11-17-phase8d-{final,final-evidence,evidence}、final/consolidated-2026-11-16） |
 | 删除 tags | **6/6 成功**（release-2026-11-17-phase8d* ×4、phase8d-frozen-phase8c-* ×2） |
-| 备份 | mirror 129 MB / 179 refs（`a1d7150`、`c0f9feb` 可检出）；bundle 128 MB（complete history）；SHA256SUMS 7 个文件 |
+| 备份 | mirror 129 MB / 167 refs（清理后刷新）（`a1d7150`、`c0f9feb` 可检出）；bundle 128 MB（complete history）；SHA256SUMS 7 个文件 |
 | 构建校验 | `scripts/build_phase8d_capability_universe.py --check` → `phase8d: check OK`（exit 0） |
 | 工作树 | `worktree-final-1117` 干净；`binary-repair-gui` 的 41 项脏改动未混入，已保全为补丁 |
 
