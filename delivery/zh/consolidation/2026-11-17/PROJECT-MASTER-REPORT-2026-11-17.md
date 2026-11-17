@@ -6,7 +6,7 @@
 > **重点会话**：**「Linux 虚拟机验证漏洞修复-1」**（`session-879cc62f`，2026-11-13 16:15 → 2026-11-17 00:46，19,989 事件 / 36 turn）与**「全类型二进制修复-1」**（`session-b139b586`，2026-11-14 15:12 → 2026-11-17 01:31，18,457 事件 / 16 turn）。
 > **方法**：`zstd -dc` 流式回放会话 JSONL（不修改原始日志）+ `git log/show/ls-tree/diff/ls-remote` 只读核验 + 已提交 junit/gate/claims/registry 解析 + `pytest` 小subset 复跑 + GitHub Actions API 只读查询。所有关键数字给证据指针；无法核实的标「未核实」。
 > **与旧版关系**：本文**取代** `项目总体回顾_完成现状_剩余任务与解决方案_2026-11-16.md`（166KB）。旧版截止 11-16 08:06，未覆盖 P31–P34、Phase-8D、门户轮、两会话末段合流失败；本文修正其 6 处过时/失实表述（见 §5.7）。
-> **一句话**：项目已经形成一条**有界、可审计、失败保留**的二进制修复流水线；但它不是通用修复器——公开集 2/24、hidden 0/6、Phase-8D 八个审计缺口全开、P35–P40 未开始。**本轮完成了两会话成果的真正合流**：新分支 `final/consolidated-2026-11-17`（`9194b02`，基线 `d37bfad`），并删除 7 个会话 heads + 6 个 tags；仓库痕迹的"对象级残留"不可清零，已如实说明。
+> **一句话**：项目已经形成一条**有界、可审计、失败保留**的二进制修复流水线；但它不是通用修复器——公开集 2/24、hidden 0/6、Phase-8D 八个审计缺口全开、P35–P40 未开始。**本轮完成了两会话成果的真正合流**：新分支 `final/consolidated-2026-11-17`（首批 `9194b02`，基线 `d37bfad`；最终 tip 以 `git log -1` 为准），并删除 7 个会话 heads + 6 个 tags；仓库痕迹的"对象级残留"不可清零，已如实说明。
 
 ---
 
@@ -332,7 +332,7 @@ f1bb1f4 (11-16 12:19, 四成员集成 + 166KB 总报告)
 └── d1b73bf ── 78edb97 ── 996060d        phase8d-open-world（8D 集成；本轮已删）
                               └── e01fc9e ── 13d3c1d ── b896f1b ── d37bfad        workbench-v3（8D + P31；本轮已删）
                                                                     └── a1d7150   final evidence（本轮已删）
-                                                                                  └── 9194b02   final/consolidated-2026-11-17（本轮新分支）
+                                                                                  └── 9194b02 → …（docs 提交）   final/consolidated-2026-11-17（本轮新分支；tip 见 git log）
 ```
 
 | 提交 | 角色 | 说明 |
@@ -354,7 +354,7 @@ f1bb1f4 (11-16 12:19, 四成员集成 + 166KB 总报告)
 | gate `not_run` | `github_actions`、`international_provider_matrix`、`self_hosted_nightly_lima_capture` | 同上；**not_run 不是 pass** |
 | GitHub CI | `43907137267`（CI）/ `43907136876`（Ubuntu）在 `d37bfad` 上 **success** | GitHub Actions API |
 | 8D 集成 CI | `43905664704` / `43905664754` 在 `996060d` 上 success | 同上 |
-| 当前 HEAD 的 CI | 新分支 `9194b02` 的 CI 由本轮 push 触发（见 Actions 页面）；**不声称已绿** | — |
+| 当前 HEAD 的 CI | 新分支（首批 `9194b02`）的 CI 由本轮 push 触发（见 Actions 页面）；**不声称已绿** | — |
 
 ## 6.3 能力现状（唯一权威口径）
 
@@ -416,7 +416,7 @@ f1bb1f4 (11-16 12:19, 四成员集成 + 166KB 总报告)
 ### P0-2 单一交付 SHA 缺失（本轮已修复）
 
 - **现状（修复前）**：`final/consolidated-2026-11-16`=`c0f9feb` 与 `d37bfad` 互不包含（final 独有 2 提交、d37 独有 7 提交）；P31 关键路径 diff 为空。
-- **本轮处理**：以 `d37bfad` 为基线建 `final/consolidated-2026-11-17`（`9194b02`），补 a1/bdd 证据，推送成功；删除旧 final/workbench/phase8d refs。
+- **本轮处理**：以 `d37bfad` 为基线建 `final/consolidated-2026-11-17`（首批 `9194b02`），补 a1/bdd 证据，推送成功；删除旧 final/workbench/phase8d refs。
 - **验收**：新分支 `git merge-base --is-ancestor d37bfad HEAD` 与 `4a7b235 HEAD` 均 0；`git ls-remote` 只有 1 条交付分支；README/CONSOLIDATION 只指向它。
 
 ### P0-3 hidden 泛化 0/6：卡在 detection
@@ -438,7 +438,7 @@ f1bb1f4 (11-16 12:19, 四成员集成 + 166KB 总报告)
 
 - **现状（修复前）**：mirror 的 final=f1bb1f4，`d37bfad` 对象不存在；bundle 实际 SHA 与文档不符；异地副本缺。
 - **本轮处理**：`backup/2026-11-17/binary-repair-mirror-2026-11-17.git`（129MB，167 refs（清理后刷新），`a1d7150`/`c0f9feb` 可检出）；`local-refs-2026-11-17.bundle`（128MB，complete history）；refs/SHA256SUMS/patch 全部落盘。
-- **验收**：`git -C mirror cat-file -t <新分支SHA>` 成功；`git bundle verify` complete；恢复演练到空目录可检出 `9194b02`/`d37bfad`/`4a7b235`。
+- **验收**：`git -C mirror cat-file -t <新分支SHA>` 成功；`git bundle verify` complete；恢复演练到空目录可检出首批 `9194b02`/`d37bfad`/`4a7b235`。
 - **剩余**：异地副本仍缺（需 owner 提供路径）。
 
 ### P0-6 GUI 工作树半提交 + 未提交 writer 修复（本轮已保全，未合入）
@@ -607,7 +607,7 @@ f1bb1f4 (11-16 12:19, 四成员集成 + 166KB 总报告)
 | `git ls-remote` 总行（含 `refs/pull/*` 11 条 + HEAD 1 条） | 210 | **192** |
 | 会话相关 ref 残留 | 7 heads + 6 tags | **0** |
 | 默认分支 | `main`=`8869b07` | 不变 |
-| 新分支 | — | `final/consolidated-2026-11-17`=`9194b02` |
+| 新分支 | — | `final/consolidated-2026-11-17`=`9194b02`（首批；tip 见 git log） |
 
 ## 9.5 备份（删除前完成，可恢复）
 
@@ -675,7 +675,7 @@ git checkout final/consolidated-2026-11-17
 
 ## 附录 A：41 个顶层会话总表（含 8 归档）
 
-见 §3.2 的 19 个有效会话 + 13 个空会话（`42f57a46`、`1edb1a82`、`2f54838b`、`f48df004`、`ff9c020b`、`a1cdccb9`、`b67c86c7`、`ba1995bd`、`3327ffaa`、`3d349441`、`474688b9`、`729f766f`、`aff70696`）。完整 41 项 sessionIds 与档案状态以 `~/.dsh/storages/workspace.json` 为准；归档 8 个已在 §3.1 列出。
+见 §3.2 的 19 个有效会话 + 22 个空会话（`42f57a46`、`1edb1a82`、`2f54838b`、`f48df004`、`ff9c020b`、`a1cdccb9`、`b67c86c7`、`ba1995bd`、`3327ffaa`、`3d349441`、`474688b9`、`729f766f`、`aff70696`、`caf358f3`、`a50c362f`、`ad717231`、`c20f3715`、`1309dc6c`、`892c4d59`、`5bdf6473`、`8152265e`、`0dd3685e`）。完整 41 项 sessionIds 与档案状态以 `~/.dsh/storages/workspace.json` 为准；归档 8 个已在 §3.1 列出。
 
 ## 附录 B：关键 commit / CI / tag 索引
 
@@ -695,7 +695,7 @@ git checkout final/consolidated-2026-11-17
 | 8D 最终树 | `d37bfad` | 13/13 gate；2411 tests；CI 43907137267/43907136876 |
 | 8D final evidence | `a1d7150` | final gate 证据 |
 | 上一轮 final | `c0f9feb` | 仅 P31–P34（已删） |
-| 本轮新分支 | `9194b02` | `final/consolidated-2026-11-17` |
+| 本轮新分支 | `9194b02`（首批） | `final/consolidated-2026-11-17` |
 
 ## 附录 C：证据文件索引
 
