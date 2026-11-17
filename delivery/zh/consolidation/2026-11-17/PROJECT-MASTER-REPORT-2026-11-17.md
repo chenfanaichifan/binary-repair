@@ -306,7 +306,7 @@
 
 | 项 | 属于会话一？ | 属于会话二？ | 证据 |
 |---|---|---|---|
-| P31–P34 | ✅ 是（turn 36） | ❌ 否 | `a9db731`/`c0f9feb`/`e01fc9e`/`d37bfad`；author `huajinyao` |
+| P31–P34 | ✅ 是（turn 36） | ❌ 否 | `a9db731`/`c0f9feb`/`e01fc9e`/`d37bfad`；author `operator（身份已脱敏）` |
 | Phase-8D | ❌ 否（只在 turn 36 的指令里出现） | ✅ 是（T15） | `d1b73bf`/`78edb97`/`996060d`/`bdd3f84`/`a1d7150`；author `BinaryRepair` |
 | 36 次稳定性 19/36 | ❌ 否 | ❌ 否 | p10–p15 的 `d4263f9`；会话二只把它写进 LIMITATIONS |
 | M1–M4 四成员 | ❌ 否 | ❌ 否 | 791a 会话（上轮回顾）在 11-16 12:17 集成 `38dd93d` |
