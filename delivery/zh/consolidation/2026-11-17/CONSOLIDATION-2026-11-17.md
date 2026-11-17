@@ -97,10 +97,21 @@ git -C backup/2026-11-17/binary-repair-mirror-2026-11-17.git \
 - 本地 `binary-repair-gui` 的 41 项脏改动未被提交，已保全为补丁；其中 `code_cave.py` phdr 修复是
   未进任何分支的真实缺陷修复，需单独立项（见总报告 P0-6）。
 
-## 7. 执行结果（2026-11-17）
+## 7. 执行结果（2026-11-17 实测）
 
-- 新分支：`final/consolidated-2026-11-17`，tip `TBD`（推送后回填）。
-- 远端 heads：97 → `TBD`；tag 行：101 → `TBD`。
-- 会话 ref 残留：`TBD`。
-- 备份校验：mirror 179 refs / 129 MB；bundle 128 MB / complete history；SHA256SUMS 见
-  `backup/2026-11-17/SHA256SUMS-2026-11-17`。
+| 项 | 结果 |
+|---|---|
+| 新分支 | `final/consolidated-2026-11-17`；首批提交 `9194b02`（基线 `d37bfad`）；文档提交后 tip 以 `git log -1` 为准 |
+| 基线包含关系 | `git merge-base --is-ancestor d37bfad HEAD` → 0；`4a7b235` → 0 |
+| 远端 heads | **97 → 91**（删 7 + 新增 1） |
+| 远端 tag 行 / 真实 tag | **101 / 71 → 89 / 65** |
+| `git ls-remote` 总行（含 pull 11 + HEAD 1） | **210 → 192** |
+| 会话相关 ref 残留 | **0**（`workbench-v3`/`feature/ai-binary-repair`/`phase8d*`/`release-2026-11-17*`/`final/consolidated-2026-11-16` 全部消失） |
+| 默认分支 | 仍 `main` = `8869b07`（未动） |
+| 删除 heads | **7/7 成功**（workbench-v3、feature/ai-binary-repair、phase8d-open-world、release/2026-11-17-phase8d-{final,final-evidence,evidence}、final/consolidated-2026-11-16） |
+| 删除 tags | **6/6 成功**（release-2026-11-17-phase8d* ×4、phase8d-frozen-phase8c-* ×2） |
+| 备份 | mirror 129 MB / 179 refs（`a1d7150`、`c0f9feb` 可检出）；bundle 128 MB（complete history）；SHA256SUMS 7 个文件 |
+| 构建校验 | `scripts/build_phase8d_capability_universe.py --check` → `phase8d: check OK`（exit 0） |
+| 工作树 | `worktree-final-1117` 干净；`binary-repair-gui` 的 41 项脏改动未混入，已保全为补丁 |
+
+> 诚实例外：`refs/pull/*` 11 条与 170 条 Actions run 仍在；commit 对象仍可按 SHA 访问；默认分支未切换。详见总报告 §9.6。
