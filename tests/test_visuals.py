@@ -58,5 +58,5 @@ def test_local_visuals_are_honestly_unavailable(tmp_path):
     visuals = backend.get_visuals(job_id)
 
     assert visuals["available"] is False
-    assert "not implemented" in visuals["note"]
+    assert "not available" in visuals["note"] or "not run" in visuals["note"]
     assert not _has_cjk_in_payload(visuals)

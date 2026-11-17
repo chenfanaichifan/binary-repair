@@ -263,9 +263,9 @@ def test_local_mode_is_honest(local_server, page, tmp_path):
     base_url, data_dir = local_server
     job_id = _create_job_via_api(page, base_url, tmp_path)
     page.wait_js(
-        "!!document.querySelector('[data-testid=\"start-unavailable\"]')", timeout=10
+        "!!document.querySelector('[data-testid=\"start-needs-approval\"]')", timeout=10
     )
-    assert "尚未提供修复执行接口" in page.text('[data-testid="start-unavailable"]')
+    assert page.text('[data-testid="start-needs-approval"]')
 
     with httpx.Client(base_url=base_url, timeout=20.0) as client:
         client.get("/?token=" + SESSION_TOKEN)

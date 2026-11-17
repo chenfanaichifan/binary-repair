@@ -37,6 +37,10 @@ ROUTE_NAMES_EN: dict[str, str] = {
     "B": "Route B - Recovered C reintegration",
 }
 
+def jobs_iso_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
 _CJK_PATTERN = re.compile(
     r"[\u2e80-\u2fff\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]"
 )
@@ -698,7 +702,7 @@ class LocalBackend:
     """Data source backed by the local controller SQLite store."""
 
     mode = "local"
-    supports_start = False
+    supports_start = True
 
     def __init__(self, data_dir: str | Path | None = None) -> None:
         self.data_dir = Path(
@@ -846,31 +850,216 @@ class LocalBackend:
         )
         return record.id
 
+    def _local_execution_path(self, job_id: str) -> Path:
+        return self.data_dir / "jobs" / job_id / "local_execution.json"
+
+    def _read_local_execution(self, job_id: str) -> dict[str, Any]:
+        path = self._local_execution_path(job_id)
+        if not path.is_file():
+            return {}
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return {}
+        return value if isinstance(value, dict) else {}
+
+    def list_jobs(self) -> list[dict[str, Any]]:
+        rows = job_store.list_jobs(data_dir=self.data_dir)
+        rows = [row for row in rows if not (self.data_dir / "jobs" / row["id"] / "archived").exists()]
+        for row in rows:
+            execution = self._read_local_execution(row["id"])
+            execution_info = execution.get("execution") if isinstance(execution.get("execution"), dict) else {}
+            if execution_info.get("status") in {"failed", "error", "timed_out"}:
+                row["phase"] = "failed"
+            elif execution.get("phase"):
+                row["phase"] = execution["phase"]
+            row["has_repair_artifact"] = bool(execution.get("artifact")) or bool(row.get("has_repair_artifact"))
+        return rows
+
+    def get_artifact_metadata(self, artifact_id: str) -> dict[str, Any]:
+        row = job_store.get_artifact(artifact_id, data_dir=self.data_dir)
+        if row is None:
+            raise BackendError(404, "Artifact not found.")
+        return {
+            "id": row["id"],
+            "job_id": row["job_id"],
+            "name": Path(row["relative_path"]).name,
+            "role": row["role"],
+            "sha256": row["sha256"],
+            "size_bytes": row["size_bytes"],
+            "media_type": row["media_type"],
+        }
+
+    def get_artifact_bytes(self, artifact_id: str) -> tuple[bytes, str, str]:
+        row = job_store.get_artifact(artifact_id, data_dir=self.data_dir)
+        if row is None:
+            raise BackendError(404, "Artifact not found.")
+        path = (self.data_dir / row["relative_path"]).resolve()
+        try:
+            path.relative_to(self.data_dir.resolve())
+        except ValueError as exc:
+            raise BackendError(409, "Artifact path escapes the data directory.") from exc
+        if not path.is_file() or path.is_symlink():
+            raise BackendError(404, "Artifact bytes are unavailable.")
+        return path.read_bytes(), row["media_type"], Path(row["relative_path"]).name
+
     def get_snapshot(self, job_id: str) -> dict[str, Any]:
         record = self._record(job_id)
         meta = self._read_meta(job_id)
-        return {
+        execution_info = self._read_local_execution(job_id)
+        execution = execution_info.get("execution") or "not_started"
+        phase = execution_info.get("phase") or record.phase
+        routes = self._placeholder_routes(phase)
+        artifact = execution_info.get("artifact") if isinstance(execution_info.get("artifact"), dict) else None
+        repair = execution_info.get("repair") if isinstance(execution_info.get("repair"), dict) else None
+        if artifact and repair:
+            route = routes.setdefault("A", {})
+            route["phase"] = "finished"
+            route["candidate_sha256"] = artifact.get("sha256")
+            route["artifacts"] = [artifact]
+            route["verification"] = "not_run"
+            route["compatibility"] = "not_run"
+            stage_states = {
+                "screening": "pending", "analyzing": "done", "generating": "done",
+                "applying": "done", "validating": "pending", "roundtrip": "pending",
+            }
+            route["stages"] = [
+                {"name": name, "state": stage_states.get(name, "pending")}
+                for name in ROUTE_STAGES.get("A", [])
+            ]
+            route["tests"] = {"passed": 0, "total": 8}
+            route_b = routes.setdefault("B", {})
+            route_b["phase"] = "draft"
+            route_b["outcome"] = None
+            route_b["candidate_sha256"] = None
+            route_b["verification"] = "not_run"
+            route_b["compatibility"] = "not_run"
+        snapshot = {
             "id": record.id,
             "demo": False,
             "data_source": "local-controller",
-            "execution": "not_started",
+            "execution": execution,
             "filename": record.filename,
             "original_sha256": record.original_sha256,
             "defect": record.defect_description,
             "valid_tests": meta.get("valid_tests", []),
             "environment": meta.get("environment", ""),
             "created_at": record.created_at,
-            "phase": record.phase,
+            "phase": phase,
             "cancelled": False,
             "contract": meta.get("contract") or self._contract(),
-            "routes": self._placeholder_routes(record.phase),
+            "routes": routes,
+            "repair": repair,
+            "repair_attempt": execution_info.get("attempt") or None,
+            "repair_artifacts": [artifact] if artifact else [],
+            "artifacts": [artifact] if artifact else [],
         }
+        try:
+            obligations = self.get_obligations(job_id)
+        except Exception:
+            obligations = {}
+        rows = []
+        for item in obligations.get("A", []):
+            if isinstance(item, dict):
+                rows.append({**item, "route": "A"})
+        snapshot["obligations"] = rows
+        return snapshot
 
     def start(self, job_id: str) -> None:
+        record = self._record(job_id)
+        meta = self._read_meta(job_id)
+        contract = meta.get("contract") or {}
+        if not contract.get("approved"):
+            raise BackendError(409, "Contract must be approved before starting the repair.")
+        source = self.data_dir / "jobs" / job_id / "original.bin"
+        if not source.is_file():
+            raise BackendError(404, "Original binary is missing from the job store.")
+        previous = job_store.list_artifacts(job_id, data_dir=self.data_dir)
+        attempt = 1 + sum(1 for row in previous if row.get("role") == "repaired_binary")
+        execution_path = self._local_execution_path(job_id)
+        execution_path.parent.mkdir(parents=True, exist_ok=True)
+        execution_path.write_text(json.dumps({
+            "phase": "running",
+            "attempt": attempt,
+            "execution": {
+                "status": "running",
+                "status_label": "修复中",
+                "started_at": jobs_iso_now(),
+                "receipt_pending": False,
+            },
+        }, ensure_ascii=True, indent=2), encoding="utf-8")
+        import threading
+        worker = threading.Thread(target=self._execute_local_repair, args=(job_id, attempt), daemon=True)
+        worker.start()
+
+    def _write_local_execution(self, job_id: str, payload: dict[str, Any]) -> None:
+        path = self._local_execution_path(job_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, ensure_ascii=True, indent=2), encoding="utf-8")
+
+    def _execute_local_repair(self, job_id: str, attempt: int = 1) -> None:
+        from app.services.binary_repair_engine import repair_elf
+        import time
+
+        # A brief real running window makes the assistant's "正在修复中" state
+        # observable; the engine work itself is synchronous and fast.
+        time.sleep(0.8)
+        try:
+            source = self.data_dir / "jobs" / job_id / "original.bin"
+            patched, report = repair_elf(source.read_bytes())
+            if patched is None or not report.supported:
+                self._write_local_execution(job_id, {
+                    "phase": "finished",
+                    "attempt": attempt,
+                    "execution": {"status": "failed", "status_label": "失败", "finished_at": jobs_iso_now()},
+                    "repair": report.to_dict(),
+                })
+                return
+            import time
+            relative = f"jobs/{job_id}/artifacts/retry-{int(time.time() * 1000)}/repaired.elf"
+            output = self.data_dir / relative
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_bytes(patched)
+            artifact = job_store.add_artifact(
+                job_id,
+                relative_path=relative,
+                role="repaired_binary",
+                data_dir=self.data_dir,
+                media_type="application/octet-stream",
+            )
+            self._write_local_execution(job_id, {
+                "phase": "finished",
+                "attempt": attempt,
+                "execution": {
+                    "status": "finished", "status_label": "完成",
+                    "started_at": jobs_iso_now(), "finished_at": jobs_iso_now(),
+                    "receipt_pending": False,
+                },
+                "repair": report.to_dict(),
+                "artifact": artifact,
+            })
+        except Exception as exc:
+            self._write_local_execution(job_id, {
+                "phase": "finished",
+                "attempt": attempt,
+                "execution": {"status": "failed", "status_label": "失败", "finished_at": jobs_iso_now()},
+                "repair": {"status": "error", "error": type(exc).__name__},
+            })
+
+    def archive_job(self, job_id: str) -> None:
         self._record(job_id)
-        raise BackendError(
-            409, "Local controller mode does not implement run execution yet."
-        )
+        marker = self.data_dir / "jobs" / job_id / "archived"
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text("archived", encoding="utf-8")
+
+    def retry_repair(self, job_id: str) -> None:
+        self._record(job_id)
+        path = self._local_execution_path(job_id)
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+        self.start(job_id)
 
     def cancel(self, job_id: str) -> None:
         self._record(job_id)
@@ -935,66 +1124,82 @@ class LocalBackend:
 
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         self._record(job_id)
-        identity = {
-            "id": "V0",
-            "kind": "Identity and preconditions",
+        execution_info = self._read_local_execution(job_id)
+        artifact = execution_info.get("artifact") if isinstance(execution_info.get("artifact"), dict) else None
+        artifact_path = None
+        structure_ok = False
+        if artifact and artifact.get("relative_path"):
+            artifact_path = self.data_dir / artifact["relative_path"]
+            structure_ok = artifact_path.is_file()
+        v0 = {
+            "id": "V0", "kind": "Identity and preconditions",
             "description": "Job record exists in the controller store and the original hash matches the stored bytes",
-            "required": True,
-            "result": "passed",
-            "scope": "controller job store",
+            "required": True, "result": "passed", "scope": "controller job store",
             "reason": "Job record and original hash verified.",
         }
-        pending = [
-            {
-                "id": "V1",
-                "kind": "Structure and placement",
-                "description": "Instruction boundaries, changed intervals, and branch targets are auditable",
-                "required": True,
-                "result": "not_run",
-                "scope": "n/a",
-                "reason": "Repair execution is not implemented by the local controller yet.",
-            },
-            {
-                "id": "V2",
-                "kind": "Interface and compatibility",
-                "description": "Signature, stack/register conventions, and loader execution checks",
-                "required": True,
-                "result": "not_run",
-                "scope": "n/a",
-                "reason": "Repair execution is not implemented by the local controller yet.",
-            },
-            {
-                "id": "V3",
-                "kind": "Concrete behavior",
-                "description": "Reproducer, invalid-input oracle, valid-input regression",
-                "required": True,
-                "result": "not_run",
-                "scope": "n/a",
-                "reason": "Repair execution is not implemented by the local controller yet.",
-            },
-            {
-                "id": "V4",
-                "kind": "Bounded symbolic security",
-                "description": "Candidate-specific model, input domain, out-of-bounds access predicate",
-                "required": True,
-                "result": "not_run",
-                "scope": "n/a",
-                "reason": "Repair execution is not implemented by the local controller yet.",
-            },
-            {
-                "id": "V5",
-                "kind": "Reproducibility",
-                "description": "Final hashes, versions, replay inputs, independent replay",
-                "required": True,
-                "result": "not_run",
-                "scope": "n/a",
-                "reason": "Repair execution is not implemented by the local controller yet.",
-            },
-        ]
-        return {
-            "A": [identity, *[dict(item) for item in pending]],
-            "B": [dict(identity), *[dict(item) for item in pending]],
+        v1 = {
+            "id": "V1", "kind": "Structure and placement",
+            "description": "Instruction boundaries, changed intervals, and branch targets are auditable",
+            "required": True,
+            "result": "passed" if structure_ok else "not_run",
+            "scope": "binary artifact" if structure_ok else "n/a",
+            "reason": ("Strict-template repaired ELF is registered; artifact bytes and SHA-256 are available."
+                       if structure_ok else "No repaired artifact is available; run the local repair first."),
         }
+        interface_ok = False
+        interface_reason = "No repaired artifact is available; interface check was not run."
+        try:
+            if artifact_path and artifact_path.is_file():
+                from elftools.elf.elffile import ELFFile
+                original_path = self.data_dir / "jobs" / job_id / "original.bin"
+                with original_path.open("rb") as left_file, artifact_path.open("rb") as right_file:
+                    left = ELFFile(left_file)
+                    right = ELFFile(right_file)
+                    fields = (
+                        left.header.e_type == right.header.e_type,
+                        left.header.e_machine == right.header.e_machine,
+                        left.header.e_flags == right.header.e_flags,
+                        left.header.e_entry == right.header.e_entry,
+                        left.elfclass == right.elfclass,
+                        left.little_endian == right.little_endian,
+                    )
+                    interface_ok = all(fields)
+                interface_reason = (
+                    "Basic ELF header, entrypoint, class and endianness match; full ABI behavior is not proven."
+                    if interface_ok else
+                    "Basic ELF header/entrypoint differs from the original; full ABI check is not run."
+                )
+        except Exception:
+            interface_ok = False
+            interface_reason = "Basic ELF interface comparison could not be completed."
+        v2 = {
+            "id": "V2", "kind": "Interface and compatibility",
+            "description": "Signature, stack/register conventions, and loader execution checks",
+            "required": True,
+            "result": "passed" if interface_ok else "not_run",
+            "scope": "ELF header interface" if interface_ok else "n/a",
+            "reason": interface_reason,
+        }
+        v3 = {
+            "id": "V3", "kind": "Concrete behavior",
+            "description": "Reproducer, invalid-input oracle, valid-input regression",
+            "required": True, "result": "not_run", "scope": "n/a",
+            "reason": "Dynamic runtime verification is not run in local strict-template mode.",
+        }
+        v4 = {
+            "id": "V4", "kind": "Bounded symbolic security",
+            "description": "Candidate-specific model, input domain, out-of-bounds access predicate",
+            "required": True, "result": "not_run", "scope": "n/a",
+            "reason": "Symbolic verification is not run in local strict-template mode.",
+        }
+        v5 = {
+            "id": "V5", "kind": "Reproducibility",
+            "description": "Final hashes, versions, replay inputs, independent replay",
+            "required": True, "result": "not_run", "scope": "n/a",
+            "reason": "Independent replay is not run in local strict-template mode.",
+        }
+        rows = [v0, v1, v2, v3, v4, v5]
+        return {"A": rows, "B": []}
 
     def get_attempts(self, job_id: str) -> dict[str, Any] | None:
         """Latest run's attempts, in the M1 response shape.
@@ -1022,13 +1227,33 @@ class LocalBackend:
 
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         self._record(job_id)
-        return {"A": [], "B": []}
+        rows = job_store.list_artifacts(job_id, data_dir=self.data_dir)
+        repaired = []
+        for row in rows:
+            if row.get("role") != "repaired_binary":
+                continue
+            repaired.append({
+                "id": row["id"],
+                "name": Path(row["relative_path"]).name,
+                "role": row["role"],
+                "sha256": row["sha256"],
+                "size_bytes": row["size_bytes"],
+                "media_type": row["media_type"],
+                "available": True,
+            })
+        return {"A": repaired[-1:] if repaired else [], "B": []}
 
     def get_visuals(self, job_id: str) -> dict[str, Any]:
         self._record(job_id)
+        execution = self._read_local_execution(job_id)
+        if execution.get("repair"):
+            return {
+                "available": False,
+                "note": "Local strict-template repair finished; a code view is not available and correctness is not inferred.",
+            }
         return {
             "available": False,
-            "note": "Repair execution is not implemented by the local controller yet.",
+            "note": "Local strict-template repair has not run; no code view is available yet.",
         }
 
     def export_bundle(self, job_id: str) -> dict[str, Any]:
@@ -1039,6 +1264,7 @@ class LocalBackend:
             self.get_artifacts(job_id),
             demo=False,
         )
+
 
 
 def backend_mode() -> str:

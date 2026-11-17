@@ -3,9 +3,9 @@
 What this proves:
 - The GUI can create a job through the real controller (`app/services/jobs.py`),
   with the original bytes and SHA-256 persisted under the data directory.
-- The snapshot is honest: job identity is real, but Route A/B execution is not
-  implemented, so phases stay `draft` and obligations stay `not_run`.
-- The GUI suppresses the "start" action in local mode and the export remains
+- The snapshot is honest: before execution V0 is passed and V1-V5 stay
+  `not_run`; the local strict-template repair can produce a real artifact.
+- The GUI exposes the start action in local mode and the export remains
   English-only (language policy).
 """
 
@@ -79,12 +79,12 @@ def test_local_backend_reports_honest_obligations(tmp_path):
     job_id = _create(backend)
 
     obligations = backend.get_obligations(job_id)
-    for key in ("A", "B"):
-        rows = obligations[key]
-        assert rows[0]["id"] == "V0"
-        assert rows[0]["result"] == "passed"
-        assert all(row["result"] == "not_run" for row in rows[1:])
-        assert not _has_cjk_in_payload(rows)
+    rows = obligations["A"]
+    assert rows[0]["id"] == "V0"
+    assert rows[0]["result"] == "passed"
+    assert all(row["result"] == "not_run" for row in rows[1:])
+    assert obligations["B"] == []
+    assert not _has_cjk_in_payload(rows)
 
     bundle = backend.export_bundle(job_id)
     assert bundle["demo"] is False
@@ -93,14 +93,14 @@ def test_local_backend_reports_honest_obligations(tmp_path):
     assert not _has_cjk_in_payload(bundle)
 
 
-def test_local_backend_execution_is_not_implemented(tmp_path):
+def test_local_backend_requires_approved_contract(tmp_path):
     backend = LocalBackend(data_dir=tmp_path)
     job_id = _create(backend)
 
     with pytest.raises(BackendError) as excinfo:
         backend.start(job_id)
     assert excinfo.value.status_code == 409
-    assert "not implement" in excinfo.value.detail
+    assert "approved" in excinfo.value.detail
 
     with pytest.raises(BackendError) as excinfo:
         backend.cancel(job_id)
@@ -111,6 +111,43 @@ def test_local_backend_unknown_job(tmp_path):
     with pytest.raises(BackendError) as excinfo:
         LocalBackend(data_dir=tmp_path).get_snapshot("does-not-exist")
     assert excinfo.value.status_code == 404
+
+
+def test_local_backend_repairs_strict_template(tmp_path):
+    import time
+    from pathlib import Path as _Path
+
+    backend = LocalBackend(data_dir=tmp_path)
+    template = _Path(__file__).resolve().parent / "fixtures" / "vuln-strict-original.elf"
+    record = backend.create_job(
+        binary_bytes=template.read_bytes(),
+        filename="vuln.elf",
+        defect=FORM["defect"],
+        valid_tests=FORM["valid_tests"],
+        environment=FORM["environment"],
+        valid_domain=FORM["valid_domain"],
+        forbidden=FORM["forbidden"],
+        invalid_outcome=FORM["invalid_outcome"],
+        assumptions=FORM["assumptions"],
+    )
+    contract = backend.get_snapshot(record)["contract"]
+    backend.approve_contract(record, expected_sha256=contract["sha256"], reviewer_label="test")
+    backend.start(record)
+    deadline = time.time() + 8
+    while time.time() < deadline:
+        snapshot = backend.get_snapshot(record)
+        execution = snapshot["execution"]
+        if isinstance(execution, dict) and execution.get("status") in {"finished", "failed"}:
+            break
+        time.sleep(0.1)
+    assert snapshot["execution"]["status"] == "finished"
+    artifacts = backend.get_artifacts(record)
+    assert len(artifacts["A"]) == 1
+    assert artifacts["A"][0]["role"] == "repaired_binary"
+    assert len(artifacts["A"][0]["sha256"]) == 64
+    obligations = backend.get_obligations(record)
+    assert obligations["A"][1]["result"] == "passed"
+    assert all(item["result"] == "not_run" for item in obligations["A"][3:])
 
 
 def test_gui_local_mode_uses_real_controller(tmp_path, monkeypatch):
@@ -134,8 +171,18 @@ def test_gui_local_mode_uses_real_controller(tmp_path, monkeypatch):
 
     page = client.get(location)
     assert page.status_code == 200
-    assert 'data-testid="start-unavailable"' in page.text
-    assert "尚未提供修复执行接口" in page.text
+    assert 'data-testid="start-needs-approval"' in page.text
+    assert 'data-testid="start-unavailable"' not in page.text
+
+    status = client.get(f"/api/jobs/{job_id}").json()
+    approved = client.post(
+        f"/jobs/{job_id}/approve",
+        data={"csrf": gui.CSRF_TOKEN, "expected_sha256": status["contract"]["sha256"], "reviewer_label": "test"},
+        follow_redirects=False,
+    )
+    assert approved.status_code == 303
+    page = client.get(location)
+    assert 'data-testid="start-run"' in page.text
 
     status = client.get(f"/api/jobs/{job_id}").json()
     assert status["demo"] is False

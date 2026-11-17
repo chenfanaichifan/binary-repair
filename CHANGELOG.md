@@ -24,6 +24,11 @@ refresh now sits on top of the workbench line, so the two are one history.
 
 ### Added
 
+- Local strict-template repair: `BINARYREPAIR_BACKEND=local` can now start an
+  asynchronous repair for the reviewed `vuln.elf` template, register the
+  repaired ELF as an artifact, expose its download, record the attempt number
+  and keep V0-V2 evidence explicit. V3-V5 remain `not_run`; this is not a
+  general-purpose ELF repair engine and does not create a verdict.
 - Inline code repair: paste a fenced (or code-like) snippet in the console and
   get a reviewable patch card with findings, a before/after diff, copy actions
   and a residual-risk note. Rules cover Python `shell=True`/Flask debug/yaml,

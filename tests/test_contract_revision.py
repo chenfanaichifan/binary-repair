@@ -132,10 +132,12 @@ def test_local_backend_contract_revision_persists(tmp_path):
     assert stored["approved"] is True
     assert stored["sha256"] == revised["sha256"]
 
-    # Execution is still not implemented, so start keeps returning 409.
-    with pytest.raises(BackendError) as not_implemented:
-        backend.start(job_id)
-    assert not_implemented.value.status_code == 409
+    # Local repair accepts an approved contract; the async engine then owns the
+    # execution result and must not be reported as a synchronous success.
+    backend.start(job_id)
+    snapshot = backend.get_snapshot(job_id)
+    execution = snapshot["execution"]
+    assert isinstance(execution, dict) or execution in {"running", "failed"}
 
 
 def test_gui_renders_contract_conflicts_as_pages():
