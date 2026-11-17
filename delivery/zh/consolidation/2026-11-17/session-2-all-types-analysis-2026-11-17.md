@@ -17,7 +17,7 @@
 | 标题演进 | 「修复二进制漏洞文件失败问题」(seq 17，LLM 生成) → 「全类型二进制修复」(seq 16659) → 「全类型二进制修复-1」(seq 16660，均为 user 改名，11-16 22:44) | `session/title` 事件 |
 | 团队 | 具名成员 8 个：`guest-runtime`、`pipeline`、`gui-docs`、`audit-tools`、`heap-engine`、`gate-profiles`、`target-scope`、`legacy-convergence`；`spawn_teammate` 调用 10 次 | seq 460/470/480/1926/1931/1941/3578/3583 |
 | 提交身份 | 本会话内所有 `git commit` 均带 `-c user.name="BinaryRepair" -c user.email="binaryrepair@local"` | calls2.tsv 中 commit 命令 |
-| 并行车道 | 同一仓库另有 `huajinyao <…@qq.com>` 身份的 operator 车道（p5–p9 … p31–p34、M1–M4、整合轮），本会话多次明确称其为「operator 提交 / 外部 p31–p34 提交」 | seq=10786 @11-15 15:20；seq=18441 @11-17 01:26 |
+| 并行车道 | 同一仓库另有 `operator（身份已脱敏）` 身份的 operator 车道（p5–p9 … p31–p34、M1–M4、整合轮），本会话多次明确称其为「operator 提交 / 外部 p31–p34 提交」 | seq=10786 @11-15 15:20；seq=18441 @11-17 01:26 |
 
 **本会话在仓库中的落点**：主 worktree `binary-repair-gui`（= `binary-repair` 的 `allhands` worktree），分支 `workbench-v3`（mainline），另建 `.agents/worktrees/phase8d-open-world`、`phase8d-final-d37` 两个临时 worktree。会话结束时 mainline `workbench-v3` = **`d37bfad`**。
 
@@ -183,7 +183,7 @@
 ### 2.11 T14（11-15 22:05–11-16 03:18）Phase-8C：Ground Truth v2 + Hidden Benchmark
 
 - 冻结 **`4a7b2355`**（tree `4bf5013`），tag `release-2026-11-16-phase8c`，evidence `ec503e4b`，nightly **13/13**，CI **43748886046** / Ubuntu **43748886289**；post-tag：provenance ok、evidence 8/8、`drift=0`、CI evidence online ok（seq=16654 @03:18）。
-- 交付：Ground Truth v2（contracts **17**，v1 12 样本 12/12 无损迁移、旧 13 contract 未改写）；公开语料 **32 样本**（28 core：12 迁移 + 6 hard-case + 6 repair-benchmark + 4 跨架构 analysis-only；4 个 Zig `-O2/-O3/-Os`+static/dynamic+strip 变体；**24 runtime / 8 analysis-only**；dev 18 / validation 14）；私有 hidden **8 样本**（6 runtime + 2 analysis-only，私有语料在 `~/.binaryrepair/phase8c-hidden`，仓库只提交 commitment `eaec60aa…`）；C11 Lima `flock` 串行化；C12/C14 证据链/claims/LIMITATIONS/CI shadow。
+- 交付：Ground Truth v2（contracts **17**，v1 12 样本 12/12 无损迁移、旧 13 contract 未改写）；公开语料 **32 样本**（28 core：12 迁移 + 6 hard-case + 6 repair-benchmark + 4 跨架构 analysis-only；4 个 Zig `-O2/-O3/-Os`+static/dynamic+strip 变体；**24 runtime / 8 analysis-only**；dev 18 / validation 14）；私有 hidden **8 样本**（6 runtime + 2 analysis-only，私有语料在 `[PRIVATE_CORPUS_PATH]`，仓库只提交 commitment `eaec60aa…`）；C11 Lima `flock` 串行化；C12/C14 证据链/claims/LIMITATIONS/CI shadow。
 - **真实结果**：32 样本 30 executed / 2 unsupported / 0 not_run；3 次独立验证尝试 **2 verified / 1 rejected**，`false_verified=0`；**1 个 deterministic claim 被独立 verifier 撤回**（`heap-malloc`：`branch_target_unknown`、`call_target_not_allowed`、`no_ret`），记入 `disagreements.json` 而非当通过；**24 个 eligible repair cases → verified rate = 2/24 = 0.0833**；detection/root-cause/localization 各 3/24（`binary-repair@d37bfad docs/status/claims.json:780,:808,:812`）。
 - **loop-guard 命中**：T14 step 310（**seq=16505 @11-16 03:02**）收到「You are repeating the exact same tool call with identical arguments」提醒——当时正用连续 `job_output` 轮询一个长跑 gate（`sleep 720` + `job_output`×3）。收到提醒后下一步改为 `bash`，**自行恢复，未陷入死循环**。与 session-1 的终局循环同源（轮询同一 job），但本会话有恢复。
 
@@ -262,13 +262,13 @@
 
 - `artifacts/repair-benchmark-2026-11-15`：4 个二进制、CWE-121/122/787，DeepSeek flash **4/6 verified**（`hard-multicall/hard-sprintf/hard-nonconst/cwe122-heap-copy` 通过；`cwe121-unchecked-strcpy` SECURITY_FAILED、`cwe787-index-write` ASSEMBLY_REJECTED）——`README.md:6`。
 - `artifacts/repair-benchmark-expansion-2026-11-16`：扩到 **8 个二进制、7 个 CWE 类**；新增 CWE-125/190 dev VERIFIED、CWE-476 hidden **VERIFIED**（首个 hidden-split AI verified）、CWE-134 `PLAN_INVALID`（负结果保留）——`README.md:15`。
-- 谁做的：这两个 benchmark 的提交是 `ca6f5d8`(p5-p9)、`d4263f9`(p10-p15) 等 **huajinyao operator 车道**；本会话只在 Phase-8A 起把它纳入 gate 与 claims。
+- 谁做的：这两个 benchmark 的提交是 `ca6f5d8`(p5-p9)、`d4263f9`(p10-p15) 等 **operator operator 车道**；本会话只在 Phase-8A 起把它纳入 gate 与 claims。
 
 ### 4.4 36 次稳定性（**不是本会话的产物**）
 
 `artifacts/stability-2026-11-16/`：**36 次独立运行 = 2 模型 × 6 case × 3 repeats**，verified **19/36 = 0.528**；deepseek-flash 12/18、deepseek-v4-pro 7/18；per-case：`cwe122-heap-copy 6/6`、`cwe787-index-write 6/6`、`hard-nonconst 3/6`、`hard-multicall 2/6`、`hard-sprintf 2/6`、`cwe121-unchecked-strcpy 0/6`（`README.md:3,:11,:19`）。
 
-**归属**：该产物由提交 `d4263f9`（11-15 16:19，author huajinyao）"feat(p10-p15): assembly feedback, **36-run stability**, v2 trace and benchmark expansion" 引入，属并行 operator 车道。本会话在 T13 把它写进 `docs/limitations.md` 并明确「这是 stochastic evidence，不是确定性泛化」（seq=12590 @11-15 18:20 的 diff）。p31–p34 车道后续把 stability runner 硬化，但 **live 60-run matrix 仍 `NOT_RUN`**（`docs/acceptance/p31-p34-2026-11-16.md:72`）。
+**归属**：该产物由提交 `d4263f9`（11-15 16:19，author operator）"feat(p10-p15): assembly feedback, **36-run stability**, v2 trace and benchmark expansion" 引入，属并行 operator 车道。本会话在 T13 把它写进 `docs/limitations.md` 并明确「这是 stochastic evidence，不是确定性泛化」（seq=12590 @11-15 18:20 的 diff）。p31–p34 车道后续把 stability runner 硬化，但 **live 60-run matrix 仍 `NOT_RUN`**（`docs/acceptance/p31-p34-2026-11-16.md:72`）。
 
 ### 4.5 独立验证器（本会话 8A→8B 的主线）
 
@@ -289,7 +289,7 @@
 
 | 证据 | 内容 |
 |---|---|
-| 提交作者/时间 | `e01fc9e` 11-16 23:30、`13d3c1d` 00:05、`b896f1b` 00:06、`d37bfad` 00:23，author 均为 `huajinyao <2761163826@qq.com>`（`git log --format='%h %ad %an %s'`） |
+| 提交作者/时间 | `e01fc9e` 11-16 23:30、`13d3c1d` 00:05、`b896f1b` 00:06、`d37bfad` 00:23，author 均为 `operator（身份已脱敏）`（`git log --format='%h %ad %an %s'`） |
 | 工作目录 | `worktree-p31-ci`（detached HEAD=d37bfad）、`worktree-p31-final`（=c0f9feb），均非本会话的 `.agents/worktrees/phase8d-*` |
 | 本会话自述 | 「`d37bfad` 是 `996060d` 的后代，额外包含**外部 p31–p34 provider/stability 提交**」（seq=18441 @01:26） |
 | 内容（离线实现） | `app/services/llm_gateway/`（base/client/credentials/errors/usage + Mock/OpenRouter/Ollama providers）、`scripts/run_model_preflight.py`、`scripts/run_stability_matrix.py` 硬化（`PLAN_INVALID`/`NO_CANDIDATE`/`ARTIFACT_MISSING`/`VERIFIER_ERROR`/`TIMEOUT` 分离、timeout 捕获、checkpoint/resume） |
@@ -372,7 +372,7 @@
 ## 8. 假设与判定方法
 
 - **事件指针格式**：`session:b139b586#seq=NNNN @MM-DD HH:MM`。seq 取自 JSONL 的 `seq` 字段；时间为 `time`（epoch ms）换算到 **UTC+8**。日志内运行时上下文在 11-16 02:56 之前写 `Asia/Shanghai`、之后写 `Asia/Singapore`，两者同为 UTC+8，不影响换算。
-- **作者归属法**：以 git 作者身份为主判据——本会话所有 commit 命令显式 `-c user.name="BinaryRepair"`，故 `author=BinaryRepair` 的 86 个提交视为本会话产出；`author=huajinyao` 的提交视为并行 operator 车道（p5–p9/p10–p15/p16/p21–p24/p31–p34/M1–M4/整合轮）。旁证：本会话在 T9/T15 明确称这些为"operator 提交""外部 p31–p34 提交"。**该判定不是密码学证明**：若另一会话也曾使用 BinaryRepair 身份，则归属会重叠；目前未发现反例。
+- **作者归属法**：以 git 作者身份为主判据——本会话所有 commit 命令显式 `-c user.name="BinaryRepair"`，故 `author=BinaryRepair` 的 86 个提交视为本会话产出；`author=operator` 的提交视为并行 operator 车道（p5–p9/p10–p15/p16/p21–p24/p31–p34/M1–M4/整合轮）。旁证：本会话在 T9/T15 明确称这些为"operator 提交""外部 p31–p34 提交"。**该判定不是密码学证明**：若另一会话也曾使用 BinaryRepair 身份，则归属会重叠；目前未发现反例。
 - **"代码/测试已实现并验证"** 只用于有真实执行证据（gate 报文、Lima 差分、CI run id、pytest 输出）的项；仅文档/claims 声明的一律标注"仅文档/声明"。
 - 未核实项：`final/consolidated-2026-11-16` 的创建者会话、`binary-repair-gui` 脏状态的具体操作者、`640d08a`（T5 提到的中间冻结树）是否仍在对象库——这三项均标"未核实"。
 
@@ -383,7 +383,7 @@
 1. **本会话 = 项目的"测量与治理"主线**：它没有新增漏洞修复能力（每阶段自述 `0 capability promotion`），但把"什么算修好了"从一句口号变成了可执行门禁：独立验证器 + patch-plan 字节重放 + Acceptance 2.0（L0–L7）+ 30 scenarios meta-audit + 13 项 frozen-tree gate。总结报告应把这条线与"能力线"分开写，否则会把治理成果误读为修复能力。
 2. **最终可交付的 mainline 是 `d37bfad`，不是 `final/consolidated-2026-11-16`（c0f9feb）**。后者缺失整个 Phase-8D（117 文件 / 76,688 行，`git merge-base --is-ancestor d37bfad c0f9feb` = NO）。GitHub 交付基线必须用 d37bfad（或其后代），否则"整合两个会话"会丢掉最后一阶段。
 3. **最硬的一组数字**（可直接引用）：68 gaps = 55 closed + 1 mitigated + 12 non-goal + 0 open；240 cells / unknown 0；marcx 14/14 + 28/28 + 16/16；8B 2 verified / 0 false verified；8C 2/24 = 0.0833 且撤回 1 个 deterministic claim；8D 297 units / 8 个 gap 全 open / hidden 6/6 detection_missed / promotion 0/4；最终 gate 13/13、drift=0。
-4. **P31–P34 不属于本会话**，且其真实联网能力是 `NOT_RUN`（OpenRouter/Ollama/live 60-run 全未跑）。若最终报告把"统一 LLM gateway/OpenRouter/Ollama"写成已验证能力，就是虚报。它们的提交时间是 11-16 23:30–11-17 00:23，author `huajinyao`，在 `worktree-p31-ci`。
+4. **P31–P34 不属于本会话**，且其真实联网能力是 `NOT_RUN`（OpenRouter/Ollama/live 60-run 全未跑）。若最终报告把"统一 LLM gateway/OpenRouter/Ollama"写成已验证能力，就是虚报。它们的提交时间是 11-16 23:30–11-17 00:23，author `operator`，在 `worktree-p31-ci`。
 5. **"36 次稳定性 19/36" 也不是本会话产物**，来自 p10–p15 的 `d4263f9`；本会话只是把它写进 `docs/limitations.md` 并限定为 stochastic。引用时必须写清来源，否则会被当成 Phase-8 的成果。
 6. **全类型矩阵是 8 个 cell（ELF×3 + PE×3 + Mach-O×2），不是"任意二进制"**；真实运行层级只有 Mach-O 是 native，ELF/PE 全是模拟执行，PE 从未在 Windows 上跑。`asm_roundtrip` 仅 ELF 三架构，`source_roundtrip` 未实现。总结里必须保留这层限定。
 7. **交付前的两个仓库级 blocker**：(a) `binary-repair-gui` 主 worktree 41 项脏状态（p31 被 staged 删除 + 未提交改动，mtime 11-16 22:40–23:10），必须裁定后清理再提交；(b) `claims.json` 的 `ci_evidence.gated_sha`/`latest_verified_ci` 仍指 `78edb97`/run 43900916188，而最终发布是 `d37bfad`/43907137267——机器可读字段需要一次 evidence 更新或显式注记。

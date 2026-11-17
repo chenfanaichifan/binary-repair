@@ -296,7 +296,7 @@ a1755a5 ── a0e6a24          worktree-feature-final（本地唯一未推送�
 
 ```bash
 set -euo pipefail
-W="/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证"
+W="${WORKSPACE:?set WORKSPACE to the project root}"
 B="$W/backup"
 R="$W/binary-repair"
 STAMP=2026-11-17
