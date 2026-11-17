@@ -3,7 +3,7 @@ name: Ubuntu verification
 on:
   workflow_dispatch:
   push:
-    branches: [workbench-v3]
+    branches: ["final/consolidated-2026-11-17"]
 
 permissions:
   contents: read

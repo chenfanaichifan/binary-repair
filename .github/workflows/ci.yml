@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, workbench-v3]
+    branches: [main, "final/consolidated-2026-11-17"]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -280,7 +280,7 @@ jobs:
       - name: Fetch mainline and release tags
         run: |
           git fetch --tags --force origin
-          git fetch --force origin workbench-v3:refs/remotes/origin/workbench-v3
+          git fetch --force origin "final/consolidated-2026-11-17:refs/remotes/origin/final/consolidated-2026-11-17"
       - name: Check release drift (tag vs mainline vs evidence)
         env:
           RELEASE_TAG: ${{ github.event.inputs.tag || 'release-2026-11-15' }}
