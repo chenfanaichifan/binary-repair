@@ -671,7 +671,7 @@ def _route_a_commands(pkg: dict[str, Any], out: Path, job: Path) -> list[list[st
         "--candidate", str(route_out / "candidate.elf"),
         "--contract", str(job / "contract.json"),
         "--tests-dir", str(job / "tests"),
-        "--out", str(out / "manifest-repaired.json"),
+        "--out", str(out / "evidence" / "v3" / "manifest-repaired.json"),
     ]
     collector = [
         sys.executable, str(Path(__file__).resolve().parents[2] / "workers/route_a/result_bundle.py"),

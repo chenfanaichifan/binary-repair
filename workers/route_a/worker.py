@@ -45,6 +45,26 @@ def canonical_json_hash(obj) -> str:
     return hashlib.sha256(canon.encode("utf-8")).hexdigest()
 
 
+def contract_hash_for(obj) -> str:
+    """Return the product's canonical contract hash.
+
+    The 2026-11-07 Route A bundle wrote ``canonical_json_hash(contract.json)``
+    (``2dea9b4c…`` for the CWE-416 no-input contract), while the host trust
+    boundary recomputes ``app.domain.contracts.contract_sha256``
+    (``c1684f15…``). V0 then failed on a real bundle. The worker must use the
+    same rule as the host; there is no second copy of the canonicalisation.
+    """
+
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
+    try:
+        from app.domain.contracts import contract_sha256
+    except Exception as exc:  # noqa: BLE001 - fail closed, never fall back to a different rule
+        raise SystemExit(f"product contract_sha256 unavailable: {exc}") from exc
+    return contract_sha256(dict(obj))
+
+
 def manifest_set_hash(tests_dir: str, input_mode: str = "argv") -> tuple[str, str, str | None]:
     valid_path = os.path.join(tests_dir, "valid.json")
     invalid_path = os.path.join(tests_dir, "invalid.json")
@@ -109,7 +129,7 @@ def main(argv=None) -> int:
     os.makedirs(args.out, exist_ok=True)
     original_hash = sha256_file(args.original)
     contract_obj = load_json(args.contract)
-    contract_hash = canonical_json_hash(contract_obj)
+    contract_hash = contract_hash_for(contract_obj)
     input_mode = contract_obj.get("input_mode", "argv")
     if input_mode not in ("argv", "stdin", "none"):
         raise SystemExit(f"unknown input_mode: {input_mode!r}")

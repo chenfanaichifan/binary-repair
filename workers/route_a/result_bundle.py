@@ -38,6 +38,25 @@ def canonical_json_hash(obj):
     return hashlib.sha256(canon.encode("utf-8")).hexdigest()
 
 
+def product_contract_hash(obj):
+    """Return the product's canonical contract hash (the host uses the same rule).
+
+    The 2026-11-07 collector compared ``canonical_json_hash(contract.json)``
+    with the worker's status value. Once the worker writes the product canonical
+    hash (V0 parity with the host trust boundary), this collector must use the
+    same rule or its own V0 gate fails.
+    """
+
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
+    try:
+        from app.domain.contracts import contract_sha256
+    except Exception as exc:  # noqa: BLE001 - fail closed, never fall back to another rule
+        raise SystemExit(f"product contract_sha256 unavailable: {exc}") from exc
+    return contract_sha256(dict(obj))
+
+
 def rel(base, path):
     return os.path.relpath(path, base).replace("\\", "/")
 
@@ -109,7 +128,7 @@ def main(argv=None):
         if not isinstance(empty, dict) or empty.get("tests"):
             raise SystemExit("input_mode=none must not carry non-empty tests/invalid.json")
     manifests.append({"name": "valid.json", "sha256": sha256_file(valid)})
-    contract_hash = canonical_json_hash(contract_obj)
+    contract_hash = product_contract_hash(contract_obj)
     set_payload = {
         "schema_version": 1,
         "case_id": v["case_id"],
