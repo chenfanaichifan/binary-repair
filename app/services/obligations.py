@@ -17,6 +17,11 @@ from app.domain.acceptance import Obligation
 from app.domain.evidence import verify_artifact
 from app.domain.interface import InterfaceCheckError, validate_interface_report
 from app.domain.outcomes import CheckResult
+from app.domain.route_a_evidence import (
+    RECORD_KIND,
+    RouteAEvidenceError,
+    validate_route_a_record,
+)
 from app.domain.scopes import scope_for_kind
 from app.domain.v4 import V4EvidenceError, validate_v4_evidence
 from app.services.orchestration import GATES, build_obligations
@@ -63,17 +68,21 @@ def persist_obligations(
         ).fetchone()
         job_original = str(job_row["original_sha256"]) if job_row is not None else None
         target_entry = ""
+        attempt_route = ""
+        contract_canonical = ""
         run_row = connection.execute(
-            "SELECT r.contract_id FROM attempts a JOIN runs r ON r.id = a.run_id "
+            "SELECT r.contract_id, a.route FROM attempts a JOIN runs r ON r.id = a.run_id "
             "WHERE a.id = ? AND r.job_id = ?",
             (attempt_id, job_id),
         ).fetchone()
         if run_row is not None:
+            attempt_route = str(run_row["route"] or "")
             contract_row = connection.execute(
-                "SELECT body_json FROM contracts WHERE id = ? AND job_id = ?",
+                "SELECT body_json, sha256 FROM contracts WHERE id = ? AND job_id = ?",
                 (run_row["contract_id"], job_id),
             ).fetchone()
             if contract_row is not None:
+                contract_canonical = str(contract_row["sha256"] or "")
                 try:
                     target_entry = str(
                         json.loads(contract_row["body_json"]).get("target_entry") or ""
@@ -169,6 +178,119 @@ def persist_obligations(
                     detail=f"V4 not_run: {reason}",
                 )
                 details["V4"] = obligations[index].detail
+
+        # V0 is identity: its evidence artifact must be the candidate bytes, not
+        # a fallback to the job original. This closes the "V0 bound to original"
+        # corner for both routes (a round-trip candidate still matches itself).
+        for index, (gate, obligation) in enumerate(
+            zip((item[0] for item in GATES), obligations)
+        ):
+            if gate != "V0" or obligation.result != CheckResult.PASSED:
+                continue
+            reason = None
+            artifact_id = evidence.get("V0")
+            if not artifact_id:
+                reason = "missing V0 evidence artifact"
+            elif not candidate_sha256:
+                reason = "candidate hash unavailable"
+            else:
+                try:
+                    verified = verify_artifact(
+                        data_dir=data_dir,
+                        job_id=job_id,
+                        attempt_id=attempt_id,
+                        artifact_id=str(artifact_id),
+                        gate="V0",
+                        require_attempt=True,
+                    )
+                    if verified["sha256"] != candidate_sha256:
+                        reason = "V0 evidence is not the candidate bytes"
+                except Exception as exc:  # noqa: BLE001 - invalid evidence is not a pass
+                    reason = str(exc)
+            if reason is not None:
+                obligations[index] = Obligation(
+                    kind=obligation.kind,
+                    required=obligation.required,
+                    result=CheckResult.NOT_RUN,
+                    detail=f"V0 identity not verified: {reason}",
+                )
+                details["V0"] = obligations[index].detail
+
+        # Route A structural gates V1/V3/V5 are host-written verification
+        # records produced by app.domain.route_a_evidence from the canonical
+        # bundle. Re-validate a record when present; legacy/other-route payloads
+        # keep their pre-existing mapping (they are not produced by the driver).
+        if attempt_route == "route_a":
+            for index, (gate, obligation) in enumerate(
+                zip((item[0] for item in GATES), obligations)
+            ):
+                if gate not in {"V1", "V3", "V5"} or obligation.result != CheckResult.PASSED:
+                    continue
+                reason = None
+                artifact_id = evidence.get(gate)
+                if not artifact_id:
+                    reason = f"missing {gate} evidence artifact"
+                else:
+                    try:
+                        verified = verify_artifact(
+                            data_dir=data_dir,
+                            job_id=job_id,
+                            attempt_id=attempt_id,
+                            artifact_id=str(artifact_id),
+                            gate=gate,
+                            require_attempt=True,
+                        )
+                        try:
+                            payload = json.loads(
+                                (Path(data_dir) / str(verified["relative_path"])).read_text(
+                                    encoding="utf-8"
+                                )
+                            )
+                        except (OSError, ValueError):
+                            payload = None
+                        if isinstance(payload, dict) and payload.get("record_kind") == RECORD_KIND:
+                            if not candidate_sha256 or not job_original:
+                                raise RouteAEvidenceError(
+                                    "candidate/original hash unavailable"
+                                )
+                            validate_route_a_record(
+                                payload,
+                                gate=gate,
+                                candidate_sha256=candidate_sha256,
+                                original_sha256=job_original,
+                                contract_canonical_sha256=contract_canonical or None,
+                            )
+                            for source in payload["source_artifacts"]:
+                                source_verified = verify_artifact(
+                                    data_dir=data_dir,
+                                    job_id=job_id,
+                                    attempt_id=attempt_id,
+                                    artifact_id=source["artifact_id"],
+                                    gate=gate,
+                                    require_attempt=True,
+                                )
+                                if source_verified["sha256"] != source["sha256"]:
+                                    raise RouteAEvidenceError(
+                                        f"{gate} source artifact hash mismatch"
+                                    )
+                        else:
+                            # Legacy/non-record payload from a non-canonical path
+                            # (generic preview input or an older route A bundle).
+                            # The canonical driver always registers a host record.
+                            details[gate] = (
+                                details.get(gate, obligation.detail)
+                                + "; legacy route_a evidence (not a host verification record)"
+                            )
+                    except (OSError, ValueError, RouteAEvidenceError) as exc:
+                        reason = str(exc)
+                if reason is not None:
+                    obligations[index] = Obligation(
+                        kind=obligation.kind,
+                        required=obligation.required,
+                        result=CheckResult.NOT_RUN,
+                        detail=f"{gate} not verified: {reason}",
+                    )
+                    details[gate] = obligations[index].detail
 
         rows = []
         for gate, obligation in zip((item[0] for item in GATES), obligations):

@@ -1,13 +1,18 @@
 """Write one worker attempt bundle from an executor result.
 
-Two modes:
+Modes:
 
-* ``--input result.json``: a generic map with ``candidate_sha256``,
-  ``results`` and optional ``evidence`` / ``details``. This is the adapter
-  target for Route A executors that already produced their own bundle.
+* ``--routea-bundle <dir>`` (production Route A entry): validate the canonical
+  guest bundle with :mod:`app.domain.route_a_evidence`, recomputing what the
+  host can recompute and registering host-written verification records. This is
+  the only mode the attempt driver uses for Route A.
 * ``--routeb-bundle <dir>``: map a `routeb/executor.py` static bundle to V0-V5
   without inventing a pass. Runtime checks without ``manifest-compare.json``
   stay ``not_run``.
+* ``--input result.json``: a generic declaration map. It is **test/preview
+  only** and is deliberately not reachable from :mod:`app.services.attempt_driver`;
+  a production attempt can never fall back to it when the canonical bundle is
+  missing.
 
 The output path defaults to ``BINARYREPAIR_RESULT_PATH`` and identifiers default
 to the environment the worker passes to ``BINARYREPAIR_ATTEMPT_CMD``.
@@ -25,6 +30,7 @@ from pathlib import Path
 from typing import Any
 
 from app.db.connection import connect
+from app.services import jobs
 from app.services.assistant_key_store import is_secret_file
 
 ROUTES = ("route_a", "route_b")
@@ -97,6 +103,11 @@ def _generic(
     job_id: str | None,
     attempt_id: str | None,
 ) -> dict[str, Any]:
+    """Map a generic declaration bundle (test/preview only).
+
+    Production Route A never reaches this function: the attempt driver only calls
+    ``--routea-bundle`` and fails closed when the canonical bundle is missing.
+    """
     try:
         payload = json.loads(input_path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
@@ -142,6 +153,206 @@ def _generic(
         "results": results,
         "evidence": evidence,
         "details": payload.get("details") or {},
+    }
+
+
+def _job_original_path(data_dir: Path, job_id: str) -> Path:
+    """Return the job's stored original ELF, re-hashed against the job record."""
+
+    connection = connect(data_dir)
+    try:
+        row = connection.execute(
+            "SELECT relative_path FROM artifacts "
+            "WHERE job_id = ? AND role = 'original' ORDER BY created_at LIMIT 1",
+            (job_id,),
+        ).fetchone()
+        job = connection.execute(
+            "SELECT original_sha256 FROM jobs WHERE id = ?", (job_id,)
+        ).fetchone()
+    finally:
+        connection.close()
+    if row is None or job is None:
+        raise SystemExit(f"job {job_id} has no stored original artifact")
+    path = data_dir / str(row["relative_path"])
+    if not path.is_file():
+        raise SystemExit(f"job original is missing: {path}")
+    if _sha256(path) != str(job["original_sha256"]):
+        raise SystemExit("job original bytes do not match the job record")
+    return path
+
+
+def _run_contract(data_dir: Path, job_id: str, run_id: str) -> tuple[dict[str, Any], Path | None]:
+    """Return the run-bound reviewed contract body and its file when present."""
+
+    connection = connect(data_dir)
+    try:
+        row = connection.execute(
+            "SELECT c.id AS contract_id, c.body_json FROM runs r "
+            "JOIN contracts c ON c.id = r.contract_id "
+            "WHERE r.id = ? AND r.job_id = ? AND c.job_id = ?",
+            (run_id, job_id, job_id),
+        ).fetchone()
+    finally:
+        connection.close()
+    if row is None:
+        raise SystemExit(f"run {run_id} has no reviewed contract")
+    try:
+        body = json.loads(str(row["body_json"]))
+    except ValueError as exc:
+        raise SystemExit(f"run contract body is not JSON: {exc}") from exc
+    if not isinstance(body, dict):
+        raise SystemExit("run contract body is not an object")
+    path = data_dir / "jobs" / job_id / "contracts" / f"{row['contract_id']}.json"
+    return body, (path if path.is_file() else None)
+
+
+def _routea(
+    bundle: Path,
+    *,
+    data_dir: Path,
+    job_id: str,
+    run_id: str,
+    attempt_id: str,
+) -> dict[str, Any]:
+    """Validate a canonical Route A bundle and write the worker result payload."""
+
+    from app.domain.route_a_evidence import (
+        GATES,
+        RouteAEvidenceError,
+        validate_route_a_bundle,
+    )
+
+    attempt = jobs.get_attempt(attempt_id, data_dir=data_dir)
+    if attempt is None or attempt.route != "route_a":
+        raise SystemExit(f"attempt {attempt_id} is not a stored route_a attempt")
+    original = _job_original_path(data_dir, job_id)
+    contract_body, contract_file = _run_contract(data_dir, job_id, run_id)
+    try:
+        validation = validate_route_a_bundle(
+            bundle,
+            original_elf=original,
+            contract_body=contract_body,
+            contract_file=contract_file,
+        )
+    except RouteAEvidenceError as exc:
+        raise SystemExit(str(exc)) from exc
+
+    evidence_dir = data_dir / "jobs" / job_id / "evidence" / attempt_id
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    identity = {
+        "candidate_sha256": validation.candidate_sha256,
+        "original_sha256": validation.original_sha256,
+        "contract_canonical_sha256": validation.contract_canonical_sha256,
+    }
+    evidence: dict[str, str] = {}
+    raw_ids: dict[str, str] = {}
+    for gate in GATES:
+        finding = validation.findings[gate]
+        if finding.raw_source:
+            source = bundle / finding.raw_source
+            if source.is_file() and gate == "V4":
+                raw_ids[gate] = _register(
+                    data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                    source=source, role=f"routea_{gate.lower()}_evidence",
+                )
+            elif source.is_file():
+                raw_ids[gate] = _register(
+                    data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                    source=source, role=f"routea_{gate.lower()}_source",
+                )
+
+        if gate == "V0" and finding.status == "passed":
+            candidate = bundle / "route_a" / "candidate.elf"
+            evidence["V0"] = _register(
+                data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                source=candidate, role="routea_v0_candidate",
+            )
+        elif gate == "V1" and finding.status == "passed":
+            source_artifacts = []
+            for source in finding.sources:
+                path = bundle / source["path"]
+                if path.is_file():
+                    artifact_id = _register(
+                        data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                        source=path, role="routea_v1_source",
+                    )
+                    source_artifacts.append(
+                        {"artifact_id": artifact_id, "path": source["path"], "sha256": source["sha256"]}
+                    )
+            record = finding.as_record(
+                source_artifacts=source_artifacts, **identity
+            )
+            record["checks"] = {
+                "audit_pass": True,
+                "edit_manifest_bound": True,
+                "readelf_present": True,
+                "lief_present": True,
+            }
+            record_path = _write(evidence_dir / "V1-verified.json", record)
+            evidence["V1"] = _register(
+                data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                source=record_path, role="routea_v1_verification",
+            )
+        elif gate == "V2" and finding.status == "passed" and finding.generated is not None:
+            report_path = _write(
+                evidence_dir / str(finding.generated_name or "v2-interface-scored.json"),
+                finding.generated,
+            )
+            evidence["V2"] = _register(
+                data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                source=report_path, role="routea_v2_interface",
+            )
+        elif gate == "V3" and finding.status == "passed":
+            source_artifacts = []
+            raw_id = raw_ids.get("V3")
+            if raw_id is not None:
+                source_artifacts.append(
+                    {"artifact_id": raw_id, "path": finding.raw_source, "sha256": finding.sources[0]["sha256"]}
+                )
+            record = finding.as_record(source_artifacts=source_artifacts, **identity)
+            record["checks"] = {
+                "repaired_pass": True,
+                "passed": finding.checks.get("passed"),
+                "total": finding.checks.get("total"),
+                "input_mode": finding.checks.get("input_mode"),
+                "cases_ok": True,
+                "guest_observed": True,
+            }
+            record_path = _write(evidence_dir / "V3-verified.json", record)
+            evidence["V3"] = _register(
+                data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                source=record_path, role="routea_v3_verification",
+            )
+        elif gate == "V4" and finding.status == "passed":
+            evidence["V4"] = raw_ids[gate]
+        elif gate == "V5" and finding.status == "passed":
+            source_artifacts = []
+            raw_id = raw_ids.get("V5")
+            if raw_id is not None:
+                source_artifacts.append(
+                    {"artifact_id": raw_id, "path": finding.raw_source, "sha256": finding.sources[0]["sha256"]}
+                )
+            record = finding.as_record(source_artifacts=source_artifacts, **identity)
+            record["checks"] = {
+                "independent_replay": True,
+                "sha256_all_candidate": True,
+                "byte_identical": True,
+                "patch_tool_sha256": finding.checks.get("patch_tool_sha256"),
+                "replayed_by": finding.checks.get("replayed_by"),
+                "runs": finding.checks.get("runs"),
+            }
+            record_path = _write(evidence_dir / "V5-verified.json", record)
+            evidence["V5"] = _register(
+                data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                source=record_path, role="routea_v5_verification",
+            )
+
+    return {
+        "route": "route_a",
+        "candidate_sha256": validation.candidate_sha256,
+        "results": validation.results,
+        "evidence": evidence,
+        "details": validation.details,
     }
 
 
@@ -381,7 +592,8 @@ def _routeb(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.services.attempt_writer")
-    parser.add_argument("--input", type=Path, help="generic result JSON")
+    parser.add_argument("--input", type=Path, help="generic result JSON (test/preview only)")
+    parser.add_argument("--routea-bundle", type=Path, help="canonical Route A evidence bundle dir")
     parser.add_argument("--routeb-bundle", type=Path, help="routeb/executor.py bundle dir")
     parser.add_argument("--data-dir", default=os.environ.get("BINARYREPAIR_DATA_DIR"))
     parser.add_argument("--job-id", default=os.environ.get("BINARYREPAIR_JOB_ID"))
@@ -398,11 +610,25 @@ def main(argv: list[str] | None = None) -> int:
             raise SystemExit("missing --out / BINARYREPAIR_RESULT_PATH")
         args.out = Path(out)
 
-    route = args.route or ("route_b" if args.routeb_bundle else None)
+    route = args.route or (
+        "route_b" if args.routeb_bundle else "route_a" if args.routea_bundle else None
+    )
     if route not in ROUTES:
         raise SystemExit("route must be route_a or route_b")
 
-    if args.routeb_bundle:
+    if args.routea_bundle:
+        data_dir = Path(_default(args.data_dir, "BINARYREPAIR_DATA_DIR"))
+        job_id = _default(args.job_id, "BINARYREPAIR_JOB_ID")
+        run_id = _default(args.run_id, "BINARYREPAIR_RUN_ID")
+        attempt_id = _default(args.attempt_id, "BINARYREPAIR_ATTEMPT_ID")
+        payload = _routea(
+            args.routea_bundle,
+            data_dir=data_dir,
+            job_id=job_id,
+            run_id=run_id,
+            attempt_id=attempt_id,
+        )
+    elif args.routeb_bundle:
         data_dir = Path(_default(args.data_dir, "BINARYREPAIR_DATA_DIR"))
         job_id = _default(args.job_id, "BINARYREPAIR_JOB_ID")
         attempt_id = _default(args.attempt_id, "BINARYREPAIR_ATTEMPT_ID")
@@ -423,7 +649,7 @@ def main(argv: list[str] | None = None) -> int:
             attempt_id=args.attempt_id,
         )
     else:
-        raise SystemExit("provide --input or --routeb-bundle")
+        raise SystemExit("provide --routea-bundle, --routeb-bundle or --input")
 
     path = _write(args.out, payload)
     print(path)

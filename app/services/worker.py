@@ -49,6 +49,15 @@ from app.services.attempt_driver import routeb_bundle_dir
 TERMINAL = {"finished", "cancelled"}
 
 
+class EvidenceGapError(RuntimeError):
+    """The route evidence is absent or incomplete (not a tool failure).
+
+    The attempt driver exits with status 3 for this case. It is recorded as
+    ``inconclusive / required_check_not_run`` with the driver's message, never as
+    ``error / tool_failed``, and it can never produce a pass.
+    """
+
+
 def _now() -> str:
     return _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat()
 
@@ -268,6 +277,10 @@ def _run_executor(
         capture_output=True,
         text=True,
     )
+    if completed.returncode == 3:
+        stderr = (completed.stderr or "").strip().splitlines()
+        tail = stderr[-1] if stderr else "route evidence is absent"
+        raise EvidenceGapError(tail)
     if completed.returncode != 0:
         stderr = (completed.stderr or "").strip().splitlines()
         tail = stderr[-1] if stderr else ""
@@ -299,6 +312,51 @@ def _reconstruct(attempt: jobs.AttemptRecord) -> Verdict | None:
     )
 
 
+def _evidence_gap_verdict(
+    *,
+    job_id: str,
+    run: jobs.RunRecord,
+    attempt: jobs.AttemptRecord,
+    data_dir: str | Path,
+    message: str,
+) -> Verdict | None:
+    """Record an absent-evidence attempt as inconclusive, with its reason.
+
+    The candidate bytes are unknown here, so the job's original hash is carried
+    only as identity/reporting data (acceptance never compares it to an approved
+    candidate). Every gate stays ``not_run`` with the driver message in its
+    detail; no gate can read as passed.
+    """
+
+    job = jobs.get_job(job_id, data_dir=data_dir)
+    if job is None:
+        return None
+    details = {
+        gate: f"missing: {message} (route {attempt.route})"
+        for gate, _kind, _required in orchestration.GATES
+    }
+    candidate = str(job.original_sha256)
+    obligations.persist_obligations(
+        data_dir=data_dir,
+        job_id=job_id,
+        attempt_id=attempt.id,
+        results={},
+        evidence={},
+        details=details,
+        candidate_sha256=candidate,
+    )
+    _stamp_attempt(attempt.id, data_dir=data_dir, finished=True)
+    return orchestration.evaluate_attempt(
+        job_id,
+        run.id,
+        attempt_id=attempt.id,
+        results={},
+        details=details,
+        data_dir=data_dir,
+        candidate_sha256=candidate,
+    )
+
+
 def _attempt_verdict(
     *,
     job_id: str,
@@ -308,14 +366,23 @@ def _attempt_verdict(
 ) -> Verdict | None:
     bundle = _bundle_path(data_dir, job_id, run.id, attempt.id)
     if not bundle.exists():
-        _run_executor(
-            data_dir=data_dir,
-            job_id=job_id,
-            run_id=run.id,
-            attempt_id=attempt.id,
-            route=attempt.route,
-            bundle=bundle,
-        )
+        try:
+            _run_executor(
+                data_dir=data_dir,
+                job_id=job_id,
+                run_id=run.id,
+                attempt_id=attempt.id,
+                route=attempt.route,
+                bundle=bundle,
+            )
+        except EvidenceGapError as exc:
+            return _evidence_gap_verdict(
+                job_id=job_id,
+                run=run,
+                attempt=attempt,
+                data_dir=data_dir,
+                message=str(exc),
+            )
     if not bundle.exists():
         return None
 

@@ -48,10 +48,12 @@ def build_obligations(
     results: Mapping[str, str | Any],
     *,
     required: Mapping[str, bool] | None = None,
+    details: Mapping[str, str] | None = None,
 ) -> list[Any]:
     from app.domain.acceptance import Obligation
 
     required = required or {}
+    details = details or {}
     obligations = []
     for gate, kind, default_required in GATES:
         result = _gate_result(results.get(gate, "not_run"))
@@ -63,7 +65,7 @@ def build_obligations(
                 kind=kind,
                 required=is_required,
                 result=result,
-                detail=f"{gate} {kind}: {result.value}",
+                detail=details.get(gate, f"{gate} {kind}: {result.value}"),
             )
         )
     return obligations
@@ -158,6 +160,7 @@ def evaluate_attempt(
     attempt_id: str | None = None,
     route: str | None = None,
     required: Mapping[str, bool] | None = None,
+    details: Mapping[str, str] | None = None,
     cancelled: bool = False,
     error_reason: Any = None,
     error_detail: str = "",
@@ -167,7 +170,7 @@ def evaluate_attempt(
     from app.domain.acceptance import decide_attempt_outcome
 
     run, body = _run_context(job_id, run_id, data_dir)
-    obligations = build_obligations(results, required=required)
+    obligations = build_obligations(results, required=required, details=details)
     verdict = decide_attempt_outcome(
         obligations=obligations,
         candidate_sha256=candidate_sha256,

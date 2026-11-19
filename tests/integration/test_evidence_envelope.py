@@ -41,28 +41,46 @@ def _artifact(data: Path, job_id: str, attempt_id: str, *, content: bytes,
     return artifact_id
 
 
-def test_passed_evidence_missing_file_is_rejected(tmp_path: Path) -> None:
+def _obligation_row(data: Path, attempt_id: str, kind: str) -> dict:
+    connection = connect(data)
+    try:
+        row = connection.execute(
+            "SELECT result, detail FROM obligations WHERE attempt_id = ? AND kind = ?",
+            (attempt_id, kind),
+        ).fetchone()
+    finally:
+        connection.close()
+    return dict(row) if row is not None else {}
+
+
+def test_passed_evidence_missing_file_is_downgraded(tmp_path: Path) -> None:
     data, job, run, attempt = _setup(tmp_path)
     relative = f"jobs/{job.id}/evidence/{attempt.id}/missing.bin"
     artifact = _artifact(data, job.id, attempt.id, content=b"x", relative=relative)
     (data / relative).unlink()
-    with pytest.raises(obligations.ObligationWriteError, match="missing"):
-        obligations.persist_obligations(
-            data_dir=data, job_id=job.id, attempt_id=attempt.id,
-            results={"V1": "passed"}, evidence={"V1": artifact},
-        )
+    obligations.persist_obligations(
+        data_dir=data, job_id=job.id, attempt_id=attempt.id,
+        results={"V1": "passed"}, evidence={"V1": artifact},
+    )
+    row = _obligation_row(data, attempt.id, "structure")
+    assert row["result"] == "not_run"
+    assert row["detail"].startswith("V1 not verified:")
+    assert "missing" in row["detail"].lower()
 
 
-def test_evidence_from_another_attempt_is_rejected(tmp_path: Path) -> None:
+def test_evidence_from_another_attempt_is_downgraded(tmp_path: Path) -> None:
     data, job, run, attempt = _setup(tmp_path)
     other = next(a for a in jobs.list_attempts(run.id, data_dir=data) if a.id != attempt.id)
     relative = f"jobs/{job.id}/evidence/{other.id}/cross.bin"
     artifact = _artifact(data, job.id, other.id, content=b"cross", relative=relative)
-    with pytest.raises(obligations.ObligationWriteError, match="another attempt"):
-        obligations.persist_obligations(
-            data_dir=data, job_id=job.id, attempt_id=attempt.id,
-            results={"V1": "passed"}, evidence={"V1": artifact},
-        )
+    obligations.persist_obligations(
+        data_dir=data, job_id=job.id, attempt_id=attempt.id,
+        results={"V1": "passed"}, evidence={"V1": artifact},
+    )
+    row = _obligation_row(data, attempt.id, "structure")
+    assert row["result"] == "not_run"
+    assert row["detail"].startswith("V1 not verified:")
+    assert "another attempt" in row["detail"]
 
 
 def test_candidate_hash_must_match_a_real_artifact(tmp_path: Path) -> None:

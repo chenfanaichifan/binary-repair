@@ -14,11 +14,11 @@ What this module does **not** do:
 * it never falls back to a different route's evidence.
 
 Exit codes (a non-zero status makes the worker persist ``error / tool_failed``
-with this message as the detail, which is the intended fail-closed path):
+with this message as the detail, except exit ``3`` which is an evidence gap and
+is recorded as ``inconclusive / required_check_not_run``):
 
-* ``2`` 鈥?the worker environment is incomplete or names an unknown route;
-* ``3`` 鈥?the route evidence directory is missing or incomplete;
-* ``4`` 鈥?no adapter input exists for this route yet.
+* ``2`` - the worker environment is incomplete or names an unknown route;
+* ``3`` - the route evidence directory is missing or incomplete.
 """
 
 from __future__ import annotations
@@ -73,6 +73,27 @@ def routeb_bundle_dir(
     )
 
 
+def routea_bundle_dir(
+    data_dir: str | Path, job_id: str, run_id: str, attempt_id: str
+) -> Path:
+    """Canonical staging directory for one attempt's Route A evidence bundle.
+
+    The guest executor writes it there and the host only reads it. It is derived
+    from the identity the worker already passes, so there is no override and
+    therefore no alternative path to fall back to.
+    """
+
+    return (
+        Path(data_dir)
+        / "jobs"
+        / job_id
+        / "runs"
+        / run_id
+        / "attempts"
+        / f"{attempt_id}.routea"
+    )
+
+
 def _missing(env: Mapping[str, str]) -> list[str]:
     return [name for name in REQUIRED_ENV if not env.get(name)]
 
@@ -100,13 +121,27 @@ def _route_b(env: Mapping[str, str]) -> int:
 
 
 def _route_a(env: Mapping[str, str]) -> int:
-    raw = env.get("BINARYREPAIR_ATTEMPT_INPUT")
-    if not raw:
-        _fail(4, "route_a has no host adapter input yet; set BINARYREPAIR_ATTEMPT_INPUT to the generic result JSON")
-    source = Path(raw)
-    if not source.is_file():
-        _fail(4, f"route_a adapter input is missing: {source}")
-    return attempt_writer.main(["--input", str(source)])
+    """Route A is only accepted from the canonical guest bundle directory.
+
+    A missing bundle is an evidence gap (exit 3), never a reason to fall back to
+    a generic declaration input. The host will not synthesise or accept one.
+    """
+
+    bundle = routea_bundle_dir(
+        env["BINARYREPAIR_DATA_DIR"],
+        env["BINARYREPAIR_JOB_ID"],
+        env["BINARYREPAIR_RUN_ID"],
+        env["BINARYREPAIR_ATTEMPT_ID"],
+    )
+    if not bundle.is_dir():
+        _fail(
+            3,
+            f"route_a evidence directory is missing: {bundle} "
+            "(the guest writes it; the host will not synthesise one or use a generic input)",
+        )
+    if not (bundle / "route_a" / "candidate.elf").is_file():
+        _fail(3, f"route_a evidence has no route_a/candidate.elf: {bundle}")
+    return attempt_writer.main(["--routea-bundle", str(bundle)])
 
 
 def main(argv: list[str] | None = None, env: Mapping[str, str] | None = None) -> int:

@@ -102,15 +102,17 @@ def test_routea_bundle_maps_gates_and_registers_evidence(tmp_path: Path) -> None
     from tools.routea_bundle_to_attempt import convert
 
     data_dir, record, run, attempt = _job(tmp_path)
-    evidence = tmp_path / "routea" / "evidence.txt"
+    evidence = tmp_path / "routea" / "candidate.elf"
     evidence.parent.mkdir(parents=True)
-    evidence.write_text("route-a evidence\n", encoding="utf-8")
+    # V0 evidence must be the candidate bytes; the converter binds candidate.elf
+    # explicitly instead of taking sources[0] (which is the original).
+    evidence.write_bytes((data_dir / "jobs" / record.id / "original.bin").read_bytes())
     bundle = {
         "route": "route_a",
         "identity": {"candidate_sha256": record.original_sha256},
         "gates": {
             "V0": {"status": "pass", "evidence": [
-                {"relative_path": "routea/evidence.txt"}]},
+                {"relative_path": "routea/candidate.elf"}]},
             "V1": {"status": "inconclusive", "evidence": []},
             "V2": {"status": "not_run", "evidence": []},
             "V3": {"status": "not_run", "evidence": []},
@@ -136,7 +138,9 @@ def test_routea_bundle_maps_gates_and_registers_evidence(tmp_path: Path) -> None
         connection.close()
     assert row is not None
     assert row["sha256"] == __import__("hashlib").sha256(evidence.read_bytes()).hexdigest()
-    assert row["relative_path"].startswith(f"attempts/{attempt.id}/")
+    assert row["relative_path"].startswith(
+        f"jobs/{record.id}/artifacts/attempts/{attempt.id}/"
+    )
 
 
 def test_routea_bundle_rejects_passed_without_evidence(tmp_path: Path) -> None:

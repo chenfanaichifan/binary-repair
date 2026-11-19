@@ -98,6 +98,30 @@ def _add_evidence(data_dir: Path, job_id: str, attempt_id: str, count: int = 5) 
     connection = connect(data_dir)
     try:
         with connection:
+            # V0 requires the candidate bytes as evidence. In this fixture the
+            # candidate is the round-trip identity of the original, so the job
+            # original bytes are also the candidate bytes.
+            v0_id = f"art-{attempt_id}-v0"
+            v0_relative = f"jobs/{job_id}/evidence/{attempt_id}/v0-candidate.bin"
+            v0_target = data_dir / v0_relative
+            v0_target.parent.mkdir(parents=True, exist_ok=True)
+            v0_target.write_bytes((data_dir / "jobs" / job_id / "original.bin").read_bytes())
+            v0_digest = __import__("hashlib").sha256(v0_target.read_bytes()).hexdigest()
+            connection.execute(
+                "INSERT INTO artifacts "
+                "(id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, 'application/octet-stream', 'evidence', ?)",
+                (
+                    v0_id,
+                    job_id,
+                    attempt_id,
+                    v0_relative,
+                    v0_digest,
+                    v0_target.stat().st_size,
+                    "2026-10-22T00:00:00+00:00",
+                ),
+            )
+            evidence["V0"] = v0_id
             for index in range(1, count + 1):
                 artifact_id = f"art-{attempt_id}-{index}"
                 relative = f"jobs/{job_id}/evidence/{attempt_id}/{index}.bin"

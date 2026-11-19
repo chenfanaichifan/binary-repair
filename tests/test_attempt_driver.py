@@ -143,21 +143,63 @@ def test_bundle_without_candidate_fails_closed(tmp_path: Path, monkeypatch) -> N
     assert not result.exists()
 
 
-def test_route_a_without_adapter_input_is_explicit(tmp_path: Path, monkeypatch) -> None:
+def test_route_a_missing_canonical_bundle_never_falls_back(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """No canonical bundle means an evidence gap, not a generic declaration."""
+
     data_dir, record, run, _attempt = _route_b_attempt(tmp_path)
+    attempt_id = "attempt-a"
+    result = (
+        data_dir
+        / "jobs"
+        / record.id
+        / "runs"
+        / run.id
+        / "attempts"
+        / f"{attempt_id}.json"
+    )
+    generic = tmp_path / "generic.json"
+    generic.write_text(
+        json.dumps(
+            {
+                "route": "route_a",
+                "candidate_sha256": "a" * 64,
+                "results": {f"V{i}": "passed" for i in range(6)},
+            }
+        ),
+        encoding="utf-8",
+    )
     monkeypatch.setenv("BINARYREPAIR_DATA_DIR", str(data_dir))
     monkeypatch.setenv("BINARYREPAIR_JOB_ID", record.id)
     monkeypatch.setenv("BINARYREPAIR_RUN_ID", run.id)
-    monkeypatch.setenv("BINARYREPAIR_ATTEMPT_ID", "attempt-a")
+    monkeypatch.setenv("BINARYREPAIR_ATTEMPT_ID", attempt_id)
     monkeypatch.setenv("BINARYREPAIR_ROUTE", "route_a")
-    monkeypatch.setenv("BINARYREPAIR_RESULT_PATH", str(tmp_path / "never.json"))
-    monkeypatch.delenv("BINARYREPAIR_ATTEMPT_INPUT", raising=False)
+    monkeypatch.setenv("BINARYREPAIR_RESULT_PATH", str(result))
+    monkeypatch.setenv("BINARYREPAIR_ATTEMPT_INPUT", str(generic))
 
     with pytest.raises(SystemExit) as raised:
         attempt_driver.main([])
 
-    assert raised.value.code == 4
-    assert not (tmp_path / "never.json").exists()
+    assert raised.value.code == 3
+    assert not result.exists(), "a generic input must never be turned into a result"
+    # The generic input is not implicitly rejected, it is simply never read.
+    assert json.loads(generic.read_text(encoding="utf-8"))["results"]["V0"] == "passed"
+
+
+def test_route_a_canonical_bundle_dir_is_derived(tmp_path: Path) -> None:
+    data_dir, record, run, _attempt = _route_b_attempt(tmp_path)
+
+    bundle = attempt_driver.routea_bundle_dir(data_dir, record.id, run.id, "attempt-a")
+    assert bundle == (
+        data_dir
+        / "jobs"
+        / record.id
+        / "runs"
+        / run.id
+        / "attempts"
+        / "attempt-a.routea"
+    )
 
 
 def test_incomplete_environment_is_rejected(monkeypatch) -> None:

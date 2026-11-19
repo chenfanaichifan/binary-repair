@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Route A result-bundle (gates.V0..V5) -> worker attempt JSON.
+"""Route A result-bundle (gates.V0..V5) -> worker attempt JSON (test/preview).
+
+Production Route A ingestion is ``app.services.attempt_driver`` ->
+``app.services.attempt_writer --routea-bundle``; this converter remains for
+tests and the preview view. It must never be used to claim a production pass.
 
 Evidence files are copied into the job artifact store and replaced by artifact
 ids. A `passed` gate without evidence is rejected rather than written as a
@@ -49,8 +53,10 @@ def _register(*, data_dir: Path, job_id: str, attempt_id: str, source: Path) -> 
     if not source.is_file():
         raise ValueError(f"evidence file missing: {source}")
     artifact_id = uuid.uuid4().hex
-    relative = f"attempts/{attempt_id}/{artifact_id}-{source.name}"
-    target = data_dir / "jobs" / job_id / "artifacts" / relative
+    # The recorded relative_path must resolve to the copied file; the copy lives
+    # under the job store, so the path includes jobs/<job>/artifacts.
+    relative = f"jobs/{job_id}/artifacts/attempts/{attempt_id}/{artifact_id}-{source.name}"
+    target = data_dir / relative
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, target)
     connection = connect(data_dir)
@@ -108,6 +114,17 @@ def convert(
         # (including V0); preview mode may show a V0 result without artifacts.
         if result == "passed" and not paths and (gate != "V0" or data_dir is not None):
             raise ValueError(f"{gate} passed without evidence; refusing false pass")
+        if gate == "V0" and data_dir is not None:
+            # Real registration: V0 identity must be the candidate bytes, never
+            # sources[0] (which, in the guest bundle, is the original ELF).
+            # Preview mode keeps the mapping-only behaviour.
+            candidate_paths = [path for path in paths if path.name == "candidate.elf"]
+            if result == "passed" and not candidate_paths:
+                raise ValueError(
+                    "V0 passed without a candidate.elf evidence path; refusing false pass"
+                )
+            if candidate_paths:
+                paths = candidate_paths
         if paths and data_dir is None:
             # Preview mode: no DB registration was requested. Keep the relative
             # paths so the caller can inspect the mapping; worker writes still
