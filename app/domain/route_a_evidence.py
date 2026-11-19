@@ -123,6 +123,21 @@ def _canonical_hash(payload: Mapping[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def _product_contract_hash(payload: Mapping[str, Any]) -> str:
+    """The reviewed-contract hash rule, shared with the product.
+
+    ``_canonical_hash`` is a plain JSON-dumps digest and is only correct for the
+    manifest-set envelope. A reviewed contract is hashed with
+    ``app.domain.contracts.contract_sha256`` (the same rule the guest worker and
+    collector use), so the bundle contract check must use that rule too; the two
+    digests differ for a contract that is not already normalised.
+    """
+
+    from app.domain.contracts import contract_sha256
+
+    return contract_sha256(dict(payload))
+
+
 def _read_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -287,7 +302,7 @@ def _check_v0(
         if contract is None:
             failures.append(f"bundle contract.json unusable: {error}")
         else:
-            if _canonical_hash(contract) != contract_canonical_sha256:
+            if _product_contract_hash(contract) != contract_canonical_sha256:
                 failures.append("bundle contract.json canonical hash differs from the reviewed contract")
             if contract_file_sha256 is not None and bundle_contract["sha256"] != contract_file_sha256:
                 failures.append("bundle contract.json bytes differ from the reviewed contract file")

@@ -93,6 +93,31 @@ def test_v0_identity_mismatch_is_a_check_failure(tmp_path: Path) -> None:
     assert validation.details["V0"].startswith("check_failed:")
 
 
+def test_v0_accepts_a_reviewed_contract_file_that_is_not_normalised(tmp_path: Path) -> None:
+    bundle = tmp_path / "bundle"
+    build_route_a_bundle(bundle)
+    # The reviewed contract file may be pretty-printed; its canonical hash must
+    # come from the product rule, not from a plain JSON-dumps digest, otherwise
+    # a real bundle can never match the reviewed contract.
+    pretty = json.dumps(CONTRACT, indent=2, sort_keys=True) + "\n"
+    (bundle / "contract.json").write_text(pretty, encoding="utf-8")
+    contract_file = tmp_path / "reviewed-contract.json"
+    contract_file.write_text(pretty, encoding="utf-8")
+
+    validation = validate_route_a_bundle(
+        bundle,
+        original_elf=ORIGINAL_ELF,
+        contract_body=CONTRACT,
+        contract_file=contract_file,
+    )
+
+    assert validation.findings["V0"].status == "passed"
+    assert (
+        validation.findings["V0"].checks["status_contract_sha256"]
+        == validation.contract_canonical_sha256
+    )
+
+
 def test_v1_audit_failure_is_a_check_failure(tmp_path: Path) -> None:
     bundle = tmp_path / "bundle"
     build_route_a_bundle(bundle, audit_pass=False)
