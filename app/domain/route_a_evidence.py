@@ -545,22 +545,126 @@ def _check_v4(
     return _missing("V4", "v4-symbolic.json or evidence/v4/symbolic.json")
 
 
+def _approved_case_expectations(tests_dir: Path) -> dict[str, dict[str, Any]]:
+    """Return approved per-case expectations with content hashes."""
+
+    approved: dict[str, dict[str, Any]] = {}
+    for name in ("valid.json", "invalid.json"):
+        path = tests_dir / name
+        if not path.is_file():
+            continue
+        payload, error = _read_json(path)
+        if payload is None:
+            raise ValueError(f"{name} unusable: {error}")
+        for case in payload.get("tests") or []:
+            if not isinstance(case, dict) or not isinstance(case.get("id"), str):
+                continue
+            expected = case.get("expected")
+            if not isinstance(expected, dict):
+                continue
+            stdout = str(expected.get("stdout", "")).encode("utf-8")
+            stderr = str(expected.get("stderr", "")).encode("utf-8")
+            approved[case["id"]] = {
+                "return_code": int(expected.get("return_code", 0)),
+                "stdout_sha256": hashlib.sha256(stdout).hexdigest(),
+                "stderr_sha256": hashlib.sha256(stderr).hexdigest(),
+            }
+    return approved
+
+
 def _check_v5(
     bundle: Path,
     *,
     candidate_sha256: str,
     original_sha256: str,
 ) -> GateFinding:
-    """V5 reproducibility: structural validation of the replay envelope.
+    """V5 reproducibility.
 
-    The replay itself is a guest/replayer activity (P0 forbids running the patch
-    tool on the host), so this function never executes anything.
+    A formal clean-snapshot replay record (2026-11-19 specification) is accepted
+    when the typed evidence, its restore receipt and every per-case comparison
+    validate. The earlier build-twice replay envelope remains supported for
+    evidence produced before the specification; it is never described as the
+    formal clean-snapshot rule.
     """
+
+    formal_rel = "evidence/v5/formal-v5.json"
+    formal_source = _source(bundle, formal_rel)
+    if formal_source is not None:
+        payload, error = _read_json(bundle / formal_rel)
+        if payload is None:
+            return _invalid("V5", f"formal-v5.json unusable: {error}")
+        try:
+            from app.domain.v5 import (
+                V5EvidenceError,
+                manifest_files,
+                manifest_sha256,
+                validate_v5_evidence,
+            )
+        except Exception as exc:  # noqa: BLE001 - absent validator is not a pass
+            return _inconclusive("V5", f"formal V5 validator unavailable: {exc}")
+        try:
+            approved = _approved_case_expectations(bundle / "tests")
+            evidence = validate_v5_evidence(
+                payload,
+                candidate_sha256=candidate_sha256,
+                original_sha256=original_sha256,
+                test_manifest_sha256=manifest_sha256(manifest_files(bundle / "tests")),
+                require_restore=True,
+                require_independent_review=True,
+                require_independent_replay=True,
+            )
+        except V5EvidenceError as exc:
+            return _invalid("V5", f"formal V5 evidence rejected: {exc}")
+        except Exception as exc:  # noqa: BLE001 - unusable evidence is not a pass
+            return _invalid("V5", f"formal V5 evidence unusable: {exc}")
+        behavior_ids = {case.case_id for case in evidence.behavior}
+        if behavior_ids != set(approved):
+            return _invalid(
+                "V5",
+                "formal V5 behaviour cases do not match the approved manifest "
+                f"(missing={sorted(set(approved) - behavior_ids)}, "
+                f"extra={sorted(behavior_ids - set(approved))})",
+            )
+        for case in evidence.behavior:
+            expected = approved[case.case_id]
+            if (
+                case.expected_return_code != expected["return_code"]
+                or case.expected_stdout_sha256 != expected["stdout_sha256"]
+                or case.expected_stderr_sha256 != expected["stderr_sha256"]
+            ):
+                return _invalid(
+                    "V5",
+                    f"formal V5 case {case.case_id} expected values do not match the approved manifest",
+                )
+        receipt = evidence.restore_receipt
+        checks = {
+            "formal_v5": True,
+            "restore_snapshot": receipt.snapshot_name,
+            "restore_snapshot_uid": receipt.snapshot_uid,
+            "restore_boot_id": receipt.boot_id,
+            "behavior_cases": len(evidence.behavior),
+            "reviewed_by": evidence.review.reviewed_by,
+            "independent_replay": True,
+            "runs": evidence.replay.runs,
+            "sha256_all_candidate": True,
+            "byte_identical": True,
+            "patch_tool_sha256": evidence.replay.patch_tool_sha256,
+            "replayed_by": evidence.replay.replayed_by,
+        }
+        return _finding(
+            "V5",
+            "passed",
+            "host_verified: clean-snapshot restore receipt and per-case replay on the frozen "
+            "candidate; every approved case matched its expectation",
+            sources=(formal_source,),
+            checks=checks,
+            raw_source=formal_rel,
+        )
 
     relative = "evidence/v5/replay.json"
     source = _source(bundle, relative)
     if source is None:
-        return _missing("V5", relative)
+        return _missing("V5", f"{formal_rel} or {relative}")
     payload, error = _read_json(bundle / relative)
     if payload is None:
         return _invalid("V5", f"replay.json unusable: {error}")

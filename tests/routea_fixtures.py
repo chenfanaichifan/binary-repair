@@ -283,6 +283,108 @@ def build_route_a_bundle(
     }
 
 
+def formal_v5_evidence(
+    bundle: Path,
+    *,
+    review_independent: bool = True,
+    revert_exit_code: int = 0,
+) -> dict:
+    """Synthetic formal V5 record (restore receipt + behaviour + review).
+
+    It exercises the schema and the host acceptance rule; it is not guest
+    evidence and the record says so through the synthetic environment values.
+    """
+
+    from app.domain.contracts import contract_sha256
+    from app.domain.v5 import manifest_files, manifest_sha256
+
+    candidate_sha = hashlib.sha256((bundle / "route_a" / "candidate.elf").read_bytes()).hexdigest()
+    original_sha = hashlib.sha256(ORIGINAL_ELF.read_bytes()).hexdigest()
+    valid = json.loads((bundle / "tests" / "valid.json").read_text(encoding="utf-8"))
+    case = valid["tests"][0]
+    expected = case["expected"]
+    expected_stdout = str(expected.get("stdout", "")).encode("utf-8")
+    expected_stderr = str(expected.get("stderr", "")).encode("utf-8")
+    return_code = int(expected.get("return_code", 0))
+    return {
+        "schema_version": 1,
+        "gate": "V5",
+        "kind": "reproducibility",
+        "scope": "replay",
+        "state": "passed",
+        "candidate_sha256": candidate_sha,
+        "original_sha256": original_sha,
+        "test_manifest_sha256": manifest_sha256(manifest_files(bundle / "tests")),
+        "contract_canonical_sha256": contract_sha256(CONTRACT),
+        "environment": {
+            "guest_hostname": "synthetic-guest",
+            "os": "Ubuntu 24.04.5 LTS",
+            "kernel": "6.8.0-147-generic",
+            "executor_manifest_sha256": "d" * 64,
+            "jobwrap_executor_sha256": "c" * 64,
+        },
+        "restore_receipt": {
+            "snapshot_name": "p1-prewindow-20261107",
+            "snapshot_uid": 15,
+            "snapshot_file_sha256": "b" * 64,
+            "vmx_path": "D:/VMs/binrepair-u2404-x64-01/BinRepair-Lab.vmx",
+            "revert_command": "vmrun -T ws revertToSnapshot <vmx> p1-prewindow-20261107",
+            "revert_exit_code": revert_exit_code,
+            "revert_stdout": "",
+            "revert_stderr": "",
+            "restore_started_at": "2026-11-19T11:00:00Z",
+            "restore_finished_at": "2026-11-19T11:06:00Z",
+            "power_state_before": "poweredOn",
+            "power_state_after_revert": "poweredOff",
+            "booted_at": "2026-11-19T11:06:40Z",
+            "boot_id": "synthetic-boot-id",
+        },
+        "behavior": [
+            {
+                "case_id": str(case["id"]),
+                "expected_return_code": return_code,
+                "expected_stdout_sha256": hashlib.sha256(expected_stdout).hexdigest(),
+                "expected_stderr_sha256": hashlib.sha256(expected_stderr).hexdigest(),
+                "observed_return_code": return_code,
+                "observed_stdout_sha256": hashlib.sha256(expected_stdout).hexdigest(),
+                "observed_stderr_sha256": hashlib.sha256(expected_stderr).hexdigest(),
+                "ok": True,
+            }
+        ],
+        "isolation": {
+            "expected_uid": 1003,
+            "uid": 1003,
+            "cap_eff": "0000000000000000",
+            "no_new_privs": "1",
+            "seccomp": "2",
+            "netns": "net:[4026532221]",
+            "jobwrap_attested": True,
+        },
+        "replay": {
+            "method": "two independent patch replays",
+            "runs": 2,
+            "sha256": [candidate_sha, candidate_sha],
+            "byte_identical": True,
+            "matches_candidate": True,
+            "patch_tool_sha256": "a" * 64,
+            "replayed_by": "fresh-context-agent-test",
+            "independent_replay": True,
+        },
+        "review": {
+            "reviewed_by": "ai-agent:reviewer-2026-11-19",
+            "independent": review_independent,
+            "result": "pass",
+            "reviewed_at": "2026-11-19T11:20:00Z",
+            "notes": "synthetic review for schema tests",
+        },
+        "not_claimed": [
+            "a binary-level proof is not claimed",
+            "one approved clean snapshot and one route only; not a general guarantee",
+        ],
+    }
+
+
+
 def build_route_b_bundle(
     bundle: Path,
     *,

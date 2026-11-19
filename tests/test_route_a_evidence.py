@@ -23,6 +23,7 @@ from tests.routea_fixtures import (
     ORIGINAL_ELF,
     build_route_a_bundle,
     change_entry,
+    formal_v5_evidence,
 )
 
 
@@ -282,3 +283,33 @@ def test_host_verification_record_round_trip(tmp_path: Path) -> None:
             original_sha256=meta["original_sha256"],
         )
     assert "audit_pass" in str(raised.value)
+
+
+def test_v5_accepts_a_formal_clean_snapshot_record(tmp_path: Path) -> None:
+    bundle = tmp_path / "bundle"
+    build_route_a_bundle(bundle)
+    (bundle / "evidence" / "v5").mkdir(parents=True, exist_ok=True)
+    (bundle / "evidence" / "v5" / "formal-v5.json").write_text(
+        json.dumps(formal_v5_evidence(bundle)), encoding="utf-8"
+    )
+
+    validation = _validate(bundle)
+
+    assert validation.findings["V5"].status == "passed"
+    assert validation.findings["V5"].checks["formal_v5"] is True
+    assert validation.findings["V5"].checks["restore_snapshot"] == "p1-prewindow-20261107"
+
+
+def test_v5_rejects_a_formal_record_with_a_non_independent_review(tmp_path: Path) -> None:
+    bundle = tmp_path / "bundle"
+    build_route_a_bundle(bundle)
+    (bundle / "evidence" / "v5").mkdir(parents=True, exist_ok=True)
+    (bundle / "evidence" / "v5" / "formal-v5.json").write_text(
+        json.dumps(formal_v5_evidence(bundle, review_independent=False)),
+        encoding="utf-8",
+    )
+
+    validation = _validate(bundle)
+
+    assert validation.findings["V5"].status == "not_run"
+    assert validation.details["V5"].startswith("invalid:")
