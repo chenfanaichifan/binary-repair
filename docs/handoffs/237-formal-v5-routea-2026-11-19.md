@@ -192,3 +192,11 @@ running with the V5 replay job dirs under `/var/lib/binrepair/jobs/` and `/tmp`
 - Guest: the approved snapshot is unchanged; the VM is currently booted from it
   and can be reverted again with the same receipt procedure. V5 replay job dirs
   are disposable.
+
+## 11. Push
+
+After this record was written, the owner asked for the P0 branch to be pushed.
+It is now on the remote as origin/p0/routea-trust-boundary-2026-11-13; the
+remote suggested a PR at
+https://github.com/chenfanaichifan/binary-repair/pull/new/p0/routea-trust-boundary-2026-11-13.
+No merge, no tag, and no change to the default branch were made.
